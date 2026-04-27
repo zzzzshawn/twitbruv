@@ -160,14 +160,14 @@ function ConversationList({
         <h2 className="text-sm font-semibold">Messages</h2>
         <div className="flex items-center gap-1">
           <Button
-            size="icon-sm"
-            variant="ghost"
+            size="sm"
+            variant="transparent"
             nativeButton={false}
             render={<Link to="/inbox/new" onClick={onClose} />}
           >
             <NotePencilIcon size={16} />
           </Button>
-          <Button size="icon-sm" variant="ghost" onClick={onClose}>
+          <Button size="sm" variant="transparent" onClick={onClose}>
             <XIcon size={16} />
           </Button>
         </div>
@@ -380,11 +380,11 @@ function ChatView({
         </div>
       )}
       <header className="flex items-center gap-2 border-b border-border px-3 py-2.5">
-        <Button size="icon-sm" variant="ghost" onClick={onBack}>
+        <Button size="sm" variant="transparent" onClick={onBack}>
           <ArrowLeftIcon size={18} />
         </Button>
         <span className="flex-1 truncate text-sm font-semibold">{title}</span>
-        <Button size="icon-sm" variant="ghost" onClick={onClose}>
+        <Button size="sm" variant="transparent" onClick={onClose}>
           <XIcon size={16} />
         </Button>
       </header>
@@ -445,8 +445,8 @@ function ChatView({
         />
         <Button
           type="button"
-          size="icon-sm"
-          variant="ghost"
+          size="sm"
+          variant="transparent"
           onClick={() => fileInputRef.current?.click()}
           disabled={sending}
         >
@@ -464,8 +464,8 @@ function ChatView({
         />
         <Button
           type="submit"
-          size="icon-sm"
-          variant="ghost"
+          size="sm"
+          variant="transparent"
           disabled={(!text.trim() && !pending) || sending}
         >
           <PaperPlaneTiltIcon size={18} />

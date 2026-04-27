@@ -200,7 +200,7 @@ function ChessGamePage() {
                 Draw
               </Button>
               <Button
-                variant="destructive"
+                variant="danger"
                 className="flex-1"
                 disabled={isFinished}
               >

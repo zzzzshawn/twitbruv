@@ -5,7 +5,6 @@ import {
   Scripts,
   createRootRoute,
 } from "@tanstack/react-router"
-import { IconContext } from "@phosphor-icons/react"
 import { Databuddy } from "@databuddy/sdk/react"
 import { DatabuddyDevtools } from "@databuddy/devtools/react"
 import { Toaster } from "sonner"
@@ -22,10 +21,12 @@ import { useMaintenance } from "../lib/maintenance"
 import { MeProvider } from "../lib/me"
 import { QueryProvider } from "../lib/query"
 import { buildSeoMeta } from "../lib/seo"
+import { getServerAuthState } from "../lib/auth.server"
 
 const DESCRIPTION = `${APP_NAME} — open-source, free-for-everyone social platform. No AI ranking, no paywalls, no ads.`
 
 export const Route = createRootRoute({
+  loader: () => getServerAuthState(),
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -83,37 +84,37 @@ export const Route = createRootRoute({
 })
 
 function RootComponent() {
+  const { user: initialMe } = Route.useLoaderData()
+
   return (
-    <IconContext.Provider value={{ weight: "duotone" }}>
-      <ThemeProvider>
-        <MaintenanceGate>
-          <QueryProvider>
-            <MeProvider>
-              <EmailVerifiedGate>
-                <AppShell>
-                  <Outlet />
-                </AppShell>
-              </EmailVerifiedGate>
-              <ThemedToaster />
-              {DATABUDDY_CLIENT_ID ? (
-                <Databuddy
-                  clientId={DATABUDDY_CLIENT_ID}
-                  trackWebVitals
-                  trackErrors
-                  trackPerformance
-                  trackOutgoingLinks
-                  trackInteractions
-                  enableBatching
-                  batchSize={20}
-                  maskPatterns={["/inbox/*", "/admin/*"]}
-                />
-              ) : null}
-              <DatabuddyDevtools enabled={import.meta.env.DEV} />
-            </MeProvider>
-          </QueryProvider>
-        </MaintenanceGate>
-      </ThemeProvider>
-    </IconContext.Provider>
+    <ThemeProvider>
+      <MaintenanceGate>
+        <QueryProvider>
+          <MeProvider initialMe={initialMe}>
+            <EmailVerifiedGate>
+              <AppShell>
+                <Outlet />
+              </AppShell>
+            </EmailVerifiedGate>
+            <ThemedToaster />
+            {DATABUDDY_CLIENT_ID ? (
+              <Databuddy
+                clientId={DATABUDDY_CLIENT_ID}
+                trackWebVitals
+                trackErrors
+                trackPerformance
+                trackOutgoingLinks
+                trackInteractions
+                enableBatching
+                batchSize={20}
+                maskPatterns={["/inbox/*", "/admin/*"]}
+              />
+            ) : null}
+            <DatabuddyDevtools enabled={import.meta.env.DEV} />
+          </MeProvider>
+        </QueryProvider>
+      </MaintenanceGate>
+    </ThemeProvider>
   )
 }
 

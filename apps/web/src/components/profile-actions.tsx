@@ -8,12 +8,7 @@ import {
   SpeakerSlashIcon,
 } from "@phosphor-icons/react"
 import { Button } from "@workspace/ui/components/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu"
+import { DropdownMenu } from "@workspace/ui/components/dropdown-menu"
 import { api } from "../lib/api"
 import { ReportDialog } from "./report-dialog"
 import type { PublicProfile } from "../lib/api"
@@ -90,7 +85,7 @@ export function ProfileActions({
       </Button>
       <Button
         size="sm"
-        variant={v.following ? "outline" : "default"}
+        variant={v.following ? "outline" : "primary"}
         disabled={busy !== null || v.blocking}
         onClick={() =>
           run(
@@ -104,16 +99,16 @@ export function ProfileActions({
       >
         {busy === "follow" ? "…" : v.following ? "Following" : "Follow"}
       </Button>
-      <DropdownMenu>
-        <DropdownMenuTrigger
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger
           render={
-            <Button size="sm" variant="ghost" aria-label="more actions">
+            <Button size="sm" variant="transparent" aria-label="more actions">
               <DotsThreeIcon size={16} />
             </Button>
           }
         />
-        <DropdownMenuContent align="end" sideOffset={4} className="w-40">
-          <DropdownMenuItem
+        <DropdownMenu.Content align="end" sideOffset={4} className="w-40">
+          <DropdownMenu.Item
             onClick={() =>
               run(
                 "mute",
@@ -125,13 +120,13 @@ export function ProfileActions({
           >
             <SpeakerSlashIcon size={14} />
             <span>{v.muting ? "Unmute" : "Mute feed"}</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setReportOpen(true)}>
+          </DropdownMenu.Item>
+          <DropdownMenu.Item onClick={() => setReportOpen(true)}>
             <FlagIcon size={14} />
             <span>Report</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem
-            variant="destructive"
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            variant="danger"
             onClick={() => {
               if (!v.blocking && !confirm(`Block @${h}?`)) return
               run(
@@ -144,9 +139,9 @@ export function ProfileActions({
           >
             <ProhibitIcon size={14} />
             <span>{v.blocking ? "Unblock" : "Block"}</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
       <ReportDialog
         open={reportOpen}
         onOpenChange={setReportOpen}

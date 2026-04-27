@@ -18,7 +18,7 @@ import {
   UserPlusIcon,
 } from "@phosphor-icons/react"
 import { Button } from "@workspace/ui/components/button"
-import { Skeleton, SkeletonAvatar } from "@workspace/ui/components/skeleton"
+import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "../lib/api"
 import { authClient } from "../lib/auth"
 import { Avatar } from "../components/avatar"
@@ -133,7 +133,7 @@ function Notifications() {
       action: (
         <Button
           size="sm"
-          variant="ghost"
+          variant="transparent"
           disabled={!hasUnread}
           onClick={markAllRead}
         >
@@ -155,7 +155,7 @@ function Notifications() {
                 key={i}
                 className="flex items-start gap-3 border-b border-border px-4 py-3"
               >
-                <SkeletonAvatar className="size-10" />
+                <Skeleton className="size-10 shrink-0 rounded-full" />
                 <div className="flex-1 space-y-2">
                   <Skeleton className="h-4 w-2/3" />
                   <Skeleton className="h-3 w-1/3" />

@@ -82,7 +82,7 @@ export function EditPostDialog({
           <div className="flex items-center gap-2">
             {error && <span className="text-destructive">{error}</span>}
             <Button
-              variant="ghost"
+              variant="transparent"
               size="sm"
               onClick={() => onOpenChange(false)}
               disabled={busy}

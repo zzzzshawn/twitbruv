@@ -15,15 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu"
+import { DropdownMenu } from "@workspace/ui/components/dropdown-menu"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import {
@@ -206,12 +198,12 @@ function AdminUsers() {
           }
           return (
             <div onClick={(e) => e.stopPropagation()}>
-              <DropdownMenu>
-                <DropdownMenuTrigger
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger
                   render={
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant="transparent"
                       disabled={busyId === u.id}
                       className="-ml-2 h-7 gap-1 text-xs tracking-wider uppercase"
                     />
@@ -219,13 +211,13 @@ function AdminUsers() {
                 >
                   {u.role}
                   <CaretDownIcon className="size-3" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  <DropdownMenuGroup>
-                    <DropdownMenuLabel>Set role</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Content align="start">
+                  <DropdownMenu.Group>
+                    <DropdownMenu.Label>Set role</DropdownMenu.Label>
+                    <DropdownMenu.Separator />
                     {ROLES.map((r) => (
-                      <DropdownMenuItem
+                      <DropdownMenu.Item
                         key={r}
                         disabled={r === u.role}
                         onClick={() =>
@@ -239,11 +231,11 @@ function AdminUsers() {
                             current
                           </span>
                         )}
-                      </DropdownMenuItem>
+                      </DropdownMenu.Item>
                     ))}
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
+                  </DropdownMenu.Group>
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
             </div>
           )
         },
@@ -302,7 +294,7 @@ function AdminUsers() {
               ) : (
                 <Button
                   size="sm"
-                  variant="destructive"
+                  variant="danger"
                   disabled={busyId === u.id || u.id === me?.id}
                   onClick={() => setDialog({ kind: "ban", user: u })}
                 >
@@ -349,7 +341,7 @@ function AdminUsers() {
               {me?.role === "owner" && !u.deletedAt && (
                 <Button
                   size="sm"
-                  variant="destructive"
+                  variant="danger"
                   disabled={busyId === u.id || u.id === me.id}
                   onClick={() => setDialog({ kind: "delete", user: u })}
                 >
@@ -551,7 +543,7 @@ function ActionDialog({
       description:
         "Bans block all activity. Leave duration empty for a permanent ban.",
       submitLabel: "Ban user",
-      submitVariant: "destructive" as const,
+      submitVariant: "danger" as const,
       showDuration: true,
       run: () => {
         const durationHours =
@@ -569,7 +561,7 @@ function ActionDialog({
       description:
         "Shadowbans hide the user's posts from others without notifying them.",
       submitLabel: "Shadowban",
-      submitVariant: "default" as const,
+      submitVariant: "outline" as const,
       showDuration: false,
       run: () =>
         api.adminShadowban(u.id, { reason: reason.trim() || undefined }),
@@ -582,7 +574,7 @@ function ActionDialog({
         ? "The verified badge will be removed."
         : "The user will be marked as verified.",
       submitLabel: u.isVerified ? "Revoke" : "Grant",
-      submitVariant: "default" as const,
+      submitVariant: "outline" as const,
       showDuration: false,
       run: () =>
         u.isVerified
@@ -594,7 +586,7 @@ function ActionDialog({
       description:
         "3–20 chars, letters/numbers/underscore. The previous handle is freed for reuse.",
       submitLabel: "Save handle",
-      submitVariant: "default" as const,
+      submitVariant: "outline" as const,
       showDuration: false,
       run: () =>
         api.adminSetHandle(u.id, {
@@ -607,7 +599,7 @@ function ActionDialog({
       description:
         "Soft-deletes the account: removes them from feeds, profiles, and search, and signs them out everywhere. Reversible from the database.",
       submitLabel: "Delete account",
-      submitVariant: "destructive" as const,
+      submitVariant: "danger" as const,
       showDuration: false,
       run: () =>
         api.adminDeleteUser(u.id, { reason: reason.trim() || undefined }),
@@ -712,7 +704,7 @@ function ActionDialog({
           )}
         </div>
         <DialogFooter>
-          <Button size="sm" variant="ghost" onClick={onClose} disabled={busy}>
+          <Button size="sm" variant="transparent" onClick={onClose} disabled={busy}>
             Cancel
           </Button>
           <Button

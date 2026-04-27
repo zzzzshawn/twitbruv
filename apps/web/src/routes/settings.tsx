@@ -520,7 +520,7 @@ function SessionsSection({
                 {!isCurrent && s.token && (
                   <Button
                     size="sm"
-                    variant="ghost"
+                    variant="transparent"
                     disabled={busy}
                     onClick={() => revoke(s.token!)}
                   >
@@ -594,7 +594,7 @@ function PrivacySection() {
       <div className="flex gap-1">
         <Button
           size="sm"
-          variant={tab === "blocks" ? "default" : "ghost"}
+          variant={tab === "blocks" ? "outline" : "transparent"}
           onClick={() => setTab("blocks")}
         >
           Blocked
@@ -604,7 +604,7 @@ function PrivacySection() {
         </Button>
         <Button
           size="sm"
-          variant={tab === "mutes" ? "default" : "ghost"}
+          variant={tab === "mutes" ? "outline" : "transparent"}
           onClick={() => setTab("mutes")}
         >
           Muted
@@ -776,7 +776,7 @@ function DangerZone({ onDeleted }: { onDeleted: () => void }) {
       />
       {error && <p className="text-xs text-destructive">{error}</p>}
       <Button
-        variant="destructive"
+        variant="danger"
         size="sm"
         disabled={!matches || busy}
         onClick={deleteMe}

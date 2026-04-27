@@ -10,10 +10,12 @@
   },
   "scripts": {
     "push": "drizzle-kit push",
+    "seed": "bun run --env-file=../../.env src/seed.ts",
     "studio": "drizzle-kit studio",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1037.0",
     "drizzle-orm": "^0.45.2",
     "postgres": "^3.4.5"
   },

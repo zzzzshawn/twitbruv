@@ -93,8 +93,8 @@ export function AvatarUpload({
           )}
         </div>
         <Button
-          variant="default"
-          size="icon"
+          variant="outline"
+          size="md"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
           className="absolute -right-1 -bottom-1 rounded-full"
@@ -111,7 +111,7 @@ export function AvatarUpload({
         {error && <span className="text-destructive">{error}</span>}
         {currentUrl && !uploading && (
           <Button
-            variant="ghost"
+            variant="transparent"
             size="sm"
             onClick={() => onChange(null)}
             className="mt-1 self-start text-destructive hover:underline"

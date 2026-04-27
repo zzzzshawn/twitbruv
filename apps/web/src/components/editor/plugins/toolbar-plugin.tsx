@@ -115,16 +115,16 @@ export function ToolbarPlugin() {
   return (
     <div className="sticky top-0 z-10 flex flex-wrap items-center gap-0.5 border-b border-border bg-background/90 px-2 py-1.5 backdrop-blur-sm">
       <Button
-        variant="ghost"
-        size="icon-sm"
+        variant="transparent"
+        size="sm"
         onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)}
         aria-label="undo"
       >
         <ArrowUUpLeftIcon className="size-4" />
       </Button>
       <Button
-        variant="ghost"
-        size="icon-sm"
+        variant="transparent"
+        size="sm"
         onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)}
         aria-label="redo"
       >
@@ -132,8 +132,8 @@ export function ToolbarPlugin() {
       </Button>
       <div className="mx-1 h-4 w-px bg-border" />
       <Button
-        variant="ghost"
-        size="icon-sm"
+        variant="transparent"
+        size="sm"
         aria-pressed={active.has("bold")}
         aria-label="bold"
         onClick={() => toggle("bold")}
@@ -141,8 +141,8 @@ export function ToolbarPlugin() {
         <TextBIcon className="size-4" />
       </Button>
       <Button
-        variant="ghost"
-        size="icon-sm"
+        variant="transparent"
+        size="sm"
         aria-pressed={active.has("italic")}
         aria-label="italic"
         onClick={() => toggle("italic")}
@@ -150,8 +150,8 @@ export function ToolbarPlugin() {
         <TextItalicIcon className="size-4" />
       </Button>
       <Button
-        variant="ghost"
-        size="icon-sm"
+        variant="transparent"
+        size="sm"
         aria-pressed={active.has("underline")}
         aria-label="underline"
         onClick={() => toggle("underline")}
@@ -159,8 +159,8 @@ export function ToolbarPlugin() {
         <TextUnderlineIcon className="size-4" />
       </Button>
       <Button
-        variant="ghost"
-        size="icon-sm"
+        variant="transparent"
+        size="sm"
         aria-pressed={active.has("strikethrough")}
         aria-label="strikethrough"
         onClick={() => toggle("strikethrough")}
@@ -168,8 +168,8 @@ export function ToolbarPlugin() {
         <TextStrikethroughIcon className="size-4" />
       </Button>
       <Button
-        variant="ghost"
-        size="icon-sm"
+        variant="transparent"
+        size="sm"
         aria-pressed={active.has("code")}
         aria-label="inline code"
         onClick={() => toggle("code")}
@@ -178,40 +178,40 @@ export function ToolbarPlugin() {
       </Button>
       <div className="mx-1 h-4 w-px bg-border" />
       <Button
-        variant="ghost"
-        size="icon-sm"
+        variant="transparent"
+        size="sm"
         aria-label="heading 2"
         onClick={() => setHeading("h2")}
       >
         <TextHTwoIcon className="size-4" />
       </Button>
       <Button
-        variant="ghost"
-        size="icon-sm"
+        variant="transparent"
+        size="sm"
         aria-label="heading 3"
         onClick={() => setHeading("h3")}
       >
         <TextHThreeIcon className="size-4" />
       </Button>
       <Button
-        variant="ghost"
-        size="icon-sm"
+        variant="transparent"
+        size="sm"
         aria-label="paragraph"
         onClick={setParagraph}
       >
         ¶
       </Button>
       <Button
-        variant="ghost"
-        size="icon-sm"
+        variant="transparent"
+        size="sm"
         aria-label="quote"
         onClick={setQuote}
       >
         <QuotesIcon className="size-4" />
       </Button>
       <Button
-        variant="ghost"
-        size="icon-sm"
+        variant="transparent"
+        size="sm"
         aria-label="code block"
         onClick={setCodeBlock}
       >
@@ -219,24 +219,24 @@ export function ToolbarPlugin() {
       </Button>
       <div className="mx-1 h-4 w-px bg-border" />
       <Button
-        variant="ghost"
-        size="icon-sm"
+        variant="transparent"
+        size="sm"
         aria-label="bulleted list"
         onClick={() => insertList("ul")}
       >
         <ListIcon className="size-4" />
       </Button>
       <Button
-        variant="ghost"
-        size="icon-sm"
+        variant="transparent"
+        size="sm"
         aria-label="numbered list"
         onClick={() => insertList("ol")}
       >
         <ListNumbersIcon className="size-4" />
       </Button>
       <Button
-        variant="ghost"
-        size="icon-sm"
+        variant="transparent"
+        size="sm"
         aria-label="link"
         onClick={toggleLink}
       >

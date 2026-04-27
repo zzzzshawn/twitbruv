@@ -6,12 +6,8 @@ import {
   AlertTitle,
 } from "@workspace/ui/components/alert"
 import { Button } from "@workspace/ui/components/button"
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card"
+import { Card } from "@workspace/ui/components/card"
+import { cn } from "@workspace/ui/lib/utils"
 import { authClient } from "../lib/auth"
 import { api } from "../lib/api"
 import { APP_NAME } from "../lib/env"
@@ -20,23 +16,34 @@ import { Compose } from "../components/compose"
 import { Feed } from "../components/feed"
 import { PageFrame } from "../components/page-frame"
 import { PageLoading } from "../components/page-surface"
-import {
-  UnderlineTabButton,
-  UnderlineTabRow,
-} from "../components/underline-tab-row"
 import type { Post } from "../lib/api"
+
+const FEED_TABS = ["following", "network", "all"] as const
+type FeedTab = (typeof FEED_TABS)[number]
+
+const TAB_LABELS: Record<FeedTab, string> = {
+  following: "Following",
+  network: "Network",
+  all: "All",
+}
 
 export const Route = createFileRoute("/")({
   component: Landing,
+  validateSearch: (search: Record<string, unknown>): { tab?: FeedTab } => {
+    const raw = search.tab
+    if (typeof raw === "string" && FEED_TABS.includes(raw as FeedTab)) {
+      return { tab: raw as FeedTab }
+    }
+    return {}
+  },
 })
-
-type FeedTab = "following" | "network" | "all"
 
 function Landing() {
   const { data: session, isPending } = authClient.useSession()
   const { me } = useMe()
+  const { tab: searchTab } = Route.useSearch()
+  const tab: FeedTab = searchTab ?? "following"
   const [newPost, setNewPost] = useState<Post | null>(null)
-  const [tab, setTab] = useState<FeedTab>("following")
 
   const loadFeed = useCallback((cursor?: string) => api.feed(cursor), [])
   const loadPublic = useCallback(
@@ -60,6 +67,23 @@ function Landing() {
     const needsHandle = me && !me.handle
     return (
       <PageFrame>
+        <header className="sticky top-0 z-40 flex h-12 items-center gap-1 bg-base-1/80 px-4 backdrop-blur-md">
+          {FEED_TABS.map((key) => (
+            <Link
+              key={key}
+              to="/"
+              search={key === "following" ? undefined : { tab: key }}
+              className={cn(
+                "rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                tab === key
+                  ? "bg-subtle text-primary"
+                  : "text-tertiary hover:text-secondary",
+              )}
+            >
+              {TAB_LABELS[key]}
+            </Link>
+          ))}
+        </header>
         {needsHandle ? (
           <Alert className="m-4">
             <AlertTitle>Finish setup</AlertTitle>
@@ -80,21 +104,6 @@ function Landing() {
         ) : (
           <Compose onCreated={(p) => setNewPost(p)} collapsible />
         )}
-        <UnderlineTabRow>
-          {(["following", "network", "all"] as Array<FeedTab>).map((t) => (
-            <UnderlineTabButton
-              key={t}
-              active={tab === t}
-              onClick={() => setTab(t)}
-            >
-              {t === "following"
-                ? "Following"
-                : t === "network"
-                  ? "Network"
-                  : "All"}
-            </UnderlineTabButton>
-          ))}
-        </UnderlineTabRow>
         <Feed
           queryKey={["feed", tab]}
           load={
@@ -131,7 +140,7 @@ function Landing() {
                     first.displayName ||
                     (first.handle ? `@${first.handle}` : "Someone")
                   return (
-                    <div className="ml-10 flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <div className="ml-10 flex items-center gap-1.5 text-xs text-tertiary">
                       <span>
                         {name}
                         {more > 0
@@ -152,19 +161,19 @@ function Landing() {
   return (
     <PageFrame>
       <main className="mx-auto max-w-3xl px-4 py-14">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+        <h1 className="text-2xl font-semibold tracking-tight text-primary">
           A calm place to build in public
         </h1>
-        <p className="mt-3 max-w-prose text-sm leading-relaxed text-muted-foreground">
+        <p className="mt-3 max-w-prose text-sm leading-relaxed text-secondary">
           {APP_NAME} is a social layer for developers: short posts, articles,
           DMs, and repo context. No paywalls, no ads, no black-box feeds.
         </p>
         <div className="mt-6 flex flex-wrap gap-2">
-          <Button size="lg" nativeButton={false} render={<Link to="/signup" />}>
+          <Button size="md" nativeButton={false} render={<Link to="/signup" />}>
             Create an account
           </Button>
           <Button
-            size="lg"
+            size="md"
             variant="outline"
             nativeButton={false}
             render={<Link to="/login" />}
@@ -173,37 +182,37 @@ function Landing() {
           </Button>
         </div>
         <div className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle>Posts and articles</CardTitle>
-              <CardDescription>
+          <Card>
+            <Card.Header>
+              <span className="text-sm font-medium text-primary">Posts and articles</span>
+              <span className="text-xs text-tertiary">
                 Short updates and long-form writing in one place.
-              </CardDescription>
-            </CardHeader>
+              </span>
+            </Card.Header>
           </Card>
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle>Developer context</CardTitle>
-              <CardDescription>
+          <Card>
+            <Card.Header>
+              <span className="text-sm font-medium text-primary">Developer context</span>
+              <span className="text-xs text-tertiary">
                 Connect GitHub, GitLab, and tools you already use.
-              </CardDescription>
-            </CardHeader>
+              </span>
+            </Card.Header>
           </Card>
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle>Simple analytics</CardTitle>
-              <CardDescription>
+          <Card>
+            <Card.Header>
+              <span className="text-sm font-medium text-primary">Simple analytics</span>
+              <span className="text-xs text-tertiary">
                 A creator dashboard without upsells or model-driven ranking.
-              </CardDescription>
-            </CardHeader>
+              </span>
+            </Card.Header>
           </Card>
-          <Card size="sm">
-            <CardHeader>
-              <CardTitle>Your data</CardTitle>
-              <CardDescription>
+          <Card>
+            <Card.Header>
+              <span className="text-sm font-medium text-primary">Your data</span>
+              <span className="text-xs text-tertiary">
                 Export and self-host with AGPL-3.0.
-              </CardDescription>
-            </CardHeader>
+              </span>
+            </Card.Header>
           </Card>
         </div>
       </main>

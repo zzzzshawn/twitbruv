@@ -147,7 +147,7 @@ export function ReportDialog({
           />
           {status && <p className="text-xs text-muted-foreground">{status}</p>}
           <div className="flex justify-end gap-2">
-            <Button size="sm" variant="ghost" onClick={close} disabled={busy}>
+            <Button size="sm" variant="transparent" onClick={close} disabled={busy}>
               Cancel
             </Button>
             <Button size="sm" onClick={submit} disabled={!reason || busy}>

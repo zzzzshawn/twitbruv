@@ -10,12 +10,7 @@ import {
 import { Button } from "@workspace/ui/components/button"
 import { Textarea } from "@workspace/ui/components/textarea"
 import { cn } from "@workspace/ui/lib/utils"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu"
+import { DropdownMenu } from "@workspace/ui/components/dropdown-menu"
 import {
   Dialog,
   DialogContent,
@@ -600,7 +595,7 @@ export function PostCard({
                     <span className="text-destructive">{editError}</span>
                   )}
                   <Button
-                    variant="ghost"
+                    variant="transparent"
                     size="sm"
                     onClick={() => {
                       setEditing(false)
@@ -648,7 +643,7 @@ export function PostCard({
           >
             {showPostLink && authorHandle && (
               <Button
-                variant="ghost"
+                variant="transparent"
                 size="sm"
                 nativeButton={false}
                 disabled={busy || !post.viewer}
@@ -680,7 +675,7 @@ export function PostCard({
               }}
             />
             <Button
-              variant="ghost"
+              variant="transparent"
               size="sm"
               onClick={toggleLike}
               disabled={busy || !post.viewer}
@@ -695,7 +690,7 @@ export function PostCard({
               <span className="text-xs">{post.counts.likes}</span>
             </Button>
             <Button
-              variant="ghost"
+              variant="transparent"
               size="sm"
               onClick={toggleBookmark}
               disabled={busy || !post.viewer}
@@ -734,7 +729,7 @@ function RepostControl({
   if (reposted) {
     return (
       <Button
-        variant="ghost"
+        variant="transparent"
         size="sm"
         onClick={onToggleRepost}
         disabled={disabled}
@@ -751,11 +746,11 @@ function RepostControl({
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger
           render={
             <Button
-              variant="ghost"
+              variant="transparent"
               size="sm"
               disabled={disabled}
               className="flex cursor-pointer items-center gap-2 transition hover:text-foreground"
@@ -767,17 +762,17 @@ function RepostControl({
             </Button>
           }
         />
-        <DropdownMenuContent align="start" sideOffset={4} className="w-40">
-          <DropdownMenuItem onClick={onToggleRepost}>
+        <DropdownMenu.Content align="start" sideOffset={4} className="w-40">
+          <DropdownMenu.Item onClick={onToggleRepost}>
             <RepeatIcon className="size-3.5" />
             <span>Repost</span>
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setQuoteOpen(true)}>
+          </DropdownMenu.Item>
+          <DropdownMenu.Item onClick={() => setQuoteOpen(true)}>
             <QuotesIcon className="size-3.5" />
             <span>Quote post</span>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
       <Dialog open={quoteOpen} onOpenChange={setQuoteOpen}>
         <DialogContent className="max-w-lg p-0">
           <DialogHeader className="border-b border-border px-4 py-3">

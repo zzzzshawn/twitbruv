@@ -18,12 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@workspace/ui/components/dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@workspace/ui/components/dropdown-menu"
+import { DropdownMenu } from "@workspace/ui/components/dropdown-menu"
 import { api } from "../lib/api"
 import { authClient } from "../lib/auth"
 import { getPastedImageFiles } from "../lib/clipboard-images"
@@ -354,7 +349,7 @@ function Thread() {
         conversation.kind === "group" ? (
           <Button
             size="sm"
-            variant="ghost"
+            variant="transparent"
             aria-label="conversation settings"
             onClick={() => setSettingsOpen(true)}
           >
@@ -628,7 +623,7 @@ function Thread() {
             />
             <Button
               type="button"
-              variant="ghost"
+              variant="transparent"
               aria-label="attach image"
               disabled={sending}
               onClick={() => fileInputRef.current?.click()}
@@ -714,7 +709,7 @@ function RequestBanner({
       </p>
       <div className="flex items-center gap-2">
         {error && <span className="text-destructive">{error}</span>}
-        <Button size="sm" variant="ghost" disabled={busy} onClick={decline}>
+        <Button size="sm" variant="transparent" disabled={busy} onClick={decline}>
           Decline
         </Button>
         <Button size="sm" disabled={busy} onClick={accept}>
@@ -970,8 +965,8 @@ function Bubble({
         😀
       </button>
       {(canEdit || canDelete) && (
-        <DropdownMenu>
-          <DropdownMenuTrigger
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger
             render={
               <button
                 type="button"
@@ -982,25 +977,25 @@ function Bubble({
               </button>
             }
           />
-          <DropdownMenuContent align={isMine ? "end" : "start"} sideOffset={4}>
+          <DropdownMenu.Content align={isMine ? "end" : "start"} sideOffset={4}>
             {canEdit && (
-              <DropdownMenuItem onClick={() => setEditing(true)}>
+              <DropdownMenu.Item onClick={() => setEditing(true)}>
                 <PencilIcon size={14} />
                 <span>Edit</span>
-              </DropdownMenuItem>
+              </DropdownMenu.Item>
             )}
             {canDelete && (
-              <DropdownMenuItem
-                variant="destructive"
+              <DropdownMenu.Item
+                variant="danger"
                 onClick={doDelete}
                 disabled={busy}
               >
                 <TrashIcon size={14} />
                 <span>Delete</span>
-              </DropdownMenuItem>
+              </DropdownMenu.Item>
             )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
       )}
       {showPicker && (
         <div
@@ -1425,7 +1420,7 @@ function GroupSettingsDialog({
                   {isAdmin && m.id !== me && (
                     <Button
                       size="sm"
-                      variant="ghost"
+                      variant="transparent"
                       disabled={busy}
                       onClick={() => remove(m.id)}
                     >
@@ -1494,7 +1489,7 @@ function GroupSettingsDialog({
           {isAdmin && <InviteSection conversationId={conversation.id} />}
 
           <Button
-            variant="destructive"
+            variant="danger"
             size="sm"
             disabled={busy}
             onClick={leave}
@@ -1585,14 +1580,14 @@ function InviteSection({ conversationId }: { conversationId: string }) {
                   </code>
                   <Button
                     size="sm"
-                    variant="ghost"
+                    variant="transparent"
                     onClick={() => copy(invite.token)}
                   >
                     {copied === invite.token ? "Copied" : "Copy"}
                   </Button>
                   <Button
                     size="sm"
-                    variant="ghost"
+                    variant="transparent"
                     onClick={() => revoke(invite.id)}
                   >
                     Revoke

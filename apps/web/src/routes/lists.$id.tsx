@@ -81,14 +81,14 @@ function ListDetail() {
         <div className="flex shrink-0 items-center gap-1">
           <Button
             size="sm"
-            variant="ghost"
+            variant="transparent"
             onClick={() => setShowAdd((v) => !v)}
           >
             {showAdd ? "Done" : "Manage"}
           </Button>
           <Button
             size="sm"
-            variant="ghost"
+            variant="transparent"
             onClick={removeList}
             className="text-destructive"
           >
@@ -228,8 +228,8 @@ function ManageMembers({
               </span>
               <Button
                 type="button"
-                size="icon-xs"
-                variant="ghost"
+                size="sm"
+                variant="transparent"
                 onClick={() => remove(m.id)}
                 disabled={busy}
                 className="shrink-0 text-muted-foreground hover:text-destructive"
@@ -283,7 +283,7 @@ function ManageMembers({
                   </div>
                   <Button
                     size="sm"
-                    variant={already ? "ghost" : "default"}
+                    variant={already ? "transparent" : "outline"}
                     disabled={busy || already}
                     onClick={() => add(u.id)}
                   >

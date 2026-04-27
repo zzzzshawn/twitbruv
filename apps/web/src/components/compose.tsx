@@ -331,7 +331,7 @@ export function Compose({
               </span>
               <Button
                 type="button"
-                variant="ghost"
+                variant="transparent"
                 size="sm"
                 onClick={() => setPoll(null)}
                 className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground"
@@ -350,8 +350,8 @@ export function Compose({
                 />
                 {poll.options.length > POLL_MIN_OPTIONS && (
                   <Button
-                    variant="ghost"
-                    size="icon-sm"
+                    variant="transparent"
+                    size="sm"
                     onClick={() => removePollOption(opt.id)}
                     aria-label="remove option"
                   >
@@ -362,7 +362,7 @@ export function Compose({
             ))}
             {poll.options.length < POLL_MAX_OPTIONS && (
               <Button
-                variant="ghost"
+                variant="transparent"
                 size="sm"
                 type="button"
                 onClick={addPollOption}
@@ -407,7 +407,6 @@ export function Compose({
                   onCheckedChange={(v) =>
                     setPoll({ ...poll, allowMultiple: v })
                   }
-                  size="sm"
                 />
               </div>
             </div>
@@ -435,8 +434,8 @@ export function Compose({
                     </div>
                   )}
                   <Button
-                    variant="ghost"
-                    size="icon"
+                    variant="transparent"
+                    size="md"
                     onClick={() => removeAttachment(a.tempId)}
                     aria-label="remove attachment"
                   >
@@ -479,8 +478,8 @@ export function Compose({
                 }}
               />
               <Button
-                variant="ghost"
-                size="icon"
+                variant="transparent"
+                size="md"
                 disabled={
                   attachments.length >= MAX_ATTACHMENTS || Boolean(poll)
                 }
@@ -490,8 +489,8 @@ export function Compose({
                 <ImageIcon size={18} />
               </Button>
               <Button
-                variant="ghost"
-                size="icon"
+                variant="transparent"
+                size="md"
                 disabled={
                   Boolean(poll) ||
                   attachments.length > 0 ||
@@ -549,7 +548,7 @@ export function Compose({
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <Button type="submit" disabled={!canSubmit} size="lg">
+              <Button type="submit" disabled={!canSubmit} size="md">
                 {loading
                   ? "Posting…"
                   : replyToId

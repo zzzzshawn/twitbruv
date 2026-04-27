@@ -2,13 +2,7 @@ import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
 import { Alert, AlertDescription } from "@workspace/ui/components/alert"
 import { Button } from "@workspace/ui/components/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card"
+import { Card } from "@workspace/ui/components/card"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { signUpSchema } from "@workspace/validators"
@@ -59,14 +53,14 @@ function SignUp() {
 
   return (
     <main className="mx-auto w-full max-w-md px-4 py-12">
-      <Card size="sm">
-        <CardHeader>
-          <CardTitle>Create an account</CardTitle>
-          <CardDescription>
+      <Card>
+        <Card.Header>
+          <span className="text-sm font-medium text-primary">Create an account</span>
+          <span className="text-xs text-tertiary">
             Free, no ads. Verify your email before you post.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
+          </span>
+        </Card.Header>
+        <Card.Content className="flex flex-col gap-4">
           {error && (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
@@ -124,7 +118,7 @@ function SignUp() {
               type="submit"
               className="w-full"
               disabled={loading}
-              size="lg"
+              size="md"
             >
               {loading ? "Creating account…" : "Create account"}
             </Button>
@@ -138,7 +132,7 @@ function SignUp() {
               Sign in
             </Link>
           </p>
-        </CardContent>
+        </Card.Content>
       </Card>
     </main>
   )

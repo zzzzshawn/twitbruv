@@ -366,7 +366,7 @@ function ReportSheet({
           <SheetFooter className="flex-row justify-end gap-2 border-t border-border">
             <Button
               size="sm"
-              variant="ghost"
+              variant="transparent"
               disabled={!!busy}
               onClick={() => resolve("dismissed")}
             >
@@ -382,7 +382,7 @@ function ReportSheet({
             </Button>
             <Button
               size="sm"
-              variant="default"
+              variant="outline"
               disabled={!!busy}
               onClick={() => resolve("actioned")}
             >

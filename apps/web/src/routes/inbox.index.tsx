@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react"
 import { NotePencilIcon } from "@phosphor-icons/react"
 import { Button } from "@workspace/ui/components/button"
 import { Badge } from "@workspace/ui/components/badge"
-import { Skeleton, SkeletonAvatar } from "@workspace/ui/components/skeleton"
+import { Skeleton } from "@workspace/ui/components/skeleton"
 import { api } from "../lib/api"
 import { usePageHeader } from "../components/app-page-header"
 import { Avatar } from "../components/avatar"
@@ -61,7 +61,7 @@ function InboxList() {
             <span className="inline-flex items-center justify-center gap-2">
               Requests
               {requestCount > 0 ? (
-                <Badge variant="secondary" className="tabular-nums">
+                <Badge variant="neutral" className="tabular-nums">
                   {requestCount}
                 </Badge>
               ) : null}
@@ -121,7 +121,7 @@ function ConversationList({
             key={i}
             className="flex items-start gap-3 border-b border-border px-4 py-3"
           >
-            <SkeletonAvatar />
+            <Skeleton className="size-10 shrink-0 rounded-full" />
             <div className="flex-1 space-y-2">
               <div className="flex justify-between">
                 <Skeleton className="h-4 w-32" />

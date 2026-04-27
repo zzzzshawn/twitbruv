@@ -2,13 +2,7 @@ import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
 import { Alert, AlertDescription } from "@workspace/ui/components/alert"
 import { Button } from "@workspace/ui/components/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card"
+import { Card } from "@workspace/ui/components/card"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 // import { Separator } from "@workspace/ui/components/separator"
@@ -66,12 +60,12 @@ function Login() {
     !errorLower.includes("enter your email")
   return (
     <main className="mx-auto w-full max-w-md px-4 py-12">
-      <Card size="sm">
-        <CardHeader>
-          <CardTitle>Sign in</CardTitle>
-          <CardDescription>Use your email and password.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
+      <Card>
+        <Card.Header>
+          <span className="text-sm font-medium text-primary">Sign in</span>
+          <span className="text-xs text-tertiary">Use your email and password.</span>
+        </Card.Header>
+        <Card.Content className="flex flex-col gap-4">
           {error && (
             <Alert variant={isInfoFeedback ? "default" : "destructive"}>
               <AlertDescription>{error}</AlertDescription>
@@ -104,14 +98,14 @@ function Login() {
               type="submit"
               className="w-full"
               disabled={loading}
-              size="lg"
+              size="md"
             >
               {loading ? "Signing in…" : "Sign in"}
             </Button>
           </form>
           {/* Magic-link sign-in and social providers temporarily hidden:
 
-            <Button variant="ghost" className="w-full" size="sm" onClick={onMagicLink} type="button" disabled={loading}>
+            <Button variant="transparent" className="w-full" size="sm" onClick={onMagicLink} type="button" disabled={loading}>
               Email me a sign-in link
             </Button>
             <div className="flex items-center gap-2">
@@ -140,7 +134,7 @@ function Login() {
               Create one
             </Link>
           </p>
-        </CardContent>
+        </Card.Content>
       </Card>
     </main>
   )

@@ -120,8 +120,8 @@ function ListsIndex() {
                   </p>
                 </Link>
                 <Button
-                  size="icon-sm"
-                  variant="ghost"
+                  size="sm"
+                  variant="transparent"
                   aria-label={
                     list.pinnedAt ? "unpin list" : "pin list to profile"
                   }
@@ -262,13 +262,12 @@ function CreateListForm({
             id="list-private"
             checked={isPrivate}
             onCheckedChange={setIsPrivate}
-            size="sm"
           />
         </div>
       </div>
       {error && <p className="text-xs text-destructive">{error}</p>}
       <div className="mt-2 flex items-center justify-end gap-2">
-        <Button size="sm" variant="ghost" onClick={onCancel} disabled={busy}>
+        <Button size="sm" variant="transparent" onClick={onCancel} disabled={busy}>
           Cancel
         </Button>
         <Button

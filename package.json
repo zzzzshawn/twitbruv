@@ -11,6 +11,7 @@
     "format:check": "turbo format:check",
     "typecheck": "turbo typecheck",
     "db:push": "bun --env-file=../../.env run --cwd packages/db push",
+    "db:seed": "bun run --cwd packages/db seed",
     "db:studio": "bun --env-file=../../.env run --cwd packages/db studio",
     "services:up": "docker compose up -d",
     "services:down": "docker compose down",

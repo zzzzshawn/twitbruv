@@ -25,10 +25,18 @@ const MeContext = createContext<MeContextValue | null>(null)
 // banned/suspended/deleted user can keep an idle tab open before being kicked.
 const POLL_INTERVAL_MS = 30_000
 
-export function MeProvider({ children }: { children: ReactNode }) {
+export function MeProvider({
+  children,
+  initialMe,
+}: {
+  children: ReactNode
+  initialMe?: SelfUser | null
+}) {
   const { data: session, isPending } = authClient.useSession()
-  const [me, setMe] = useState<SelfUser | null>(null)
+  const [me, setMe] = useState<SelfUser | null>(initialMe ?? null)
   const [isLoading, setIsLoading] = useState(false)
+  // Skip the first client-side fetch when the server already provided user data
+  const initialLoadDone = useRef(!!initialMe)
   // Guard against re-entrant signOut calls when both the poll and a parallel
   // request both observe a 401.
   const forcingOut = useRef(false)
@@ -78,6 +86,11 @@ export function MeProvider({ children }: { children: ReactNode }) {
     if (isPending) return
     if (!session) {
       setMe(null)
+      return
+    }
+    // Skip the first client-side fetch when SSR already provided user data
+    if (initialLoadDone.current) {
+      initialLoadDone.current = false
       return
     }
     refresh()

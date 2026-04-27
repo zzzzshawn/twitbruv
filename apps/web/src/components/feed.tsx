@@ -1,9 +1,9 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query"
 import { useVirtualizer, useWindowVirtualizer } from "@tanstack/react-virtual"
-import { SkeletonPostCard } from "@workspace/ui/components/skeleton"
+import { Skeleton } from "@workspace/ui/components/skeleton"
 import { PageEmpty, PageError } from "./page-surface"
-import { PostCard } from "./post-card"
+import { FeedPostCard } from "./feed-post-card"
 import { extractMacfolioUrl } from "./macfolio-card"
 import type { InfiniteData } from "@tanstack/react-query"
 import type { FeedPage, Post } from "../lib/api"
@@ -166,7 +166,14 @@ export function Feed({
     return (
       <div>
         {Array.from({ length: 4 }).map((_, i) => (
-          <SkeletonPostCard key={i} />
+          <div key={i} className="flex gap-3 border-b border-border px-4 py-4">
+            <Skeleton className="size-10 shrink-0 rounded-full" />
+            <div className="flex-1 space-y-3">
+              <Skeleton className="h-4 w-1/3" />
+              <Skeleton className="h-3 w-full" />
+              <Skeleton className="h-3 w-2/3" />
+            </div>
+          </div>
         ))}
       </div>
     )
@@ -179,9 +186,9 @@ export function Feed({
     return (
       <>
         {banner && (
-          <div className="border-b border-border/50 px-4 pt-2">{banner}</div>
+          <div className="px-4 pt-2">{banner}</div>
         )}
-        <PostCard post={post} onChange={replace} onRemove={remove} />
+        <FeedPostCard post={post} onChange={replace} onRemove={remove} />
       </>
     )
   }

@@ -226,7 +226,7 @@ function SearchInner({ initialQuery }: { initialQuery: string }) {
                 <span key={s.id} className="inline-flex items-center gap-0.5">
                   <Button
                     size="sm"
-                    variant={s.query === query ? "default" : "ghost"}
+                    variant={s.query === query ? "outline" : "transparent"}
                     onClick={() => {
                       setDraft(s.query)
                       navigate({ to: "/search", search: { q: s.query } })
@@ -236,8 +236,8 @@ function SearchInner({ initialQuery }: { initialQuery: string }) {
                     <span className="max-w-[18ch] truncate">{s.query}</span>
                   </Button>
                   <Button
-                    size="icon-xs"
-                    variant="ghost"
+                    size="sm"
+                    variant="transparent"
                     aria-label={`delete saved search ${s.query}`}
                     onClick={async () => {
                       setSaved((prev) => prev.filter((x) => x.id !== s.id))

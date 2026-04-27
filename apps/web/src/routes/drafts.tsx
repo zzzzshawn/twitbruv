@@ -174,19 +174,19 @@ function DraftRow({
           {!editing && (
             <Button
               size="sm"
-              variant="ghost"
+              variant="transparent"
               onClick={() => setEditing(true)}
               disabled={busy}
             >
               Schedule
             </Button>
           )}
-          <Button size="sm" variant="ghost" onClick={onPublish} disabled={busy}>
+          <Button size="sm" variant="transparent" onClick={onPublish} disabled={busy}>
             Post now
           </Button>
           <Button
             size="sm"
-            variant="ghost"
+            variant="transparent"
             onClick={onDelete}
             disabled={busy}
             className="text-destructive"
@@ -218,7 +218,7 @@ function DraftRow({
           {item.scheduledFor && (
             <Button
               size="sm"
-              variant="ghost"
+              variant="transparent"
               onClick={() => {
                 onReschedule(null)
                 setEditing(false)
@@ -230,7 +230,7 @@ function DraftRow({
           )}
           <Button
             size="sm"
-            variant="ghost"
+            variant="transparent"
             onClick={() => setEditing(false)}
             disabled={busy}
           >

@@ -470,7 +470,7 @@ function AdminPosts() {
               {!p.deletedAt && (
                 <Button
                   size="sm"
-                  variant="ghost"
+                  variant="transparent"
                   className="h-7 px-2 text-xs text-destructive hover:text-destructive"
                   disabled={busyId === p.id}
                   onClick={(e) => {
@@ -796,12 +796,12 @@ function DeletePostDialog({
         </div>
         {error && <p className="text-xs text-destructive">{error}</p>}
         <DialogFooter>
-          <Button size="sm" variant="ghost" onClick={onClose} disabled={busy}>
+          <Button size="sm" variant="transparent" onClick={onClose} disabled={busy}>
             Cancel
           </Button>
           <Button
             size="sm"
-            variant="destructive"
+            variant="danger"
             onClick={submit}
             disabled={busy}
           >

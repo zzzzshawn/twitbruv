@@ -100,8 +100,8 @@ export function ImageLightbox({
           {images.length > 1 && (
             <>
               <Button
-                variant="ghost"
-                size="icon"
+                variant="transparent"
+                size="md"
                 aria-label="previous image"
                 onClick={goPrev}
                 disabled={!canPrev}
@@ -110,8 +110,8 @@ export function ImageLightbox({
                 <CaretLeftIcon size={20} />
               </Button>
               <Button
-                variant="ghost"
-                size="icon"
+                variant="transparent"
+                size="md"
                 aria-label="next image"
                 onClick={goNext}
                 disabled={!canNext}

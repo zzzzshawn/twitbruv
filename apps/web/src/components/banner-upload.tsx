@@ -74,7 +74,7 @@ export function BannerUpload({
           {error && <span className="text-destructive">{error}</span>}
           {currentUrl && !uploading && (
             <Button
-              variant="ghost"
+              variant="transparent"
               size="sm"
               onClick={() => onChange(null)}
               className="text-destructive hover:underline"
@@ -85,8 +85,8 @@ export function BannerUpload({
         </div>
       </div>
       <Button
-        variant="default"
-        size="icon"
+        variant="outline"
+        size="md"
         onClick={() => inputRef.current?.click()}
         disabled={uploading}
         onDragOver={onDragOver}

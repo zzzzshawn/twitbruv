@@ -1,13 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { toast } from "sonner"
 import { Button } from "@workspace/ui/components/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@workspace/ui/components/card"
+import { Card } from "@workspace/ui/components/card"
 import { RESEND_COOLDOWN_SEC } from "@workspace/validators/auth"
 import { authClient } from "../lib/auth"
 import { useMe } from "../lib/me"
@@ -102,22 +96,22 @@ export function EmailVerifyScreen({ email }: { email: string }) {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-      <Card size="sm" className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Verify your email</CardTitle>
-          <CardDescription>
+      <Card className="w-full max-w-md">
+        <Card.Header>
+          <span className="text-sm font-medium text-primary">Verify your email</span>
+          <span className="text-xs text-tertiary">
             We sent a verification link to <strong>{email}</strong>. Click it to
             unlock your account.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
+          </span>
+        </Card.Header>
+        <Card.Content className="flex flex-col gap-4">
           <p className="text-sm text-muted-foreground">
             This page will refresh automatically once your email is verified.
             Check your spam folder if the email doesn't arrive within a minute.
           </p>
           <Button
             type="button"
-            size="lg"
+            size="md"
             className="w-full"
             onClick={onResend}
             disabled={sending || secondsLeft > 0}
@@ -132,7 +126,7 @@ export function EmailVerifyScreen({ email }: { email: string }) {
           >
             Use a different account
           </button>
-        </CardContent>
+        </Card.Content>
       </Card>
     </main>
   )

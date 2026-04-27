@@ -101,8 +101,8 @@ export function CoverPicker({
           />
           <Button
             type="button"
-            size="icon-sm"
-            variant="ghost"
+            size="sm"
+            variant="transparent"
             onClick={clear}
             aria-label="remove cover"
             className="absolute top-2 right-2 size-7 rounded-full bg-background/80 backdrop-blur-sm"
