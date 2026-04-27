@@ -266,6 +266,7 @@ export function Compose({
 				attachments.forEach((a) => URL.revokeObjectURL(a.previewUrl))
 				setAttachments([])
 				setPoll(null)
+				textareaRef.current?.blur()
 				if (collapsible) setExpanded(false)
 				onCreated?.(post)
 			} catch (err) {

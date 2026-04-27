@@ -146,23 +146,22 @@ export function PostCard({
 				)}
 
 				<div className="flex w-full gap-3">
-				{/* Thread line + Avatar column */}
-				<div className="relative flex flex-col items-center">
-					{showLineTop && (
-						<div
-							className="absolute top-0 w-px bg-neutral"
-							style={{ height: 12 }}
-						/>
-					)}
-					<Avatar
-						initial={author.displayName[0] ?? "?"}
-						src={author.avatarUrl}
-						size="lg"
-						className="z-10"
+			{/* Thread line + Avatar column */}
+			<div className="relative flex flex-col items-center">
+				{showLineTop && (
+					<div
+						className="absolute left-1/2 -translate-x-1/2 w-px bg-[var(--border-color-neutral)]"
+						style={{ top: "-12px", height: "8px" }}
 					/>
-					{showLineBottom && (
-						<div className="mt-1 w-px flex-1 bg-neutral" />
-					)}
+				)}
+				<Avatar
+					initial={author.displayName[0] ?? "?"}
+					src={author.avatarUrl}
+					size="lg"
+				/>
+				{showLineBottom && (
+					<div className="mt-1 mb-[-12px] w-px flex-1 bg-[var(--border-color-neutral)]" />
+				)}
 				</div>
 
 				{/* Content column */}

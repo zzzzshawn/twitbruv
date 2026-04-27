@@ -1,1112 +1,336 @@
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
-import { useEffect, useRef, useState } from "react"
-import {
-  AtSymbolIcon,
-  BookmarkIcon,
-  ChartBarIcon,
-  ChatBubbleLeftIcon,
-  HashtagIcon,
-  PhotoIcon,
-  ArrowPathIcon,
-} from "@heroicons/react/24/solid"
-import { BookmarkIcon as BookmarkIconOutline } from "@heroicons/react/24/outline"
-import { Textarea } from "@workspace/ui/components/textarea"
-import { cn } from "@workspace/ui/lib/utils"
-import {
-  LikeIconBurst,
-  useLikeAnimation,
-} from "../components/like-button-heart"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { ArrowLeftIcon } from "@heroicons/react/24/solid"
+import { Button } from "@workspace/ui/components/button"
 import { ApiError, api } from "../lib/api"
-import { useSubmitHotkey } from "../lib/hotkeys"
-import { Avatar } from "../components/avatar"
-import { RichText } from "../components/rich-text"
-import { MacfolioCardFromText } from "../components/macfolio-card"
-import { PollBlock } from "../components/poll-block"
-import {
-  ArticleCardBlock,
-  QuoteEmbed,
-  clickedInteractiveElement,
-} from "../components/post-card"
-import { GithubCardBlock } from "../components/github-card"
-import { PostMenu } from "../components/post-menu"
-import { EditPostDialog } from "../components/edit-post-dialog"
-import { ImageLightbox } from "../components/image-lightbox"
-import { useMe } from "../lib/me"
 import { APP_NAME } from "../lib/env"
 import { buildSeoMeta, canonicalLink, clipDescription } from "../lib/seo"
+import { Compose } from "../components/compose"
+import { FeedPostCard } from "../components/feed-post-card"
+import { PageError } from "../components/page-surface"
 import type { Post, Thread } from "../lib/api"
 
+// ───────────────────────────────────────────────────────────────────────────
+// Route definition (SEO loader + head)
+// ───────────────────────────────────────────────────────────────────────────
+
 export const Route = createFileRoute("/$handle/p/$id")({
-  component: ThreadView,
-  loader: async ({ params }) => {
-    try {
-      const { post } = await api.post(params.id)
-      return { post }
-    } catch {
-      return { post: null }
-    }
-  },
-  head: ({ loaderData, params }) => {
-    const post = loaderData?.post ?? null
-    const path = `/${params.handle}/p/${params.id}`
-    if (!post) {
-      return {
-        meta: buildSeoMeta({
-          title: "Post not found",
-          description: `This post on ${APP_NAME} either doesn't exist or has been removed.`,
-          path,
-        }),
-        links: [canonicalLink(path)],
-      }
-    }
-    const author = post.author.displayName || `@${post.author.handle ?? "user"}`
-    const description = clipDescription(
-      post.text || `A post by ${author} on ${APP_NAME}.`
-    )
-    return {
-      meta: buildSeoMeta({
-        title: `${author}: "${clipDescription(post.text, 60)}"`,
-        description,
-        path,
-        image: `/og/post/${post.id}`,
-        type: "article",
-        largeCard: true,
-        publishedTime: post.createdAt,
-        authorHandle: post.author.handle ?? undefined,
-      }),
-      links: [canonicalLink(path)],
-      scripts: [
-        {
-          type: "application/ld+json",
-          children: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "SocialMediaPosting",
-            headline: clipDescription(post.text, 110),
-            articleBody: post.text,
-            datePublished: post.createdAt,
-            dateModified: post.editedAt ?? post.createdAt,
-            url: `${path}`,
-            author: post.author.handle
-              ? {
-                  "@type": "Person",
-                  name: post.author.displayName ?? post.author.handle,
-                  url: `/${post.author.handle}`,
-                }
-              : undefined,
-            interactionStatistic: [
-              {
-                "@type": "InteractionCounter",
-                interactionType: "https://schema.org/LikeAction",
-                userInteractionCount: post.counts.likes,
-              },
-              {
-                "@type": "InteractionCounter",
-                interactionType: "https://schema.org/ShareAction",
-                userInteractionCount: post.counts.reposts,
-              },
-              {
-                "@type": "InteractionCounter",
-                interactionType: "https://schema.org/CommentAction",
-                userInteractionCount: post.counts.replies,
-              },
-            ],
-          }),
-        },
-      ],
-    }
-  },
+	component: ThreadView,
+	loader: async ({ params }) => {
+		try {
+			const { post } = await api.post(params.id)
+			return { post }
+		} catch {
+			return { post: null }
+		}
+	},
+	head: ({ loaderData, params }) => {
+		const post = loaderData?.post ?? null
+		const path = `/${params.handle}/p/${params.id}`
+		if (!post) {
+			return {
+				meta: buildSeoMeta({
+					title: "Post not found",
+					description: `This post on ${APP_NAME} either doesn't exist or has been removed.`,
+					path,
+				}),
+				links: [canonicalLink(path)],
+			}
+		}
+		const author =
+			post.author.displayName || `@${post.author.handle ?? "user"}`
+		const description = clipDescription(
+			post.text || `A post by ${author} on ${APP_NAME}.`,
+		)
+		return {
+			meta: buildSeoMeta({
+				title: `${author}: "${clipDescription(post.text, 60)}"`,
+				description,
+				path,
+				image: `/og/post/${post.id}`,
+				type: "article",
+				largeCard: true,
+				publishedTime: post.createdAt,
+				authorHandle: post.author.handle ?? undefined,
+			}),
+			links: [canonicalLink(path)],
+			scripts: [
+				{
+					type: "application/ld+json",
+					children: JSON.stringify({
+						"@context": "https://schema.org",
+						"@type": "SocialMediaPosting",
+						headline: clipDescription(post.text, 110),
+						articleBody: post.text,
+						datePublished: post.createdAt,
+						dateModified: post.editedAt ?? post.createdAt,
+						url: path,
+						author: post.author.handle
+							? {
+									"@type": "Person",
+									name:
+										post.author.displayName ??
+										post.author.handle,
+									url: `/${post.author.handle}`,
+								}
+							: undefined,
+						interactionStatistic: [
+							{
+								"@type": "InteractionCounter",
+								interactionType:
+									"https://schema.org/LikeAction",
+								userInteractionCount: post.counts.likes,
+							},
+							{
+								"@type": "InteractionCounter",
+								interactionType:
+									"https://schema.org/ShareAction",
+								userInteractionCount: post.counts.reposts,
+							},
+							{
+								"@type": "InteractionCounter",
+								interactionType:
+									"https://schema.org/CommentAction",
+								userInteractionCount: post.counts.replies,
+							},
+						],
+					}),
+				},
+			],
+		}
+	},
 })
 
-function PostMediaGrid({
-  media,
-  className,
-}: {
-  media: NonNullable<Post["media"]>
-  className: string
-}) {
-  const gallery = media.flatMap((m) => {
-    if (m.processingState !== "ready") return []
-    const full =
-      m.variants.find((v) => v.kind === "large") ??
-      m.variants.find((v) => v.kind === "medium") ??
-      m.variants.find((v) => v.kind === "thumb") ??
-      m.variants[0]
-    return [{ id: m.id, src: full.url, alt: m.altText ?? "" }]
-  })
-  const galleryImages = gallery.map(({ src, alt }) => ({ src, alt }))
-  return (
-    <div className={className}>
-      {media.map((m) => {
-        const variant =
-          m.variants.find((v) => v.kind === "medium") ?? m.variants[0]
-        const isReady = m.processingState === "ready"
-        const galleryIndex = gallery.findIndex((g) => g.id === m.id)
-        return (
-          <div key={m.id} className="aspect-video bg-base-2">
-            {isReady && (
-              <ImageLightbox
-                images={galleryImages}
-                initialIndex={galleryIndex >= 0 ? galleryIndex : 0}
-                disabled={galleryImages.length === 0}
-                className="block h-full w-full"
-              >
-                <img
-                  src={variant.url}
-                  alt={m.altText ?? ""}
-                  className="h-full w-full object-cover"
-                />
-              </ImageLightbox>
-            )}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
+// ───────────────────────────────────────────────────────────────────────────
+// Thread view component
+// ───────────────────────────────────────────────────────────────────────────
 
 function ThreadView() {
-  const { handle, id } = Route.useParams()
-  const navigate = useNavigate()
-  const [thread, setThread] = useState<Thread | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    setThread(null)
-    setError(null)
-    api
-      .thread(id)
-      .then(setThread)
-      .catch((e) => setError(e instanceof ApiError ? e.message : "not found"))
-  }, [id])
-
-  function replace(next: Post) {
-    setThread((t) =>
-      t
-        ? {
-            ancestors: t.ancestors.map((p) => (p.id === next.id ? next : p)),
-            post: t.post && t.post.id === next.id ? next : t.post,
-            replies: t.replies.map((p) =>
-              p.id === next.id ? { ...p, ...next } : p
-            ),
-          }
-        : t
-    )
-  }
-
-  function removeFromThread(removeId: string) {
-    setThread((t) =>
-      t
-        ? {
-            ancestors: t.ancestors.filter((p) => p.id !== removeId),
-            post: t.post && t.post.id === removeId ? null : t.post,
-            replies: t.replies.filter((p) => p.id !== removeId),
-          }
-        : t
-    )
-  }
-
-  function onReply(post: Post) {
-    setThread((t) =>
-      t
-        ? {
-            ...t,
-            post: t.post
-              ? {
-                  ...t.post,
-                  counts: {
-                    ...t.post.counts,
-                    replies: t.post.counts.replies + 1,
-                  },
-                }
-              : t.post,
-            replies: [...t.replies, { ...post, descendantReplyCount: 0 }],
-          }
-        : t
-    )
-  }
-
-  if (error) {
-    return (
-      <main>
-        <div className="px-4 py-16 text-center">
-          <p className="text-sm text-tertiary">post not found</p>
-          <Link
-            to="/$handle"
-            params={{ handle }}
-            className="mt-3 inline-block text-xs text-primary hover:underline"
-          >
-            back to @{handle}
-          </Link>
-        </div>
-      </main>
-    )
-  }
-
-  if (!thread) {
-    return (
-      <main>
-        <div className="px-4 py-16">
-          <p className="text-sm text-tertiary">loading…</p>
-        </div>
-      </main>
-    )
-  }
-
-  const hasAncestors = thread.ancestors.length > 0
-
-  return (
-    <main>
-      {hasAncestors && (
-        <div>
-          {thread.ancestors.map((p) => (
-            <AncestorPost
-              key={p.id}
-              post={p}
-              onChange={replace}
-              onRemove={() => removeFromThread(p.id)}
-              showLineBelow={true}
-            />
-          ))}
-        </div>
-      )}
-
-      {thread.post && (
-        <ParentPost
-          post={thread.post}
-          onChange={replace}
-          onRemove={() => navigate({ to: "/$handle", params: { handle } })}
-          hasAncestors={hasAncestors}
-        />
-      )}
-
-      <ReplyComposer postId={id} onReply={onReply} />
-
-      {thread.replies.length > 0 && (
-        <div>
-          {thread.replies.map((p) => (
-            <div key={p.id}>
-              <ReplyRow
-                post={p}
-                onChange={replace}
-                onRemove={() => removeFromThread(p.id)}
-              />
-              {p.descendantReplyCount > 0 && p.author.handle && (
-                <Link
-                  to="/$handle/p/$id"
-                  params={{ handle: p.author.handle, id: p.id }}
-                  className="block border-b border-neutral bg-base-2/10 px-4 py-2 pl-16 text-xs text-primary hover:underline"
-                >
-                  View {p.descendantReplyCount} more{" "}
-                  {p.descendantReplyCount === 1 ? "reply" : "replies"}
-                </Link>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </main>
-  )
-}
-
-function AncestorPost({
-  post,
-  onChange,
-  onRemove,
-  showLineBelow,
-}: {
-  post: Post
-  onChange: (p: Post) => void
-  onRemove: () => void
-  showLineBelow: boolean
-}) {
-  const [busy, setBusy] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
-  const authorHandle = post.author.handle
-  const initial = (post.author.displayName ?? authorHandle ?? "·")
-    .slice(0, 1)
-    .toUpperCase()
-
-  function relativeTime(iso: string): string {
-    const d = new Date(iso).getTime()
-    const diff = Date.now() - d
-    const s = Math.floor(diff / 1000)
-    if (s < 60) return `${s}s`
-    const m = Math.floor(s / 60)
-    if (m < 60) return `${m}m`
-    const h = Math.floor(m / 60)
-    if (h < 24) return `${h}h`
-    const dd = Math.floor(h / 24)
-    if (dd < 7) return `${dd}d`
-    return new Date(iso).toLocaleDateString()
-  }
-
-  async function optimistic(next: Partial<Post>, op: () => Promise<unknown>) {
-    const prev = post
-    onChange({ ...post, ...next })
-    setBusy(true)
-    try {
-      await op()
-    } catch {
-      onChange(prev)
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  const likeAnim = useLikeAnimation()
-  function toggleLike() {
-    if (busy || !post.viewer) return
-    const liked = !post.viewer.liked
-    likeAnim.trigger()
-    optimistic(
-      {
-        counts: { ...post.counts, likes: post.counts.likes + (liked ? 1 : -1) },
-        viewer: { ...post.viewer, liked },
-      },
-      () => (liked ? api.like(post.id) : api.unlike(post.id))
-    )
-  }
-
-  function toggleRepost() {
-    if (busy || !post.viewer) return
-    const reposted = !post.viewer.reposted
-    optimistic(
-      {
-        counts: {
-          ...post.counts,
-          reposts: post.counts.reposts + (reposted ? 1 : -1),
-        },
-        viewer: { ...post.viewer, reposted },
-      },
-      () => (reposted ? api.repost(post.id) : api.unrepost(post.id))
-    )
-  }
-
-  function toggleBookmark() {
-    if (busy || !post.viewer) return
-    const bookmarked = !post.viewer.bookmarked
-    optimistic(
-      {
-        counts: {
-          ...post.counts,
-          bookmarks: post.counts.bookmarks + (bookmarked ? 1 : -1),
-        },
-        viewer: { ...post.viewer, bookmarked },
-      },
-      () => (bookmarked ? api.bookmark(post.id) : api.unbookmark(post.id))
-    )
-  }
-
-  return (
-    <article className="relative px-4 py-3">
-      {showLineBelow && (
-        <div
-          className="absolute top-[42px] bottom-0 left-[26px] w-px bg-border"
-          aria-hidden="true"
-        />
-      )}
-
-      <div className="flex gap-2.5">
-        <div className="shrink-0">
-          {authorHandle ? (
-            <Link to="/$handle" params={{ handle: authorHandle }}>
-              <Avatar initial={initial} src={post.author.avatarUrl} size={20} />
-            </Link>
-          ) : (
-            <Avatar initial={initial} src={post.author.avatarUrl} size={20} />
-          )}
-        </div>
-
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5 text-xs">
-            {authorHandle ? (
-              <Link
-                to="/$handle"
-                params={{ handle: authorHandle }}
-                className="font-semibold hover:underline"
-              >
-                {post.author.displayName || `@${authorHandle}`}
-              </Link>
-            ) : (
-              <span className="font-semibold">
-                {post.author.displayName ?? "unknown"}
-              </span>
-            )}
-            {authorHandle && (
-              <span className="text-tertiary">@{authorHandle}</span>
-            )}
-            <span className="text-tertiary">·</span>
-            <span className="text-tertiary tabular-nums">
-              {relativeTime(post.createdAt)}
-            </span>
-            <PostMenu
-              post={post}
-              onChange={onChange}
-              onRemove={onRemove}
-              onStartEdit={() => setEditOpen(true)}
-              className="ml-auto"
-            />
-          </div>
-
-          <p className="mt-1 text-[13.5px] leading-[1.55] break-words whitespace-pre-wrap">
-            <RichText text={post.text} />
-          </p>
-
-          <MacfolioCardFromText text={post.text} />
-
-          {post.media && post.media.length > 0 && (
-            <PostMediaGrid
-              media={post.media}
-              className={`mt-2 grid gap-px overflow-hidden rounded-sm border border-neutral ${post.media.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}
-            />
-          )}
-
-          {post.articleCard && <ArticleCardBlock card={post.articleCard} />}
-
-          {post.githubCards?.map((card, i) => (
-            <GithubCardBlock
-              key={`${card.kind}-${card.url}-${i}`}
-              card={card}
-            />
-          ))}
-
-          {post.poll && (
-            <PollBlock
-              poll={post.poll}
-              onChange={(nextPoll) => onChange({ ...post, poll: nextPoll })}
-            />
-          )}
-
-          {post.quoteOf && <QuoteEmbed post={post.quoteOf} />}
-
-          <div className="mt-2.5 flex items-center gap-5 text-tertiary">
-            {authorHandle && (
-              <Link
-                to="/$handle/p/$id"
-                params={{ handle: authorHandle, id: post.id }}
-                className="flex items-center gap-1.5 py-0.5 text-[13px] tabular-nums hover:text-primary"
-              >
-                <ChatBubbleLeftIcon className="size-4" />
-                <span>{post.counts.replies}</span>
-              </Link>
-            )}
-            <button
-              type="button"
-              onClick={toggleRepost}
-              disabled={busy || !post.viewer}
-              className={`flex items-center gap-1.5 py-0.5 text-[13px] tabular-nums transition-colors hover:text-primary ${post.viewer?.reposted ? "text-primary" : ""}`}
-            >
-              <ArrowPathIcon className="size-4" />
-              <span>{post.counts.reposts}</span>
-            </button>
-            <button
-              type="button"
-              onClick={toggleLike}
-              disabled={busy || !post.viewer}
-              className={`flex items-center gap-1.5 py-0.5 text-[13px] tabular-nums transition-colors hover:text-primary ${post.viewer?.liked ? "text-primary" : ""}`}
-            >
-              <LikeIconBurst
-                liked={!!post.viewer?.liked}
-                animating={likeAnim.animating}
-                iconSize={16}
-              />
-              <span>{post.counts.likes}</span>
-            </button>
-            <button
-              type="button"
-              onClick={toggleBookmark}
-              disabled={busy || !post.viewer}
-              className={`flex items-center gap-1.5 py-0.5 transition-colors hover:text-primary ${post.viewer?.bookmarked ? "text-primary" : ""}`}
-            >
-              {post.viewer?.bookmarked ? (
-                <BookmarkIcon className="size-4" />
-              ) : (
-                <BookmarkIconOutline className="size-4" />
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-      <EditPostDialog
-        post={post}
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        onSaved={onChange}
-      />
-    </article>
-  )
-}
-
-function ParentPost({
-  post,
-  onChange,
-  onRemove,
-  hasAncestors,
-}: {
-  post: Post
-  onChange: (p: Post) => void
-  onRemove: () => void
-  hasAncestors?: boolean
-}) {
-  const [busy, setBusy] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
-  const authorHandle = post.author.handle
-  const initial = (post.author.displayName ?? authorHandle ?? "·")
-    .slice(0, 1)
-    .toUpperCase()
-
-  async function optimistic(next: Partial<Post>, op: () => Promise<unknown>) {
-    const prev = post
-    onChange({ ...post, ...next })
-    setBusy(true)
-    try {
-      await op()
-    } catch {
-      onChange(prev)
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  const likeAnim = useLikeAnimation()
-  function toggleLike() {
-    if (busy || !post.viewer) return
-    const liked = !post.viewer.liked
-    likeAnim.trigger()
-    optimistic(
-      {
-        counts: { ...post.counts, likes: post.counts.likes + (liked ? 1 : -1) },
-        viewer: { ...post.viewer, liked },
-      },
-      () => (liked ? api.like(post.id) : api.unlike(post.id))
-    )
-  }
-
-  function toggleRepost() {
-    if (busy || !post.viewer) return
-    const reposted = !post.viewer.reposted
-    optimistic(
-      {
-        counts: {
-          ...post.counts,
-          reposts: post.counts.reposts + (reposted ? 1 : -1),
-        },
-        viewer: { ...post.viewer, reposted },
-      },
-      () => (reposted ? api.repost(post.id) : api.unrepost(post.id))
-    )
-  }
-
-  function toggleBookmark() {
-    if (busy || !post.viewer) return
-    const bookmarked = !post.viewer.bookmarked
-    optimistic(
-      {
-        counts: {
-          ...post.counts,
-          bookmarks: post.counts.bookmarks + (bookmarked ? 1 : -1),
-        },
-        viewer: { ...post.viewer, bookmarked },
-      },
-      () => (bookmarked ? api.bookmark(post.id) : api.unbookmark(post.id))
-    )
-  }
-
-  return (
-    <article className="relative border-b border-neutral px-4 py-3.5">
-      {hasAncestors && (
-        <div
-          className="absolute top-0 left-[26px] h-3.5 w-px bg-border"
-          aria-hidden="true"
-        />
-      )}
-
-      <div className="flex items-center gap-2">
-        {authorHandle ? (
-          <Link to="/$handle" params={{ handle: authorHandle }}>
-            <Avatar initial={initial} src={post.author.avatarUrl} size={26} />
-          </Link>
-        ) : (
-          <Avatar initial={initial} src={post.author.avatarUrl} size={26} />
-        )}
-        <div className="min-w-0 flex-1">
-          {authorHandle ? (
-            <Link
-              to="/$handle"
-              params={{ handle: authorHandle }}
-              className="block hover:underline"
-            >
-              <span className="text-[13px] font-semibold">
-                {post.author.displayName || `@${authorHandle}`}
-              </span>
-            </Link>
-          ) : (
-            <span className="text-[13px] font-semibold">
-              {post.author.displayName ?? "unknown"}
-            </span>
-          )}
-          {authorHandle && (
-            <span className="block text-[11px] text-tertiary">
-              @{authorHandle}
-            </span>
-          )}
-        </div>
-        <PostMenu
-          post={post}
-          onChange={onChange}
-          onRemove={onRemove}
-          onStartEdit={() => setEditOpen(true)}
-        />
-      </div>
-
-      <p className="mt-2.5 text-[15.5px] leading-[1.5] break-words whitespace-pre-wrap">
-        <RichText text={post.text} />
-      </p>
-
-      <MacfolioCardFromText text={post.text} />
-
-      {post.media && post.media.length > 0 && (
-        <PostMediaGrid
-          media={post.media}
-          className={`mt-2.5 grid gap-px overflow-hidden rounded-sm border border-neutral ${post.media.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}
-        />
-      )}
-
-      {post.articleCard && <ArticleCardBlock card={post.articleCard} />}
-
-      {post.githubCards?.map((card, i) => (
-        <GithubCardBlock key={`${card.kind}-${card.url}-${i}`} card={card} />
-      ))}
-
-      {post.poll && (
-        <PollBlock
-          poll={post.poll}
-          onChange={(nextPoll) => onChange({ ...post, poll: nextPoll })}
-        />
-      )}
-
-      {post.quoteOf && <QuoteEmbed post={post.quoteOf} />}
-
-      {/* <div className="mt-2.5 flex items-center gap-3 text-[11px] tabular-nums text-tertiary">
-        {post.counts.reposts > 0 && <span>{post.counts.reposts} reposts</span>}
-        {post.counts.likes > 0 && <span>{post.counts.likes} likes</span>}
-        {post.counts.bookmarks > 0 && (
-          <span>{post.counts.bookmarks} bookmarks</span>
-        )}
-      </div> */}
-
-      <div className="mt-2.5 flex items-center gap-5 text-tertiary">
-        <button
-          type="button"
-          className="flex items-center gap-1.5 py-0.5 text-[13px] tabular-nums hover:text-primary"
-        >
-          <ChatBubbleLeftIcon className="size-4" />
-          <span>{post.counts.replies}</span>
-        </button>
-        <button
-          type="button"
-          onClick={toggleRepost}
-          disabled={busy || !post.viewer}
-          className={`flex items-center gap-1.5 py-0.5 text-[13px] tabular-nums transition-colors hover:text-primary ${post.viewer?.reposted ? "text-primary" : ""}`}
-        >
-          <ArrowPathIcon className="size-4" />
-          <span>{post.counts.reposts}</span>
-        </button>
-        <button
-          type="button"
-          onClick={toggleLike}
-          disabled={busy || !post.viewer}
-          className={`flex items-center gap-1.5 py-0.5 text-[13px] tabular-nums transition-colors hover:text-primary ${post.viewer?.liked ? "text-primary" : ""}`}
-        >
-          <LikeIconBurst
-            liked={!!post.viewer?.liked}
-            animating={likeAnim.animating}
-            iconSize={16}
-          />
-          <span>{post.counts.likes}</span>
-        </button>
-        <button
-          type="button"
-          onClick={toggleBookmark}
-          disabled={busy || !post.viewer}
-          className={`flex items-center gap-1.5 py-0.5 transition-colors hover:text-primary ${post.viewer?.bookmarked ? "text-primary" : ""}`}
-        >
-          {post.viewer?.bookmarked ? (
-            <BookmarkIcon className="size-4" />
-          ) : (
-            <BookmarkIconOutline className="size-4" />
-          )}
-        </button>
-      </div>
-      <EditPostDialog
-        post={post}
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        onSaved={onChange}
-      />
-    </article>
-  )
-}
-
-function ReplyComposer({
-  postId,
-  onReply,
-}: {
-  postId: string
-  onReply: (p: Post) => void
-}) {
-  const { me } = useMe()
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
-  const [text, setText] = useState("")
-  const [expanded, setExpanded] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const avatarInitial = (me?.displayName ?? me?.handle ?? "·")
-    .slice(0, 1)
-    .toUpperCase()
-
-  const canSubmit = text.trim().length > 0 && !loading
-
-  async function submit() {
-    if (!canSubmit) return
-    setLoading(true)
-    try {
-      const { post } = await api.createPost({
-        text: text.trim(),
-        replyToId: postId,
-      })
-      setText("")
-      setExpanded(false)
-      onReply(post)
-    } catch {
-      // ignore
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useSubmitHotkey(submit, { enabled: canSubmit, target: textareaRef })
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    submit()
-  }
-
-  return (
-    <form
-      onSubmit={handleSubmit}
-      className="border-b border-neutral px-4 py-2.5"
-    >
-      <div className="flex gap-2.5">
-        <Avatar initial={avatarInitial} src={me?.avatarUrl} size={20} />
-        <div className="min-w-0 flex-1">
-          <Textarea
-            ref={textareaRef}
-            value={text}
-            onChange={(e) => {
-              setText(e.target.value)
-              if (textareaRef.current) {
-                textareaRef.current.style.height = "auto"
-                textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`
-              }
-            }}
-            onFocus={() => setExpanded(true)}
-            placeholder="Post your reply"
-            rows={1}
-            className="min-h-0 border-0 bg-transparent px-1 py-1 text-[13px] leading-relaxed md:text-[13px] dark:bg-transparent"
-          />
-
-          <div
-            className={`flex items-center justify-between overflow-hidden transition-all duration-200 ${
-              expanded ? "mt-2.5 max-h-10 opacity-100" : "max-h-0 opacity-0"
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                aria-label="add image"
-                className="flex size-[22px] items-center justify-center rounded-sm text-tertiary transition-colors hover:bg-base-2 hover:text-primary"
-              >
-                <PhotoIcon className="size-[13px]" />
-              </button>
-              <button
-                type="button"
-                aria-label="add poll"
-                className="flex size-[22px] items-center justify-center rounded-sm text-tertiary transition-colors hover:bg-base-2 hover:text-primary"
-              >
-                <ChartBarIcon className="size-[13px]" />
-              </button>
-              <button
-                type="button"
-                aria-label="add hashtag"
-                className="flex size-[22px] items-center justify-center rounded-sm text-tertiary transition-colors hover:bg-base-2 hover:text-primary"
-              >
-                <HashtagIcon className="size-[13px]" />
-              </button>
-              <button
-                type="button"
-                aria-label="mention someone"
-                className="flex size-[22px] items-center justify-center rounded-sm text-tertiary transition-colors hover:bg-base-2 hover:text-primary"
-              >
-                <AtSymbolIcon className="size-[13px]" />
-              </button>
-            </div>
-            <button
-              type="submit"
-              disabled={!canSubmit}
-              className="h-[22px] rounded-sm bg-primary px-2.5 text-[11.5px] font-bold text-primary-foreground transition-opacity disabled:opacity-50"
-            >
-              {loading ? "Replying…" : "Reply"}
-            </button>
-          </div>
-
-          {!expanded && (
-            <div className="mt-1 flex justify-end">
-              <button
-                type="submit"
-                disabled={!canSubmit}
-                className="h-[22px] rounded-sm bg-primary px-2.5 text-[11.5px] font-bold text-primary-foreground transition-opacity disabled:opacity-50"
-              >
-                Reply
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </form>
-  )
-}
-
-function ReplyRow({
-  post,
-  onChange,
-  onRemove,
-}: {
-  post: Post
-  onChange: (p: Post) => void
-  onRemove: () => void
-}) {
-  const navigate = useNavigate()
-  const authorHandle = post.author.handle
-  function openPost(e: React.MouseEvent) {
-    if (!authorHandle) return
-    if (clickedInteractiveElement(e.target)) return
-    if (typeof window !== "undefined") {
-      const sel = window.getSelection()
-      if (sel && sel.toString().length > 0) return
-    }
-    navigate({
-      to: "/$handle/p/$id",
-      params: { handle: authorHandle, id: post.id },
-    })
-  }
-  return (
-    // biome-ignore lint/a11y/useKeyWithClickEvents: row navigates on click; interactive children use clickedInteractiveElement to opt out
-    <div
-      onClick={openPost}
-      className={cn(
-        "block border-b border-neutral py-3 pr-4 pl-8 transition-colors",
-        authorHandle && "cursor-pointer hover:bg-base-2/30"
-      )}
-    >
-      <ReplyCard post={post} onChange={onChange} onRemove={onRemove} />
-    </div>
-  )
-}
-
-function ReplyCard({
-  post,
-  onChange,
-  onRemove,
-}: {
-  post: Post
-  onChange: (p: Post) => void
-  onRemove: () => void
-}) {
-  const [busy, setBusy] = useState(false)
-  const [editOpen, setEditOpen] = useState(false)
-  const authorHandle = post.author.handle
-  const initial = (post.author.displayName ?? authorHandle ?? "·")
-    .slice(0, 1)
-    .toUpperCase()
-
-  async function optimistic(next: Partial<Post>, op: () => Promise<unknown>) {
-    const prev = post
-    onChange({ ...post, ...next })
-    setBusy(true)
-    try {
-      await op()
-    } catch {
-      onChange(prev)
-    } finally {
-      setBusy(false)
-    }
-  }
-
-  const likeAnim = useLikeAnimation()
-  function toggleLike() {
-    if (busy || !post.viewer) return
-    const liked = !post.viewer.liked
-    likeAnim.trigger()
-    optimistic(
-      {
-        counts: { ...post.counts, likes: post.counts.likes + (liked ? 1 : -1) },
-        viewer: { ...post.viewer, liked },
-      },
-      () => (liked ? api.like(post.id) : api.unlike(post.id))
-    )
-  }
-
-  function toggleRepost() {
-    if (busy || !post.viewer) return
-    const reposted = !post.viewer.reposted
-    optimistic(
-      {
-        counts: {
-          ...post.counts,
-          reposts: post.counts.reposts + (reposted ? 1 : -1),
-        },
-        viewer: { ...post.viewer, reposted },
-      },
-      () => (reposted ? api.repost(post.id) : api.unrepost(post.id))
-    )
-  }
-
-  function relativeTime(iso: string): string {
-    const d = new Date(iso).getTime()
-    const diff = Date.now() - d
-    const s = Math.floor(diff / 1000)
-    if (s < 60) return `${s}s`
-    const m = Math.floor(s / 60)
-    if (m < 60) return `${m}m`
-    const h = Math.floor(m / 60)
-    if (h < 24) return `${h}h`
-    const dd = Math.floor(h / 24)
-    if (dd < 7) return `${dd}d`
-    return new Date(iso).toLocaleDateString()
-  }
-
-  return (
-    <>
-      <div className="flex items-center gap-2 text-xs">
-        {authorHandle ? (
-          <Link
-            to="/$handle"
-            params={{ handle: authorHandle }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Avatar initial={initial} src={post.author.avatarUrl} size={20} />
-          </Link>
-        ) : (
-          <Avatar initial={initial} src={post.author.avatarUrl} size={20} />
-        )}
-        {authorHandle ? (
-          <Link
-            to="/$handle"
-            params={{ handle: authorHandle }}
-            className="font-semibold hover:underline"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {post.author.displayName || `@${authorHandle}`}
-          </Link>
-        ) : (
-          <span className="font-semibold">
-            {post.author.displayName ?? "unknown"}
-          </span>
-        )}
-        {authorHandle && (
-          <span className="text-tertiary">@{authorHandle}</span>
-        )}
-        <span className="text-tertiary">·</span>
-        <span className="text-tertiary tabular-nums">
-          {relativeTime(post.createdAt)}
-        </span>
-        <PostMenu
-          post={post}
-          onChange={onChange}
-          onRemove={onRemove}
-          onStartEdit={() => setEditOpen(true)}
-          className="ml-auto"
-        />
-      </div>
-
-      <p className="mt-1.5 text-[13.5px] leading-[1.55] break-words whitespace-pre-wrap">
-        <RichText text={post.text} />
-      </p>
-
-      <MacfolioCardFromText text={post.text} />
-
-      {post.media && post.media.length > 0 && (
-        // biome-ignore lint/a11y/useKeyWithClickEvents: stops parent Link from intercepting interactions
-        <div onClick={(e) => e.stopPropagation()}>
-          <PostMediaGrid
-            media={post.media}
-            className={`mt-2 grid gap-px overflow-hidden rounded-sm border border-neutral ${post.media.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}
-          />
-        </div>
-      )}
-
-      {post.articleCard && <ArticleCardBlock card={post.articleCard} />}
-
-      {post.githubCards?.map((card, i) => (
-        <GithubCardBlock key={`${card.kind}-${card.url}-${i}`} card={card} />
-      ))}
-
-      {post.poll && (
-        <PollBlock
-          poll={post.poll}
-          onChange={(nextPoll) => onChange({ ...post, poll: nextPoll })}
-        />
-      )}
-
-      {post.quoteOf && <QuoteEmbed post={post.quoteOf} />}
-
-      {/* biome-ignore lint/a11y/useKeyWithClickEvents: action bar wrapper */}
-      <div
-        className="mt-2.5 flex items-center gap-5 text-tertiary"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <button
-          type="button"
-          className="flex items-center gap-1.5 py-0.5 text-[13px] tabular-nums hover:text-primary"
-        >
-          <ChatBubbleLeftIcon className="size-4" />
-          <span>{post.counts.replies}</span>
-        </button>
-        <button
-          type="button"
-          onClick={toggleRepost}
-          disabled={busy || !post.viewer}
-          className={`flex items-center gap-1.5 py-0.5 text-[13px] tabular-nums transition-colors hover:text-primary ${post.viewer?.reposted ? "text-primary" : ""}`}
-        >
-          <ArrowPathIcon className="size-4" />
-          <span>{post.counts.reposts}</span>
-        </button>
-        <button
-          type="button"
-          onClick={toggleLike}
-          disabled={busy || !post.viewer}
-          className={`flex items-center gap-1.5 py-0.5 text-[13px] tabular-nums transition-colors hover:text-primary ${post.viewer?.liked ? "text-primary" : ""}`}
-        >
-          <LikeIconBurst
-            liked={!!post.viewer?.liked}
-            animating={likeAnim.animating}
-            iconSize={16}
-          />
-          <span>{post.counts.likes}</span>
-        </button>
-        <button
-          type="button"
-          className="flex items-center gap-1.5 py-0.5 transition-colors hover:text-primary"
-        >
-          <BookmarkIconOutline className="size-4" />
-        </button>
-      </div>
-      <EditPostDialog
-        post={post}
-        open={editOpen}
-        onOpenChange={setEditOpen}
-        onSaved={onChange}
-      />
-    </>
-  )
+	const { handle, id } = Route.useParams()
+	const navigate = useNavigate()
+	const [thread, setThread] = useState<Thread | null>(null)
+	const [error, setError] = useState<string | null>(null)
+	const focalRef = useRef<HTMLDivElement>(null)
+	const didScrollRef = useRef(false)
+
+	// Load thread data
+	useEffect(() => {
+		setThread(null)
+		setError(null)
+		didScrollRef.current = false
+		api.thread(id)
+			.then(setThread)
+			.catch((e) => {
+				if (e instanceof ApiError && e.status === 404) {
+					setError("Post not found")
+				} else {
+					setError("Something went wrong")
+				}
+			})
+	}, [id])
+
+	// Scroll to focal post on load (Twitter-style: parents hidden above)
+	useEffect(() => {
+		if (!thread || didScrollRef.current) return
+		if (thread.ancestors.length === 0) return // no parents to scroll past
+		didScrollRef.current = true
+		requestAnimationFrame(() => {
+			focalRef.current?.scrollIntoView({ block: "start" })
+		})
+	}, [thread])
+
+	// ── Optimistic update helpers ──────────────────────────────────────
+
+	const replace = useCallback((next: Post) => {
+		setThread((t) =>
+			t
+				? {
+						ancestors: t.ancestors.map((p) =>
+							p.id === next.id ? next : p,
+						),
+						post:
+							t.post && t.post.id === next.id ? next : t.post,
+						replies: t.replies.map((p) =>
+							p.id === next.id
+								? { ...p, ...next }
+								: p,
+						),
+					}
+				: t,
+		)
+	}, [])
+
+	const removeFromThread = useCallback(
+		(removeId: string) => {
+			setThread((t) =>
+				t
+					? {
+							ancestors: t.ancestors.filter(
+								(p) => p.id !== removeId,
+							),
+							post:
+								t.post && t.post.id === removeId
+									? null
+									: t.post,
+							replies: t.replies.filter(
+								(p) => p.id !== removeId,
+							),
+						}
+					: t,
+			)
+		},
+		[],
+	)
+
+	const onReply = useCallback((post: Post) => {
+		setThread((t) =>
+			t
+				? {
+						...t,
+						post: t.post
+							? {
+									...t.post,
+									counts: {
+										...t.post.counts,
+										replies: t.post.counts.replies + 1,
+									},
+								}
+							: t.post,
+						replies: [
+							...t.replies,
+							{ ...post, descendantReplyCount: 0 },
+						],
+					}
+				: t,
+		)
+	}, [])
+
+	// ── Error / loading states ─────────────────────────────────────────
+
+	if (error) {
+		return (
+			<main>
+				<PageError message={error} className="px-4 py-16" />
+				<div className="px-4 text-center">
+					<Link
+						to="/$handle"
+						params={{ handle }}
+						className="text-xs text-primary hover:underline"
+					>
+						Back to @{handle}
+					</Link>
+				</div>
+			</main>
+		)
+	}
+
+	if (!thread) {
+		return (
+			<main>
+				<div className="px-4 py-16 text-center">
+					<p className="text-sm text-tertiary">Loading…</p>
+				</div>
+			</main>
+		)
+	}
+
+	const hasParents = thread.ancestors.length > 0
+
+	return (
+		<main>
+			{/* Sticky header */}
+			<header className="sticky top-0 z-40 flex h-12 items-center gap-3 bg-base-1/80 px-4 backdrop-blur-md">
+				<Button
+					variant="transparent"
+					size="sm"
+					iconLeft={<ArrowLeftIcon className="size-4" />}
+					onClick={() => navigate({ to: "/" })}
+					aria-label="Back"
+				/>
+				<span className="text-sm font-semibold text-primary">
+					Post
+				</span>
+			</header>
+
+			{/* Parent chain */}
+			{hasParents &&
+				thread.ancestors.map((p, i) => {
+					const isFirst = i === 0
+					const threadLine = isFirst ? "bottom" : "both"
+					return (
+						<FeedPostCard
+							key={p.id}
+							post={p}
+							onChange={replace}
+							onRemove={() => removeFromThread(p.id)}
+							threadLine={threadLine}
+						/>
+					)
+				})}
+
+			{/* Focal post */}
+			{thread.post && (
+				<div ref={focalRef}>
+					<FeedPostCard
+						post={thread.post}
+						onChange={replace}
+						onRemove={() => {
+							navigate({
+								to: "/$handle",
+								params: { handle },
+							})
+						}}
+						threadLine={hasParents ? "top" : undefined}
+						disableHover
+						truncateText={false}
+					/>
+				</div>
+			)}
+
+			{/* Reply composer */}
+			{thread.post && (
+				<div>
+					<Compose
+						replyToId={thread.post.id}
+						onCreated={onReply}
+						collapsible
+						placeholder="Post your reply"
+					/>
+				</div>
+			)}
+
+			{/* Replies */}
+			{thread.replies.map((reply) => (
+				<div key={reply.id}>
+					<FeedPostCard
+						post={reply}
+						onChange={replace}
+						onRemove={() => removeFromThread(reply.id)}
+					/>
+					{reply.descendantReplyCount > 0 && reply.author.handle && (
+						<div className="px-4 pb-2 pl-[68px]">
+							<Button
+								variant="transparent"
+								size="sm"
+								onClick={() =>
+									navigate({
+										to: "/$handle/p/$id",
+										params: {
+											handle: reply.author.handle!,
+											id: reply.id,
+										},
+									})
+								}
+							>
+								View {reply.descendantReplyCount} more{" "}
+								{reply.descendantReplyCount === 1
+									? "reply"
+									: "replies"}
+							</Button>
+						</div>
+					)}
+				</div>
+			))}
+		</main>
+	)
 }

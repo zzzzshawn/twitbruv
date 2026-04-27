@@ -13,6 +13,7 @@ import { api } from "../lib/api"
 import { APP_NAME } from "../lib/env"
 import { useMe } from "../lib/me"
 import { Compose } from "../components/compose"
+import { useOnModalPostCreated } from "../components/compose-provider"
 import { Feed } from "../components/feed"
 import { PageFrame } from "../components/page-frame"
 import { PageLoading } from "../components/page-surface"
@@ -45,6 +46,11 @@ function Landing() {
   const { tab: searchTab } = Route.useSearch()
   const tab: FeedTab = searchTab ?? "following"
   const [newPost, setNewPost] = useState<Post | null>(null)
+
+  // Prepend posts created from the modal composer (e.g. quote posts)
+  useOnModalPostCreated(useCallback((post: Post) => {
+    setNewPost(post)
+  }, []))
 
   const loadFeed = useCallback((cursor?: string) => api.feed(cursor), [])
   const loadPublic = useCallback(
