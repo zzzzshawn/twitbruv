@@ -6,6 +6,11 @@ import {
 	EnvelopeIcon,
 	UserIcon,
 	PencilSquareIcon,
+	SunIcon,
+	MoonIcon,
+	ComputerDesktopIcon,
+	Cog6ToothIcon,
+	ArrowRightStartOnRectangleIcon,
 } from "@heroicons/react/24/outline"
 import {
 	HomeIcon as HomeIconSolid,
@@ -14,9 +19,18 @@ import {
 	EnvelopeIcon as EnvelopeIconSolid,
 	UserIcon as UserIconSolid,
 } from "@heroicons/react/24/solid"
+import {
+	SunIcon as SunIcon16,
+	MoonIcon as MoonIcon16,
+	ComputerDesktopIcon as ComputerDesktopIcon16,
+} from "@heroicons/react/16/solid"
 import { cn } from "@workspace/ui/lib/utils"
 import { Button } from "@workspace/ui/components/button"
+import { DropdownMenu } from "@workspace/ui/components/dropdown-menu"
+import { SegmentedControl } from "@workspace/ui/components/segmented-control"
 import { me } from "../data/mock"
+
+export type ThemeMode = "light" | "dark" | "system"
 
 const navItems = [
 	{ to: "/", label: "Home", icon: HomeIcon, iconActive: HomeIconSolid },
@@ -26,7 +40,19 @@ const navItems = [
 	{ to: "/profile", label: "Profile", icon: UserIcon, iconActive: UserIconSolid },
 ] as const
 
-export function Sidebar({ onCompose }: { onCompose: () => void }) {
+const themeOptions = [
+	{ value: "light" as const, icon: <SunIcon16 /> },
+	{ value: "dark" as const, icon: <MoonIcon16 /> },
+	{ value: "system" as const, icon: <ComputerDesktopIcon16 /> },
+]
+
+interface SidebarProps {
+	onCompose: () => void
+	theme: ThemeMode
+	onThemeChange: (theme: ThemeMode) => void
+}
+
+export function Sidebar({ onCompose, theme, onThemeChange }: SidebarProps) {
 	return (
 		<aside className="sticky top-0 flex h-svh w-[68px] shrink-0 flex-col items-center justify-between py-4 xl:w-[240px] xl:items-start xl:px-3">
 			{/* Logo */}
@@ -88,31 +114,89 @@ export function Sidebar({ onCompose }: { onCompose: () => void }) {
 				</div>
 			</nav>
 
-			{/* Profile pill at bottom */}
-			<button
-				type="button"
-				className="flex items-center gap-3 rounded-full p-2 transition-colors hover:bg-subtle xl:w-full"
-			>
-				{me.avatarUrl ? (
-					<img
-						src={me.avatarUrl}
-						alt=""
-						className="size-9 shrink-0 rounded-full object-cover"
-					/>
-				) : (
-					<div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-subtle text-sm font-semibold text-secondary">
-						{me.displayName[0]}
+			{/* Profile pill / user menu */}
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger
+					className="flex items-center gap-3 rounded-full p-2 transition-colors hover:bg-subtle xl:w-full"
+				>
+					{me.avatarUrl ? (
+						<img
+							src={me.avatarUrl}
+							alt=""
+							className="size-9 shrink-0 rounded-full object-cover"
+						/>
+					) : (
+						<div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-subtle text-sm font-semibold text-secondary">
+							{me.displayName[0]}
+						</div>
+					)}
+					<div className="hidden min-w-0 text-left xl:block">
+						<div className="truncate text-sm font-semibold text-primary">
+							{me.displayName}
+						</div>
+						<div className="truncate text-xs text-tertiary">
+							@{me.handle}
+						</div>
 					</div>
-				)}
-				<div className="hidden min-w-0 text-left xl:block">
-					<div className="truncate text-sm font-semibold text-primary">
-						{me.displayName}
+				</DropdownMenu.Trigger>
+
+				<DropdownMenu.Content
+					side="top"
+					align="start"
+					sideOffset={8}
+					minWidth="min-w-[260px]"
+				>
+					{/* User info header */}
+					<div className="flex items-center gap-3 px-2 py-2">
+						{me.avatarUrl ? (
+							<img
+								src={me.avatarUrl}
+								alt=""
+								className="size-10 shrink-0 rounded-full object-cover"
+							/>
+						) : (
+							<div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-subtle text-sm font-semibold text-secondary">
+								{me.displayName[0]}
+							</div>
+						)}
+						<div className="flex flex-col gap-0.5">
+							<span className="text-sm font-medium text-primary">
+								{me.displayName}
+							</span>
+							<span className="text-xs text-tertiary">
+								@{me.handle}
+							</span>
+						</div>
 					</div>
-					<div className="truncate text-xs text-tertiary">
-						@{me.handle}
+
+					<DropdownMenu.Separator />
+
+					{/* Appearance toggle */}
+					<div className="flex items-center justify-between px-2 py-1.5">
+						<span className="text-sm text-primary">Appearance</span>
+						<SegmentedControl<ThemeMode>
+							options={themeOptions}
+							value={theme}
+							onValueChange={onThemeChange}
+						/>
 					</div>
-				</div>
-			</button>
+
+					<DropdownMenu.Separator />
+
+					<DropdownMenu.Item icon={<Cog6ToothIcon className="size-4" />}>
+						Settings
+					</DropdownMenu.Item>
+
+					<DropdownMenu.Separator />
+
+					<DropdownMenu.Item
+						icon={<ArrowRightStartOnRectangleIcon className="size-4" />}
+						variant="danger"
+					>
+						Log out
+					</DropdownMenu.Item>
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
 		</aside>
 	)
 }

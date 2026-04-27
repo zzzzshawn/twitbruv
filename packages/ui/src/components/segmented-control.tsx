@@ -1,87 +1,178 @@
-import { useRef, useState, useLayoutEffect, useCallback } from "react"
+import {
+	type ReactNode,
+	type CSSProperties,
+	useState,
+	useRef,
+	useCallback,
+	useLayoutEffect,
+} from "react"
 import { cn } from "@workspace/ui/lib/utils"
 
-export interface SegmentedControlProps<T extends string> {
-	items: readonly T[]
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+export interface SegmentedControlOption<T extends string = string> {
 	value: T
-	onChange: (value: T) => void
+	label?: string
+	icon?: ReactNode
+}
+
+export interface SegmentedControlProps<T extends string = string> {
+	/** Options to display as segments */
+	options: SegmentedControlOption<T>[]
+	/** Controlled value */
+	value?: T
+	/** Uncontrolled default value */
+	defaultValue?: T
+	/** Called when the selected segment changes */
+	onValueChange?: (value: T) => void
+	/**
+	 * Layout mode:
+	 * - `fill` - segments divide space equally (default)
+	 * - `fit` - segments hug their content
+	 */
+	layout?: "fill" | "fit"
 	className?: string
 }
 
+// ---------------------------------------------------------------------------
+// SegmentedControl
+// ---------------------------------------------------------------------------
+
 /**
- * Segmented control with a sliding active indicator.
- * The background pill smoothly animates between items on selection.
+ * Segmented control with a sliding indicator that animates between options.
+ *
+ * Two layout modes:
+ * - `fill` (default) - equal-width segments via CSS grid, indicator positioned with translateX
+ * - `fit` - segments size to content, indicator position/width measured from DOM
  */
-export function SegmentedControl<T extends string>({
-	items,
-	value,
-	onChange,
+export function SegmentedControl<T extends string = string>({
+	options,
+	value: controlledValue,
+	defaultValue,
+	onValueChange,
+	layout = "fill",
 	className,
 }: SegmentedControlProps<T>) {
+	const [internalValue, setInternalValue] = useState<T>(
+		() => defaultValue ?? options[0]?.value ?? ("" as T),
+	)
+	const isControlled = controlledValue !== undefined
+	const activeValue = isControlled ? controlledValue : internalValue
+	const activeIndex = options.findIndex((o) => o.value === activeValue)
+
+	// Refs for fit-mode DOM measurement
 	const containerRef = useRef<HTMLDivElement>(null)
-	const itemRefs = useRef<Map<T, HTMLButtonElement>>(new Map())
-	const [pillStyle, setPillStyle] = useState<React.CSSProperties>({})
-	const [hasTransition, setHasTransition] = useState(false)
+	const buttonRefs = useRef<(HTMLButtonElement | null)[]>([])
+	const [indicator, setIndicator] = useState<{
+		left: number
+		width: number
+	} | null>(null)
+	// Track whether we've done the initial measurement so we can skip the
+	// transition on mount (prevents the indicator "sliding in from nowhere").
+	const hasMeasuredRef = useRef(false)
 
 	const measure = useCallback(() => {
-		const el = itemRefs.current.get(value)
-		if (!el || !containerRef.current) return
+		if (layout !== "fit") return
+		const btn = buttonRefs.current[activeIndex]
+		if (!btn) return
+		const wasFirst = !hasMeasuredRef.current
+		hasMeasuredRef.current = true
+		setIndicator({ left: btn.offsetLeft, width: btn.offsetWidth })
+		if (wasFirst) {
+			void btn.offsetHeight
+		}
+	}, [activeIndex, layout])
 
-		const containerRect = containerRef.current.getBoundingClientRect()
-		const itemRect = el.getBoundingClientRect()
-
-		setPillStyle({
-			width: itemRect.width,
-			height: itemRect.height,
-			transform: `translateX(${itemRect.left - containerRect.left}px)`,
-		})
-	}, [value])
-
-	// Measure on value change
 	useLayoutEffect(() => {
 		measure()
-		// Enable transition after first measurement so initial render doesn't animate
-		requestAnimationFrame(() => setHasTransition(true))
-	}, [measure])
 
-	// Re-measure on resize
-	useLayoutEffect(() => {
-		const observer = new ResizeObserver(() => measure())
-		if (containerRef.current) observer.observe(containerRef.current)
-		return () => observer.disconnect()
-	}, [measure])
+		const container = containerRef.current
+		if (!container || layout !== "fit") return
+
+		const ro = new ResizeObserver(measure)
+		ro.observe(container)
+		return () => ro.disconnect()
+	}, [measure, layout])
+
+	function handleSelect(value: T) {
+		if (!isControlled) setInternalValue(value)
+		onValueChange?.(value)
+	}
+
+	// Indicator styles
+	const isFill = layout === "fill"
+	const count = options.length
+
+	const indicatorStyle: CSSProperties = isFill
+		? {
+				width: `calc(100% / ${count})`,
+				transform: `translateX(${activeIndex * 100}%)`,
+			}
+		: indicator
+			? {
+					left: indicator.left,
+					width: indicator.width,
+					transition: hasMeasuredRef.current ? undefined : "none",
+				}
+			: { opacity: 0 }
 
 	return (
 		<div
 			ref={containerRef}
-			className={cn("relative flex items-center gap-0.5", className)}
+			className={cn(
+				"relative rounded-md bg-subtle",
+				isFill ? "grid" : "inline-flex",
+				className,
+			)}
+			style={
+				isFill
+					? { gridTemplateColumns: `repeat(${count}, 1fr)` }
+					: undefined
+			}
 		>
-			{/* Sliding pill */}
+			{/* Sliding indicator */}
 			<div
+				aria-hidden
 				className={cn(
-					"absolute left-0 top-0 rounded-lg bg-subtle",
-					hasTransition &&
-						"transition-[transform,width] duration-250 ease-out-expo motion-reduce:transition-none",
+					"absolute inset-y-0 p-0.5",
+					"transition-all duration-200 ease-out-expo",
+					"motion-reduce:transition-none",
+					!isFill && !hasMeasuredRef.current && "transition-none",
 				)}
-				style={pillStyle}
-			/>
+				style={indicatorStyle}
+			>
+				<div className="h-full rounded-[6px] bg-base-2 shadow-xs" />
+			</div>
 
-			{/* Items */}
-			{items.map((item) => (
+			{/* Option buttons */}
+			{options.map((option, i) => (
 				<button
-					key={item}
+					key={option.value}
 					ref={(el) => {
-						if (el) itemRefs.current.set(item, el)
-						else itemRefs.current.delete(item)
+						buttonRefs.current[i] = el
 					}}
 					type="button"
-					onClick={() => onChange(item)}
+					aria-pressed={option.value === activeValue}
+					onClick={() => handleSelect(option.value)}
 					className={cn(
-						"relative z-[1] cursor-pointer rounded-lg px-3 py-1.5 text-sm font-medium outline-none select-none transition-colors duration-150",
-						item === value ? "text-primary" : "text-tertiary hover:text-secondary",
+						"relative z-[1] flex items-center justify-center gap-1.5 px-2.5 h-8 rounded-[6px]",
+						"text-sm font-medium select-none cursor-pointer",
+						"outline-none focus-visible:ring-2 focus-visible:ring-focus",
+						"transition-colors duration-150",
+						"motion-reduce:transition-none",
+						option.value === activeValue
+							? "text-primary"
+							: "text-tertiary hover:text-secondary",
 					)}
 				>
-					{item}
+					{option.icon && (
+						<span className="flex size-4 shrink-0 items-center justify-center [&>svg]:size-4">
+							{option.icon}
+						</span>
+					)}
+					{option.label && <span>{option.label}</span>}
 				</button>
 			))}
 		</div>

@@ -1,8 +1,8 @@
 import { useState } from "react"
 import { useNavigate, useSearchParams } from "react-router"
+import { cn } from "@workspace/ui/lib/utils"
 import { PostCard } from "@workspace/ui/components/post-card"
 import { Lightbox } from "@workspace/ui/components/lightbox"
-import { SegmentedControl } from "@workspace/ui/components/segmented-control"
 import { feedPosts, getRepliesForPost, type Post } from "../data/mock"
 
 const TABS = ["For You", "Following"] as const
@@ -73,12 +73,22 @@ export default function Feed() {
 	return (
 		<div>
 			{/* Header */}
-			<header className="sticky top-0 z-40 flex h-12 items-center bg-base-1/80 px-4 backdrop-blur-md">
-				<SegmentedControl
-					items={TABS}
-					value={activeTab}
-					onChange={setActiveTab}
-				/>
+			<header className="sticky top-0 z-40 flex h-12 items-center gap-1 bg-base-1/80 px-4 backdrop-blur-md">
+				{TABS.map((tab) => (
+					<button
+						key={tab}
+						type="button"
+						onClick={() => setActiveTab(tab)}
+						className={cn(
+							"rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+							tab === activeTab
+								? "bg-subtle text-primary"
+								: "text-tertiary hover:text-secondary",
+						)}
+					>
+						{tab}
+					</button>
+				))}
 			</header>
 
 			{/* Feed */}

@@ -9,7 +9,7 @@
 	--background-color-base-0: var(--color-gray-4);
 	--background-color-base-1: var(--color-gray-2);
 	--background-color-base-2: var(--color-gray-1);
-	--background-color-subtle: oklch(0 0 0 / 0.06);
+	--background-color-subtle: oklch(0 0 0 / 0.04);
 	--background-color-inverse: oklch(0.205 0 0);
 
 	/* Status backgrounds */

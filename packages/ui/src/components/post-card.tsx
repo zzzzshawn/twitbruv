@@ -109,7 +109,7 @@ export function PostCard({
 	return (
 		<Hover
 			borderRadius="rounded-2xl"
-			background="bg-[oklch(0_0_0/0.03)]"
+			background="bg-subtle/50"
 			disabled={disableHover}
 			fullWidth
 			className={cn(!disableHover && "cursor-pointer", className)}
