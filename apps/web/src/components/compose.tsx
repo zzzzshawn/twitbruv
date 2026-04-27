@@ -6,6 +6,7 @@ import {
 	UsersIcon,
 	AtSymbolIcon,
 	XMarkIcon,
+	PencilSquareIcon,
 } from "@heroicons/react/24/solid"
 import { toast } from "sonner"
 import { cn } from "@workspace/ui/lib/utils"
@@ -186,6 +187,11 @@ export function Compose({
 	const [replyRestriction, setReplyRestriction] = useState<
 		"anyone" | "following" | "mentioned"
 	>("anyone")
+	const [editingAttachmentId, setEditingAttachmentId] = useState<string | null>(
+		null,
+	)
+	const [isDragging, setIsDragging] = useState(false)
+	const dragCounter = useRef(0)
 
 	const showReplyControl = !replyToId
 
@@ -426,6 +432,24 @@ export function Compose({
 		[canSubmit, handleSubmit],
 	)
 
+	const handleDragEnter = useCallback((e: React.DragEvent) => {
+		e.preventDefault()
+		dragCounter.current++
+		if (dragCounter.current === 1) {
+			setIsDragging(true)
+			if (collapsible) setExpanded(true)
+		}
+	}, [collapsible])
+
+	const handleDragLeave = useCallback((e: React.DragEvent) => {
+		e.preventDefault()
+		dragCounter.current--
+		if (dragCounter.current <= 0) {
+			dragCounter.current = 0
+			setIsDragging(false)
+		}
+	}, [])
+
 	const handleDragOver = useCallback(
 		(e: React.DragEvent) => {
 			if (attachments.length >= MAX_ATTACHMENTS) return
@@ -437,6 +461,8 @@ export function Compose({
 	const handleDrop = useCallback(
 		(e: React.DragEvent) => {
 			e.preventDefault()
+			dragCounter.current = 0
+			setIsDragging(false)
 			addFiles(e.dataTransfer.files)
 		},
 		[addFiles],
@@ -470,6 +496,8 @@ export function Compose({
 	return (
 		<form
 			onSubmit={handleSubmit}
+			onDragEnter={handleDragEnter}
+			onDragLeave={handleDragLeave}
 			onDragOver={handleDragOver}
 			onDrop={handleDrop}
 			className="flex gap-3 px-4 py-3"
@@ -625,59 +653,142 @@ export function Compose({
 					</div>
 				)}
 
-				{/* Attachments */}
+{/* Attachments */}
 				{attachments.length > 0 && (
-					<div className="mt-2 grid grid-cols-2 gap-2">
-						{attachments.map((a, i) => (
-							<div key={a.tempId} className="flex flex-col gap-1">
-								<div className="relative aspect-square overflow-hidden rounded-xl border border-neutral bg-base-2">
-									<img
-										src={a.previewUrl}
-										alt=""
-										className="h-full w-full object-cover"
-									/>
-									{a.status === "uploading" && (
-										<div className="absolute inset-0 flex items-center justify-center bg-base-1/50 text-xs text-secondary">
-											uploading…
-										</div>
-									)}
-									{a.status === "failed" && (
-										<div className="absolute inset-0 flex items-center justify-center bg-danger-subtle/50 p-2 text-center text-xs text-danger">
-											{a.error ?? "failed"}
-										</div>
-									)}
-									<button
-										type="button"
-										onClick={() => removeAttachment(a.tempId)}
-										className="absolute top-1.5 right-1.5 flex size-6 items-center justify-center rounded-full bg-base-1/80 text-primary backdrop-blur-sm transition-colors hover:bg-base-1"
+					<div className="mt-2 space-y-2">
+						<div
+							className={cn(
+								"grid gap-0.5 overflow-hidden rounded-xl",
+								attachments.length === 1 && "grid-cols-1",
+								attachments.length === 2 && "grid-cols-2",
+								attachments.length >= 3 &&
+									"grid-cols-2 grid-rows-2",
+							)}
+						>
+							{attachments.map((a, i) => (
+								<div
+									key={a.tempId}
+									className="relative"
+								>
+									<div
+										className={cn(
+											"relative overflow-hidden bg-base-2",
+											attachments.length === 1 &&
+												"max-h-80",
+											attachments.length === 2 &&
+												"aspect-[4/3]",
+											attachments.length >= 3 &&
+												i === 0 &&
+												"row-span-2 h-full",
+											attachments.length >= 3 &&
+												i > 0 &&
+												"aspect-square",
+										)}
 									>
-										<XMarkIcon className="size-3.5" />
-									</button>
+										<img
+											src={a.previewUrl}
+											alt=""
+											className="h-full w-full object-cover"
+										/>
+										{a.status === "uploading" && (
+											<div className="absolute inset-0 flex items-center justify-center bg-base-1/50">
+												<div className="h-5 w-5 animate-spin rounded-full border-2 border-secondary border-t-primary" />
+											</div>
+										)}
+										{a.status === "failed" && (
+											<div className="absolute inset-0 flex items-center justify-center bg-danger-subtle/50 p-2 text-center text-xs text-danger">
+												{a.error ?? "failed"}
+											</div>
+										)}
+										{/* Edit button */}
+										<button
+											type="button"
+											onClick={() =>
+												setEditingAttachmentId(
+													editingAttachmentId ===
+														a.tempId
+														? null
+														: a.tempId,
+												)
+											}
+											className="absolute top-1.5 left-1.5 flex size-7 items-center justify-center rounded-full bg-base-1/80 text-primary backdrop-blur-sm transition-colors hover:bg-base-1"
+										>
+											<PencilSquareIcon className="size-3.5" />
+										</button>
+										{/* Remove button */}
+										<button
+											type="button"
+											onClick={() =>
+												removeAttachment(a.tempId)
+											}
+											className="absolute top-1.5 right-1.5 flex size-7 items-center justify-center rounded-full bg-base-1/80 text-primary backdrop-blur-sm transition-colors hover:bg-base-1"
+										>
+											<XMarkIcon className="size-3.5" />
+										</button>
+									</div>
 								</div>
-								{i === 0 && (
-									<Input
-										value={a.altText}
-										onChange={(e) =>
-											setAttachments((prev) =>
-												prev.map((x) =>
-													x.tempId === a.tempId
-														? {
-																...x,
-																altText: e.target
-																	.value,
-														  }
-														: x,
-												),
-											)
-										}
-										disabled={a.status !== "ready"}
-										placeholder="Alt text"
-										maxLength={1000}
-										className="text-xs"
-									/>
-								)}
-							</div>
-						))}
+							))}
+						</div>
+						{/* Alt text panel for editing */}
+						{editingAttachmentId && (
+							(() => {
+								const a = attachments.find(
+									(x) => x.tempId === editingAttachmentId,
+								)
+								if (!a) return null
+								return (
+									<div className="rounded-xl border border-neutral p-3">
+										<div className="flex items-center justify-between">
+											<span className="text-xs font-medium text-tertiary">
+												Alt text
+											</span>
+											<button
+												type="button"
+												onClick={() =>
+													setEditingAttachmentId(null)
+												}
+												className="flex size-6 items-center justify-center rounded-full text-tertiary hover:text-primary"
+											>
+												<XMarkIcon className="size-3.5" />
+											</button>
+										</div>
+										<textarea
+											value={a.altText}
+											onChange={(e) =>
+												setAttachments(
+													(prev) =>
+														prev.map((x) =>
+															x.tempId ===
+															a.tempId
+																? {
+																		...x,
+																		altText: e
+																				.target
+																					.value,
+																  }
+																: x,
+														),
+												)
+											}
+											placeholder="Describe this image for people who are blind or have low vision"
+											maxLength={1000}
+											rows={2}
+											className="mt-2 w-full resize-none rounded-lg border border-neutral bg-base-2 px-3 py-2 text-sm text-primary outline-none placeholder:text-tertiary focus:border-neutral-strong"
+										/>
+									</div>
+								)
+							})()
+						)}
+					</div>
+				)}
+
+				{/* Drop zone */}
+				{isDragging && attachments.length < MAX_ATTACHMENTS && (
+					<div className="mt-2 flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-neutral-strong bg-subtle py-10">
+						<PhotoIcon className="size-8 text-tertiary" />
+						<span className="mt-2 text-sm text-tertiary">
+							Drop images here
+						</span>
 					</div>
 				)}
 
