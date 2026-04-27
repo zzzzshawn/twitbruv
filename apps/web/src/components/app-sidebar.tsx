@@ -86,7 +86,7 @@ export function AppSidebar({ onCompose }: { onCompose: () => void }) {
 			renderLink={({ to, end, className, children }) => (
 				<Link
 					to={to}
-					activeOptions={{ exact: end }}
+					activeOptions={{ exact: end, includeSearch: false }}
 				>
 					{({ isActive }) => (
 						<div className={className(isActive)}>

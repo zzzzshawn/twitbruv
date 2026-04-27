@@ -22,13 +22,22 @@ export function AppShell({ children }: { children: ReactNode }) {
 	return (
 		<LightboxProvider>
 			{authed && <ChessChallengePoller enabled />}
-			<div className="mx-auto flex min-h-svh max-w-[1080px]">
-				<AppSidebar onCompose={() => {}} />
 
-				<main className="min-h-svh flex-1">
+			{/* Fixed sidebar - never scrolls, always visible at left edge of centered layout */}
+			<div
+				className="fixed top-0 z-40 h-svh w-[68px] xl:w-[240px]"
+				style={{ left: "max(0px, calc((100vw - 1080px) / 2))" }}
+			>
+				<AppSidebar onCompose={() => {}} />
+			</div>
+
+			{/* Main content - scrolls with body, scrollbar hugs right edge of viewport */}
+			<div className="mx-auto flex min-h-svh max-w-[1080px]">
+				{/* Spacer matching sidebar width so content isn't hidden behind it */}
+				<div className="w-[68px] shrink-0 xl:w-[240px]" />
+				<main className="flex-1">
 					{children}
 				</main>
-
 				{/* Right gutter */}
 				<div className="hidden w-[320px] shrink-0 lg:block" />
 			</div>

@@ -8,6 +8,7 @@ import { updateProfileSchema } from "@workspace/validators"
 import { Textarea } from "@workspace/ui/components/textarea"
 import { ApiError, api } from "../lib/api"
 import { authClient } from "../lib/auth"
+import { API_URL } from "../lib/env"
 import { useMe } from "../lib/me"
 import { ClaimHandle } from "../components/claim-handle"
 import { AvatarUpload } from "../components/avatar-upload"
@@ -30,6 +31,7 @@ type SettingsTab =
   | "privacy"
   | "connections"
   | "danger"
+  | "dev"
 
 const SETTINGS_TABS: ReadonlyArray<SettingsTab> = [
   "profile",
@@ -38,6 +40,7 @@ const SETTINGS_TABS: ReadonlyArray<SettingsTab> = [
   "privacy",
   "connections",
   "danger",
+  ...(import.meta.env.DEV ? (["dev"] as const) : []),
 ]
 
 type SettingsSearch = { tab?: SettingsTab }
@@ -144,6 +147,15 @@ function Settings() {
           >
             Danger zone
           </UnderlineTabButton>
+          {import.meta.env.DEV && (
+            <UnderlineTabButton
+              active={tab === "dev"}
+              onClick={() => setTab("dev")}
+              className="shrink-0 px-3"
+            >
+              Dev Tools
+            </UnderlineTabButton>
+          )}
         </UnderlineTabRow>
 
         <div className="mt-6">
@@ -157,6 +169,7 @@ function Settings() {
           {tab === "danger" && (
             <DangerZone onDeleted={() => router.navigate({ to: "/" })} />
           )}
+          {tab === "dev" && <DevToolsSection />}
         </div>
       </main>
     </PageFrame>
@@ -981,4 +994,54 @@ function ConnectionsSection() {
 
 function truncate(s: string, n: number): string {
   return s.length <= n ? s : `${s.slice(0, n - 1)}…`
+}
+
+function DevToolsSection() {
+  const [status, setStatus] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  const handleSeed = async () => {
+    setLoading(true)
+    setStatus(null)
+    try {
+      const res = await fetch(`${API_URL}/api/dev/seed`, {
+        method: "POST",
+        credentials: "include",
+      })
+      const data = await res.json()
+      if (data.ok) {
+        setStatus(data.message + (data.counts ? ` (${data.counts.users} users, ${data.counts.posts} posts, ${data.counts.images} images)` : ""))
+      } else {
+        setStatus("Failed to seed")
+      }
+    } catch (e) {
+      setStatus(`Error: ${e instanceof Error ? e.message : "unknown"}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <section className="space-y-6">
+      <div>
+        <h3 className="text-sm font-medium text-primary">Seed Data</h3>
+        <p className="mt-1 text-xs text-tertiary">
+          Create fake users, posts with images, replies, reposts, and quote
+          tweets for testing. Also creates a few posts for your account.
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleSeed}
+          loading={loading}
+          className="mt-3"
+        >
+          Seed posts
+        </Button>
+        {status && (
+          <p className="mt-2 text-xs text-secondary">{status}</p>
+        )}
+      </div>
+    </section>
+  )
 }

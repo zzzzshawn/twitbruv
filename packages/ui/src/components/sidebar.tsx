@@ -97,7 +97,7 @@ export function Sidebar({
 	return (
 		<aside
 			className={cn(
-				"sticky top-0 flex h-svh w-[68px] shrink-0 flex-col items-center justify-between py-4 xl:w-[240px] xl:items-start xl:px-3",
+				"sticky top-0 flex h-svh w-[68px] shrink-0 flex-col items-center justify-between overflow-y-auto py-4 xl:w-[240px] xl:items-start xl:px-3",
 				className,
 			)}
 		>

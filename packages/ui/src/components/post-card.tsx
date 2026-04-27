@@ -212,7 +212,7 @@ export function PostCard({
 								}}
 								className="text-tertiary"
 							>
-								<AnimatedNumber value={replies} />
+								{replies > 0 ? <AnimatedNumber value={replies} /> : null}
 							</Button>
 						</div>
 
@@ -231,7 +231,7 @@ export function PostCard({
 									reposted && "text-success",
 								)}
 							>
-								<AnimatedNumber value={reposts} />
+								{reposts > 0 ? <AnimatedNumber value={reposts} /> : null}
 							</Button>
 						</div>
 
@@ -248,7 +248,7 @@ export function PostCard({
 									heartBurst && "animate-[heartBounce_400ms_ease-out]",
 								)}
 							>
-								<AnimatedNumber value={likes} />
+								{likes > 0 ? <AnimatedNumber value={likes} /> : null}
 							</Button>
 						</div>
 
