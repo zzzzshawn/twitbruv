@@ -45,6 +45,7 @@ function SignUp() {
         email,
         password,
         name: displayName || handle,
+        callbackURL: `${window.location.origin}/?verified=1`,
       })
       if (err) throw new Error(err.message ?? "Sign up failed")
       await api.claimHandle(handle).catch(() => {})
@@ -119,13 +120,21 @@ function SignUp() {
                 At least 10 characters.
               </p>
             </div>
-            <Button type="submit" className="w-full" disabled={loading} size="lg">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading}
+              size="lg"
+            >
               {loading ? "Creating account…" : "Create account"}
             </Button>
           </form>
           <p className="text-center text-xs text-muted-foreground">
             Already have an account?{" "}
-            <Link to="/login" className="text-foreground underline-offset-4 hover:underline">
+            <Link
+              to="/login"
+              className="text-foreground underline-offset-4 hover:underline"
+            >
               Sign in
             </Link>
           </p>

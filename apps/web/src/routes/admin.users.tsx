@@ -42,7 +42,6 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import { CaretDownIcon } from "@phosphor-icons/react"
-import { trackedAction } from "../lib/analytics"
 import { api } from "../lib/api"
 import { useInfiniteScrollSentinel } from "../lib/use-infinite-scroll-sentinel"
 import { useMe } from "../lib/me"
@@ -125,7 +124,6 @@ function AdminUsers() {
       setLoadingMore(false)
     }
   }, [cursor, loadingMore, q])
-
 
   const act = useCallback(
     async (userId: string, op: () => Promise<unknown>) => {
@@ -232,13 +230,7 @@ function AdminUsers() {
                         disabled={r === u.role}
                         onClick={() =>
                           r !== u.role &&
-                          act(u.id, () =>
-                            trackedAction(
-                              "admin_user_role_set",
-                              () => api.adminSetRole(u.id, r),
-                              () => ({ target_user_id: u.id, role: r }),
-                            ),
-                          )
+                          act(u.id, () => api.adminSetRole(u.id, r))
                         }
                       >
                         <span className="tracking-wider uppercase">{r}</span>
@@ -303,15 +295,7 @@ function AdminUsers() {
                   size="sm"
                   variant="outline"
                   disabled={busyId === u.id}
-                  onClick={() =>
-                    act(u.id, () =>
-                      trackedAction(
-                        "admin_user_unbanned",
-                        () => api.adminUnban(u.id),
-                        () => ({ target_user_id: u.id }),
-                      ),
-                    )
-                  }
+                  onClick={() => act(u.id, () => api.adminUnban(u.id))}
                 >
                   Unban
                 </Button>
@@ -330,15 +314,7 @@ function AdminUsers() {
                   size="sm"
                   variant="outline"
                   disabled={busyId === u.id}
-                  onClick={() =>
-                    act(u.id, () =>
-                      trackedAction(
-                        "admin_user_unshadowbanned",
-                        () => api.adminUnshadowban(u.id),
-                        () => ({ target_user_id: u.id }),
-                      ),
-                    )
-                  }
+                  onClick={() => act(u.id, () => api.adminUnshadowban(u.id))}
                 >
                   Unshadow
                 </Button>
@@ -582,19 +558,10 @@ function ActionDialog({
           hours.trim() && Number.isFinite(Number(hours))
             ? Number(hours)
             : undefined
-        return trackedAction(
-          "admin_user_banned",
-          () =>
-            api.adminBan(u.id, {
-              reason: reason.trim() || undefined,
-              durationHours,
-            }),
-          () => ({
-            target_user_id: u.id,
-            has_reason: reason.trim().length > 0,
-            duration_hours: durationHours ?? null,
-          }),
-        )
+        return api.adminBan(u.id, {
+          reason: reason.trim() || undefined,
+          durationHours,
+        })
       },
     },
     shadow: {
@@ -605,15 +572,7 @@ function ActionDialog({
       submitVariant: "default" as const,
       showDuration: false,
       run: () =>
-        trackedAction(
-          "admin_user_shadowbanned",
-          () =>
-            api.adminShadowban(u.id, { reason: reason.trim() || undefined }),
-          () => ({
-            target_user_id: u.id,
-            has_reason: reason.trim().length > 0,
-          }),
-        ),
+        api.adminShadowban(u.id, { reason: reason.trim() || undefined }),
     },
     verify: {
       title: u.isVerified
@@ -627,16 +586,8 @@ function ActionDialog({
       showDuration: false,
       run: () =>
         u.isVerified
-          ? trackedAction(
-              "admin_user_unverified",
-              () => api.adminUnverify(u.id, reason.trim() || undefined),
-              () => ({ target_user_id: u.id }),
-            )
-          : trackedAction(
-              "admin_user_verified",
-              () => api.adminVerify(u.id, reason.trim() || undefined),
-              () => ({ target_user_id: u.id }),
-            ),
+          ? api.adminUnverify(u.id, reason.trim() || undefined)
+          : api.adminVerify(u.id, reason.trim() || undefined),
     },
     handle: {
       title: `Change handle for ${subject}`,
@@ -646,15 +597,10 @@ function ActionDialog({
       submitVariant: "default" as const,
       showDuration: false,
       run: () =>
-        trackedAction(
-          "admin_user_handle_set",
-          () =>
-            api.adminSetHandle(u.id, {
-              handle: handle.trim(),
-              reason: reason.trim() || undefined,
-            }),
-          () => ({ target_user_id: u.id }),
-        ),
+        api.adminSetHandle(u.id, {
+          handle: handle.trim(),
+          reason: reason.trim() || undefined,
+        }),
     },
     delete: {
       title: `Delete account ${subject}`,
@@ -664,15 +610,7 @@ function ActionDialog({
       submitVariant: "destructive" as const,
       showDuration: false,
       run: () =>
-        trackedAction(
-          "admin_user_deleted",
-          () =>
-            api.adminDeleteUser(u.id, { reason: reason.trim() || undefined }),
-          () => ({
-            target_user_id: u.id,
-            has_reason: reason.trim().length > 0,
-          }),
-        ),
+        api.adminDeleteUser(u.id, { reason: reason.trim() || undefined }),
     },
   }[state.kind]
 
@@ -698,7 +636,10 @@ function ActionDialog({
         <div className="flex flex-col gap-3">
           {state.kind === "handle" && (
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="admin-action-handle" className="text-xs text-muted-foreground">
+              <Label
+                htmlFor="admin-action-handle"
+                className="text-xs text-muted-foreground"
+              >
                 New handle
               </Label>
               <Input
@@ -713,7 +654,10 @@ function ActionDialog({
             </div>
           )}
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="admin-action-reason" className="text-xs text-muted-foreground">
+            <Label
+              htmlFor="admin-action-reason"
+              className="text-xs text-muted-foreground"
+            >
               Reason (optional)
             </Label>
             <Input
@@ -725,7 +669,10 @@ function ActionDialog({
           </div>
           {config.showDuration && (
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="admin-action-hours" className="text-xs text-muted-foreground">
+              <Label
+                htmlFor="admin-action-hours"
+                className="text-xs text-muted-foreground"
+              >
                 Duration in hours (blank = permanent)
               </Label>
               <Input
@@ -739,8 +686,15 @@ function ActionDialog({
           )}
           {state.kind === "delete" && (
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="admin-action-confirm" className="text-xs text-muted-foreground">
-                Type <code className="rounded bg-muted px-1">{deleteConfirmText}</code> to confirm
+              <Label
+                htmlFor="admin-action-confirm"
+                className="text-xs text-muted-foreground"
+              >
+                Type{" "}
+                <code className="rounded bg-muted px-1">
+                  {deleteConfirmText}
+                </code>{" "}
+                to confirm
               </Label>
               <Input
                 id="admin-action-confirm"
@@ -765,7 +719,9 @@ function ActionDialog({
             size="sm"
             variant={config.submitVariant}
             onClick={submit}
-            disabled={busy || (state.kind === "delete" && confirm !== deleteConfirmText)}
+            disabled={
+              busy || (state.kind === "delete" && confirm !== deleteConfirmText)
+            }
           >
             {busy ? "Working…" : config.submitLabel}
           </Button>
@@ -873,9 +829,7 @@ function UserDetailSheet({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1 text-sm font-semibold">
                     {u.displayName ?? u.handle ?? u.email}
-                    {u.isVerified && (
-                      <VerifiedBadge size={14} role={u.role} />
-                    )}
+                    {u.isVerified && <VerifiedBadge size={14} role={u.role} />}
                   </div>
                   {u.handle && (
                     <Link
@@ -894,7 +848,7 @@ function UserDetailSheet({
 
               {u.bio && (
                 <DetailSection label="Bio">
-                  <p className="whitespace-pre-wrap text-xs">{u.bio}</p>
+                  <p className="text-xs whitespace-pre-wrap">{u.bio}</p>
                 </DetailSection>
               )}
 
@@ -1016,9 +970,7 @@ function UserDetailSheet({
                 label={`Recent posts (${detail.recentPosts.length})`}
               >
                 {detail.recentPosts.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">
-                    No posts yet.
-                  </p>
+                  <p className="text-xs text-muted-foreground">No posts yet.</p>
                 ) : (
                   <ul className="flex flex-col gap-2">
                     {detail.recentPosts.map((p) => (

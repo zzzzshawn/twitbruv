@@ -1,4 +1,6 @@
-import { API_URL } from "./env"
+import { getTrackingIds } from "@databuddy/sdk"
+import { API_URL, MAINTENANCE_MODE } from "./env"
+import { setRuntimeMaintenance } from "./maintenance"
 import type { GithubCard } from "@workspace/github-unfurl/card"
 
 export type { GithubCard } from "@workspace/github-unfurl/card"
@@ -14,21 +16,37 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  // Build-time kill switch: refuse to even hit the network so a cached client
+  // can't keep abusing the API while we're locked down.
+  if (MAINTENANCE_MODE) {
+    throw new ApiError(503, "maintenance", "maintenance")
+  }
+  const trackingHeaders: Record<string, string> = {}
+  const { anonId, sessionId } = getTrackingIds()
+  if (anonId) trackingHeaders["X-Db-Anon-Id"] = anonId
+  if (sessionId) trackingHeaders["X-Db-Session-Id"] = sessionId
+
   const res = await fetch(`${API_URL}${path}`, {
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      ...trackingHeaders,
       ...(init?.headers ?? {}),
     },
     ...init,
   })
   if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: "unknown" }))
-    throw new ApiError(
-      res.status,
-      body.error ?? "unknown",
-      body.message ?? res.statusText
-    )
+    const raw: unknown = await res.json().catch(() => null)
+    const body =
+      raw && typeof raw === "object" && !Array.isArray(raw)
+        ? (raw as Record<string, unknown>)
+        : null
+    const code = typeof body?.error === "string" ? body.error : "unknown"
+    const messageStr = typeof body?.message === "string" ? body.message : null
+    if (res.status === 503 && code === "maintenance") {
+      setRuntimeMaintenance(true, messageStr)
+    }
+    throw new ApiError(res.status, code, messageStr ?? res.statusText)
   }
   return (await res.json()) as T
 }
@@ -413,6 +431,7 @@ export const api = {
     request<{ ok: true }>(`/api/posts/${id}/pin`, { method: "DELETE" }),
 
   adminStats: () => request<AdminStats>(`/api/admin/stats`),
+  adminOnline: () => request<AdminOnline>(`/api/admin/online`),
   adminUsers: (q?: string, cursor?: string) => {
     const params = new URLSearchParams()
     if (q) params.set("q", q)
@@ -484,6 +503,31 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify(body),
     }),
+  adminPosts: (
+    params: {
+      q?: string
+      cursor?: string
+      sort?: AdminPostSort
+      order?: "asc" | "desc"
+      type?: AdminPostType | "any"
+      visibility?: "public" | "followers" | "unlisted" | "any"
+      status?: "active" | "deleted" | "sensitive" | "any"
+    } = {}
+  ) => {
+    const sp = new URLSearchParams()
+    if (params.q) sp.set("q", params.q)
+    if (params.cursor) sp.set("cursor", params.cursor)
+    if (params.sort) sp.set("sort", params.sort)
+    if (params.order) sp.set("order", params.order)
+    if (params.type && params.type !== "any") sp.set("type", params.type)
+    if (params.visibility && params.visibility !== "any")
+      sp.set("visibility", params.visibility)
+    if (params.status && params.status !== "any")
+      sp.set("status", params.status)
+    return request<{ posts: Array<AdminPost>; nextCursor: string | null }>(
+      `/api/admin/posts${sp.toString() ? `?${sp.toString()}` : ""}`
+    )
+  },
   adminDeletePost: (
     id: string,
     body: { reason?: string; reportId?: string } = {}
@@ -526,11 +570,21 @@ export const api = {
   chessActiveGames: () =>
     request<{ games: Array<ChessGame> }>("/api/chess/active"),
   chessPendingGames: () =>
-    request<{ games: Array<{ id: string; whitePlayerId: string; blackPlayerId: string; createdAt: string; challenger: PublicUser }> }>("/api/chess/pending"),
+    request<{
+      games: Array<{
+        id: string
+        whitePlayerId: string
+        blackPlayerId: string
+        createdAt: string
+        challenger: PublicUser
+      }>
+    }>("/api/chess/pending"),
   chessAcceptGame: (id: string) =>
     request<{ game: ChessGame }>(`/api/chess/${id}/accept`, { method: "POST" }),
   chessDeclineGame: (id: string) =>
-    request<{ game: ChessGame }>(`/api/chess/${id}/decline`, { method: "POST" }),
+    request<{ game: ChessGame }>(`/api/chess/${id}/decline`, {
+      method: "POST",
+    }),
   chessLeaderboard: () =>
     request<{ leaderboard: Array<ChessStats> }>("/api/chess/leaderboard"),
   chessGame: (id: string) => request<{ game: ChessGame }>(`/api/chess/${id}`),
@@ -1060,6 +1114,53 @@ export interface AdminStats {
     actioned: number
     dismissed: number
   }
+}
+
+export interface AdminOnline {
+  count: number
+  sample: Array<{
+    id: string
+    handle: string | null
+    displayName: string | null
+    avatarUrl: string | null
+  }>
+}
+
+export type AdminPostSort =
+  | "created"
+  | "likes"
+  | "reposts"
+  | "replies"
+  | "quotes"
+  | "bookmarks"
+  | "impressions"
+
+export type AdminPostType = "original" | "reply" | "repost" | "quote"
+
+export interface AdminPost {
+  id: string
+  authorId: string
+  author: {
+    id: string
+    handle: string | null
+    displayName: string | null
+    avatarUrl: string | null
+    isVerified: boolean
+    role: "user" | "admin" | "owner"
+  } | null
+  text: string
+  postType: AdminPostType
+  visibility: "public" | "followers" | "unlisted"
+  sensitive: boolean
+  likeCount: number
+  repostCount: number
+  replyCount: number
+  quoteCount: number
+  bookmarkCount: number
+  impressionCount: number
+  editedAt: string | null
+  deletedAt: string | null
+  createdAt: string
 }
 
 export interface AdminUser {

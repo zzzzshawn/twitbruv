@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react"
-import { ChartBarIcon, ImageIcon, UsersIcon, XIcon } from "@phosphor-icons/react"
+import {
+  ChartBarIcon,
+  ImageIcon,
+  UsersIcon,
+  XIcon,
+} from "@phosphor-icons/react"
+import { toast } from "sonner"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
@@ -18,7 +24,6 @@ import {
   POLL_OPTION_MAX_LEN,
   POST_MAX_LEN,
 } from "@workspace/validators"
-import { trackedAction } from "../lib/analytics"
 import { ApiError, api } from "../lib/api"
 import { setAltText, uploadImage } from "../lib/media"
 import { getPastedImageFiles } from "../lib/clipboard-images"
@@ -102,7 +107,6 @@ export function Compose({
   const [attachments, setAttachments] = useState<Array<PendingAttachment>>([])
   const [poll, setPoll] = useState<PollDraft | null>(null)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   // Replies inherit their thread's restriction; only let the user pick on
   // top-level posts and quotes (which start a new thread).
   const [replyRestriction, setReplyRestriction] = useState<
@@ -211,7 +215,6 @@ export function Compose({
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!canSubmit) return
-    setError(null)
     setLoading(true)
     try {
       // Push alt text just before send. Best-effort — failures don't block the post itself.
@@ -232,26 +235,14 @@ export function Compose({
             allowMultiple: poll.allowMultiple,
           }
         : undefined
-      const { post } = await trackedAction(
-        "post_created",
-        () =>
-          api.createPost({
-            text: text.trim(),
-            replyToId,
-            quoteOfId,
-            mediaIds: readyMediaIds.length > 0 ? readyMediaIds : undefined,
-            poll: pollPayload,
-            replyRestriction: showReplyControl ? replyRestriction : undefined,
-          }),
-        ({ post: p }) => ({
-          post_id: p.id,
-          is_reply: !!replyToId,
-          is_quote: !!quoteOfId,
-          media_count: readyMediaIds.length,
-          char_count: text.trim().length,
-          has_poll: !!pollPayload,
-        }),
-      )
+      const { post } = await api.createPost({
+        text: text.trim(),
+        replyToId,
+        quoteOfId,
+        mediaIds: readyMediaIds.length > 0 ? readyMediaIds : undefined,
+        poll: pollPayload,
+        replyRestriction: showReplyControl ? replyRestriction : undefined,
+      })
       setText("")
       clearDraft(dKey)
       attachments.forEach((a) => URL.revokeObjectURL(a.previewUrl))
@@ -260,7 +251,7 @@ export function Compose({
       if (collapsible) setExpanded(false)
       onCreated?.(post)
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "failed to post")
+      toast.error(err instanceof ApiError ? err.message : "failed to post")
     } finally {
       setLoading(false)
     }
@@ -404,13 +395,18 @@ export function Compose({
                 </Select>
               </div>
               <div className="flex items-center gap-2">
-                <Label htmlFor="poll-multi" className="text-xs text-muted-foreground">
+                <Label
+                  htmlFor="poll-multi"
+                  className="text-xs text-muted-foreground"
+                >
                   Multiple choice
                 </Label>
                 <Switch
                   id="poll-multi"
                   checked={poll.allowMultiple}
-                  onCheckedChange={(v) => setPoll({ ...poll, allowMultiple: v })}
+                  onCheckedChange={(v) =>
+                    setPoll({ ...poll, allowMultiple: v })
+                  }
                   size="sm"
                 />
               </div>
@@ -510,12 +506,10 @@ export function Compose({
               </Button>
               {showReplyControl && (
                 <div
-                  className="flex min-w-0 max-w-[min(100%,12rem)] items-center gap-1.5"
+                  className="flex max-w-[min(100%,12rem)] min-w-0 items-center gap-1.5"
                   title="Who can reply"
                 >
-                  <UsersIcon
-                    className="size-3.5 shrink-0 text-muted-foreground"
-                  />
+                  <UsersIcon className="size-3.5 shrink-0 text-muted-foreground" />
                   <Select
                     value={replyRestriction}
                     onValueChange={(v) =>
@@ -524,13 +518,20 @@ export function Compose({
                       )
                     }
                   >
-                    <SelectTrigger size="sm" className="h-7 min-w-0 flex-1 text-xs">
+                    <SelectTrigger
+                      size="sm"
+                      className="h-7 min-w-0 flex-1 text-xs"
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="anyone">Everyone can reply</SelectItem>
-                      <SelectItem value="following">People you follow</SelectItem>
-                      <SelectItem value="mentioned">Only people you @mention</SelectItem>
+                      <SelectItem value="following">
+                        People you follow
+                      </SelectItem>
+                      <SelectItem value="mentioned">
+                        Only people you @mention
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -548,9 +549,6 @@ export function Compose({
               </span>
             </div>
             <div className="flex items-center gap-2">
-              {error && (
-                <span className="text-xs text-destructive">{error}</span>
-              )}
               <Button type="submit" disabled={!canSubmit} size="lg">
                 {loading
                   ? "Posting…"

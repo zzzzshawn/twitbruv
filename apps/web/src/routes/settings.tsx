@@ -6,7 +6,6 @@ import { Label } from "@workspace/ui/components/label"
 import { Switch } from "@workspace/ui/components/switch"
 import { updateProfileSchema } from "@workspace/validators"
 import { Textarea } from "@workspace/ui/components/textarea"
-import { trackedAction } from "../lib/analytics"
 import { ApiError, api } from "../lib/api"
 import { authClient } from "../lib/auth"
 import { useMe } from "../lib/me"
@@ -49,7 +48,8 @@ export const Route = createFileRoute("/settings")({
     const raw = search.tab
     return {
       tab:
-        typeof raw === "string" && (SETTINGS_TABS as ReadonlyArray<string>).includes(raw)
+        typeof raw === "string" &&
+        (SETTINGS_TABS as ReadonlyArray<string>).includes(raw)
           ? (raw as SettingsTab)
           : undefined,
     }
@@ -76,7 +76,10 @@ function Settings() {
     if (!session) router.navigate({ to: "/login" })
   }, [isPending, session, router])
 
-  const appHeader = useMemo(() => (!me ? null : { title: "Settings" as const }), [me])
+  const appHeader = useMemo(
+    () => (!me ? null : { title: "Settings" as const }),
+    [me]
+  )
   usePageHeader(appHeader)
 
   if (isPending || !me) {
@@ -210,11 +213,7 @@ function ProfileSection() {
       return
     }
     try {
-      const { user: next } = await trackedAction(
-        "profile_updated",
-        () => api.updateMe(parsed.data),
-        () => ({ fields: Object.keys(parsed.data).join(",") }),
-      )
+      const { user: next } = await api.updateMe(parsed.data)
       setMe(next)
       setStatus("saved")
     } catch (err) {
@@ -228,21 +227,14 @@ function ProfileSection() {
   }) {
     try {
       // api.updateMe accepts empty string to clear; null gets normalized to empty.
-      const { user } = await trackedAction(
-        "profile_updated",
-        () =>
-          api.updateMe({
-            ...(patch.avatarUrl !== undefined
-              ? { avatarUrl: patch.avatarUrl ?? "" }
-              : {}),
-            ...(patch.bannerUrl !== undefined
-              ? { bannerUrl: patch.bannerUrl ?? "" }
-              : {}),
-          }),
-        () => ({
-          fields: Object.keys(patch).join(","),
-        }),
-      )
+      const { user } = await api.updateMe({
+        ...(patch.avatarUrl !== undefined
+          ? { avatarUrl: patch.avatarUrl ?? "" }
+          : {}),
+        ...(patch.bannerUrl !== undefined
+          ? { bannerUrl: patch.bannerUrl ?? "" }
+          : {}),
+      })
       setMe(user)
     } catch (e) {
       setStatus(e instanceof ApiError ? e.message : "update failed")
@@ -267,7 +259,7 @@ function ProfileSection() {
       <form
         onSubmit={onSave}
         id="profile"
-        className="scroll-mt-4 flex flex-col gap-3 border-t border-border pt-6"
+        className="flex scroll-mt-4 flex-col gap-3 border-t border-border pt-6"
       >
         <h2 className="text-sm font-semibold">Profile details</h2>
         <div className="flex flex-col gap-1.5">
@@ -579,11 +571,7 @@ function PrivacySection() {
   async function unblock(handle: string, id: string) {
     setBusyId(id)
     try {
-      await trackedAction(
-        "user_unblocked",
-        () => api.unblock(handle),
-        () => ({ target_user_id: id, target_handle: handle }),
-      )
+      await api.unblock(handle)
       setBlocks((prev) => (prev ? prev.filter((u) => u.id !== id) : prev))
     } finally {
       setBusyId(null)
@@ -593,11 +581,7 @@ function PrivacySection() {
   async function unmute(handle: string, id: string) {
     setBusyId(id)
     try {
-      await trackedAction(
-        "user_unmuted",
-        () => api.unmute(handle),
-        () => ({ target_user_id: id, target_handle: handle }),
-      )
+      await api.unmute(handle)
       setMutes((prev) => (prev ? prev.filter((u) => u.id !== id) : prev))
     } finally {
       setBusyId(null)
@@ -837,7 +821,8 @@ function ConnectionsSection() {
     setStatus(null)
     try {
       const r = await api.connectorsGithubRefresh()
-      if (r.stale) setStatus("Refresh hit GitHub's limit — showing last good data.")
+      if (r.stale)
+        setStatus("Refresh hit GitHub's limit — showing last good data.")
       else setStatus("Refreshed.")
       await load()
     } catch (e) {
@@ -849,7 +834,11 @@ function ConnectionsSection() {
 
   async function disconnect() {
     if (busy) return
-    if (!window.confirm("Disconnect GitHub? Your contributions will be removed from your profile.")) {
+    if (
+      !window.confirm(
+        "Disconnect GitHub? Your contributions will be removed from your profile."
+      )
+    ) {
       return
     }
     setBusy("disconnect")
@@ -881,7 +870,8 @@ function ConnectionsSection() {
     <section className="space-y-4">
       <h2 className="text-sm font-semibold">Connections</h2>
       <p className="text-xs text-muted-foreground">
-        Link external accounts to enrich your profile. We never post on your behalf.
+        Link external accounts to enrich your profile. We never post on your
+        behalf.
       </p>
 
       {connected === "github" && (
@@ -899,7 +889,9 @@ function ConnectionsSection() {
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="text-sm font-semibold">GitHub</div>
-            {!state && <p className="text-xs text-muted-foreground">loading…</p>}
+            {!state && (
+              <p className="text-xs text-muted-foreground">loading…</p>
+            )}
             {state && state.configured === false && (
               <p className="text-xs text-muted-foreground">
                 The server isn't configured for GitHub connections yet.

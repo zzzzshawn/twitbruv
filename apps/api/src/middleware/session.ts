@@ -16,7 +16,22 @@ export type HonoEnv = {
 
 export function sessionMiddleware(ctx: AppContext): MiddlewareHandler<HonoEnv> {
   return async (c, next) => {
-    c.set('ctx', ctx)
+    // Bind Databuddy anonymous + session IDs from the client so server-side events
+    // are stitched to the same visitor journey in the analytics dashboard.
+    // These are analytics identity only — not trusted for auth or billing.
+    const headerOrNull = (name: string) => {
+      const value = c.req.header(name)?.trim()
+      return value || null
+    }
+    const dbIds = {
+      anonymousId: headerOrNull('X-Db-Anon-Id'),
+      sessionId: headerOrNull('X-Db-Session-Id'),
+    }
+    const requestCtx: AppContext = {
+      ...ctx,
+      track: (name, userId, properties) => ctx.track(name, userId, properties, dbIds),
+    }
+    c.set('ctx', requestCtx)
     try {
       const session = await ctx.auth.api.getSession({ headers: c.req.raw.headers })
       // Banned users get treated as logged out — no enumeration of routes that would otherwise
@@ -41,6 +56,33 @@ export function requireAuth(): MiddlewareHandler<HonoEnv> {
   }
 }
 
+// Stricter than requireAuth — also runs an authoritative ban/soft-delete/email-verified check
+// against the DB and refuses to let the request proceed unless the user has claimed a handle.
+// Used on every route where a logged-in user is "doing something" on the platform; only /api/me
+// and the handle-claim endpoint should fall back to plain requireAuth so a handleless or
+// unverified user can still read their own state, verify their email, and claim a handle.
+export function requireHandle(): MiddlewareHandler<HonoEnv> {
+  return async (c, next) => {
+    const session = c.get('session')
+    if (!session) return c.json({ error: 'unauthorized' }, 401)
+    const { db } = c.get('ctx')
+    const [user] = await db
+      .select({
+        banned: schema.users.banned,
+        deletedAt: schema.users.deletedAt,
+        handle: schema.users.handle,
+        emailVerified: schema.users.emailVerified,
+      })
+      .from(schema.users)
+      .where(eq(schema.users.id, session.user.id))
+      .limit(1)
+    if (!user || user.banned || user.deletedAt) return c.json({ error: 'banned' }, 403)
+    if (!user.emailVerified) return c.json({ error: 'email_not_verified' }, 403)
+    if (!user.handle) return c.json({ error: 'handle_required' }, 403)
+    await next()
+  }
+}
+
 // Role check goes back to the DB because better-auth's session.user surface doesn't include
 // custom fields like `role` by default. Per-request DB hit is fine — admin endpoints are low
 // volume — and it means a role change takes effect on the very next request.
@@ -50,11 +92,20 @@ export function requireRole(...roles: Array<Role>): MiddlewareHandler<HonoEnv> {
     if (!session) return c.json({ error: 'unauthorized' }, 401)
     const { db } = c.get('ctx')
     const [row] = await db
-      .select({ role: schema.users.role })
+      .select({
+        role: schema.users.role,
+        banned: schema.users.banned,
+        deletedAt: schema.users.deletedAt,
+        handle: schema.users.handle,
+        emailVerified: schema.users.emailVerified,
+      })
       .from(schema.users)
       .where(eq(schema.users.id, session.user.id))
       .limit(1)
-    const role = (row?.role ?? 'user') as Role
+    if (!row || row.banned || row.deletedAt) return c.json({ error: 'banned' }, 403)
+    if (!row.emailVerified) return c.json({ error: 'email_not_verified' }, 403)
+    if (!row.handle) return c.json({ error: 'handle_required' }, 403)
+    const role = (row.role ?? 'user') as Role
     if (!roles.includes(role)) return c.json({ error: 'forbidden' }, 403)
     // Make the looked-up role visible to handlers (e.g. admin route checks owner-only logic).
     session.user.role = role

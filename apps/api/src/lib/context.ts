@@ -9,6 +9,8 @@ import { createCache, type Cache } from './cache.ts'
 import { createPubSub, type PubSub } from './pubsub.ts'
 import { createLogger, type Logger } from './logger.ts'
 import { makeRateLimit } from '@workspace/rate-limit'
+import { createTracker, type TrackFn } from './analytics.ts'
+import { createModerator, type Moderator } from './moderation.ts'
 
 export interface AppContext {
   env: Env
@@ -22,11 +24,14 @@ export interface AppContext {
   pubsub: PubSub
   log: Logger
   rateLimit: ReturnType<typeof makeRateLimit>
+  track: TrackFn
+  moderate: Moderator
 }
 
 export async function buildContext(): Promise<AppContext> {
   const env = loadEnv()
   const db = createDb(env.DATABASE_URL)
+  const log = createLogger(env)
 
   const mailer = createMailer({
     from: env.EMAIL_FROM,
@@ -48,6 +53,17 @@ export async function buildContext(): Promise<AppContext> {
     cookieDomain: env.AUTH_COOKIE_DOMAIN,
     appName: env.APP_NAME,
     sendEmail: async ({ to, subject, template, data }) => {
+      // Dev: don't hit SMTP/Resend — print the link to the server console so the engineer can
+      // click it without running a local mail catcher. Production still goes through the mailer.
+      // Recipient is masked (`a***@domain`) so dev logs pasted into a bug report or screenshot
+      // don't leak a real address; the URL stays plaintext intentionally — clicking it is the
+      // whole point of this branch, and a redacted token can't be used to verify.
+      if (env.NODE_ENV !== 'production') {
+        const url = typeof data.url === 'string' ? data.url : null
+        const maskedTo = to.replace(/^(.).*(@.*)$/, '$1***$2')
+        log.info({ to: maskedTo, subject, template, url }, 'email_dev_console')
+        return
+      }
       await mailer.send({ to, subject, template, data: { ...data, appName: env.APP_NAME } })
     },
     ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
@@ -92,8 +108,9 @@ export async function buildContext(): Promise<AppContext> {
 
   const cache = createCache(env.REDIS_URL)
   const pubsub = createPubSub(env.REDIS_URL)
-  const log = createLogger(env)
   const rateLimit = makeRateLimit(env.REDIS_URL, log)
+  const track = createTracker(env.DATABUDDY_API_KEY, env.DATABUDDY_WEBSITE_ID, log)
+  const moderate = createModerator(env, log)
 
-  return { env, db, mailer, auth, s3, mediaEnv, boss, cache, pubsub, log, rateLimit }
+  return { env, db, mailer, auth, s3, mediaEnv, boss, cache, pubsub, log, rateLimit, track, moderate }
 }

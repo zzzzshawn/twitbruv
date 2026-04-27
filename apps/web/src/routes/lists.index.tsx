@@ -7,7 +7,6 @@ import { Label } from "@workspace/ui/components/label"
 import { Switch } from "@workspace/ui/components/switch"
 import { Textarea } from "@workspace/ui/components/textarea"
 import { LIST_SLUG_RE, LIST_TITLE_MAX } from "@workspace/validators"
-import { trackedAction } from "../lib/analytics"
 import { ApiError, api } from "../lib/api"
 import { authClient } from "../lib/auth"
 import { usePageHeader } from "../components/app-page-header"
@@ -95,7 +94,11 @@ function ListsIndex() {
                   <div className="flex items-center justify-between">
                     <h2 className="flex items-center gap-1.5 text-sm font-semibold">
                       {list.pinnedAt && (
-                        <PushPinIcon size={12} weight="fill" className="text-primary" />
+                        <PushPinIcon
+                          size={12}
+                          weight="fill"
+                          className="text-primary"
+                        />
                       )}
                       {list.title}
                     </h2>
@@ -139,7 +142,11 @@ function ListsIndex() {
                   }}
                 >
                   {list.pinnedAt ? (
-                    <PushPinIcon size={14} weight="fill" className="text-primary" />
+                    <PushPinIcon
+                      size={14}
+                      weight="fill"
+                      className="text-primary"
+                    />
                   ) : (
                     <PushPinIcon size={14} />
                   )}
@@ -186,17 +193,12 @@ function CreateListForm({
     setBusy(true)
     setError(null)
     try {
-      await trackedAction(
-        "list_created",
-        () =>
-          api.createList({
-            slug: effectiveSlug,
-            title: title.trim(),
-            description: description.trim() || undefined,
-            isPrivate,
-          }),
-        () => ({ slug: effectiveSlug, is_private: isPrivate }),
-      )
+      await api.createList({
+        slug: effectiveSlug,
+        title: title.trim(),
+        description: description.trim() || undefined,
+        isPrivate,
+      })
       await onCreated()
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : "create failed"
@@ -250,7 +252,10 @@ function CreateListForm({
           />
         </div>
         <div className="flex items-center justify-between gap-2 pt-0.5">
-          <Label htmlFor="list-private" className="text-xs text-muted-foreground">
+          <Label
+            htmlFor="list-private"
+            className="text-xs text-muted-foreground"
+          >
             Private list
           </Label>
           <Switch

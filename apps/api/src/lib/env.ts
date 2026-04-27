@@ -107,6 +107,41 @@ const envSchema = z.object({
     .enum(["true", "false"])
     .default("false")
     .transform((v) => v === "true"),
+
+  // Hard kill switch. When true, every request (except /healthz and /readyz) is short-circuited
+  // with a 503 + `{ error: "maintenance" }` so the app can be locked down at runtime without a
+  // redeploy when abuse is in progress. The client detects the 503 and renders a maintenance
+  // screen over the whole UI.
+  MAINTENANCE_MODE: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((v) => v === "true"),
+  // Human-readable banner shown on the maintenance screen. Kept on the server so it can be
+  // updated without a client redeploy.
+  MAINTENANCE_MESSAGE: z
+    .string()
+    .default("We're temporarily down for maintenance. Check back shortly."),
+
+  // Databuddy server-side analytics API key (format: dbdy_xxx). Optional — if unset,
+  // server-side event tracking is silently disabled.
+  DATABUDDY_API_KEY: z.string().optional(),
+  // Databuddy website/client ID — must match the VITE_PUBLIC_DATABUDDY_CLIENT_ID used
+  // on the frontend so server-side events are scoped to the same website.
+  DATABUDDY_WEBSITE_ID: z.string().optional(),
+
+  // OpenAI API key for the /v1/moderations endpoint used to pre-publish-screen posts.
+  // Optional — when unset, moderation is disabled and every post is accepted (with a
+  // one-time warning at boot). Network errors / timeouts also fail open. Whitespace
+  // is trimmed and empty strings are coerced to undefined so a misformatted env var
+  // (e.g. `OPENAI_API_KEY= `) is treated as unset rather than a bogus key.
+  OPENAI_API_KEY: z.preprocess(
+    (v) => {
+      if (typeof v !== "string") return v
+      const trimmed = v.trim()
+      return trimmed.length === 0 ? undefined : trimmed
+    },
+    z.string().optional()
+  ),
 })
 
 export type Env = z.infer<typeof envSchema>

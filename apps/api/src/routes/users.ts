@@ -3,7 +3,7 @@ import { and, desc, eq, isNull, lt, sql } from '@workspace/db'
 import { schema } from '@workspace/db'
 import { assetUrl } from '@workspace/media/s3'
 import type { HonoEnv } from '../middleware/session.ts'
-import { requireAuth } from '../middleware/session.ts'
+import { requireHandle } from '../middleware/session.ts'
 import { toPostDto, type PostDto } from '../lib/post-dto.ts'
 import { loadViewerFlags } from '../lib/viewer-flags.ts'
 import { loadPostMedia } from '../lib/post-media.ts'
@@ -421,7 +421,7 @@ usersRoute.get('/:handle/following', async (c) => {
 })
 
 // Follow / unfollow.
-usersRoute.post('/:handle/follow', requireAuth(), async (c) => {
+usersRoute.post('/:handle/follow', requireHandle(), async (c) => {
   const session = c.get('session')!
   const { db, cache, rateLimit } = c.get('ctx')
   await rateLimit(c, 'users.follow')
@@ -449,10 +449,11 @@ usersRoute.post('/:handle/follow', requireAuth(), async (c) => {
     cache.del(homeFeedCacheKey(session.user.id)),
     invalidateUnreadCounts(cache, notified),
   ])
+  c.get('ctx').track('user_followed', session.user.id)
   return c.json({ ok: true })
 })
 
-usersRoute.delete('/:handle/follow', requireAuth(), async (c) => {
+usersRoute.delete('/:handle/follow', requireHandle(), async (c) => {
   const session = c.get('session')!
   const { db, cache } = c.get('ctx')
   const user = await resolveHandle(db, c.req.param('handle'))
@@ -463,11 +464,12 @@ usersRoute.delete('/:handle/follow', requireAuth(), async (c) => {
     .where(and(eq(schema.follows.followerId, session.user.id), eq(schema.follows.followeeId, user.id)))
 
   await cache.del(homeFeedCacheKey(session.user.id))
+  c.get('ctx').track('user_unfollowed', session.user.id)
   return c.json({ ok: true })
 })
 
 // Block / unblock (two-way hide). Also removes any follow edges in either direction.
-usersRoute.post('/:handle/block', requireAuth(), async (c) => {
+usersRoute.post('/:handle/block', requireHandle(), async (c) => {
   const session = c.get('session')!
   const { db, cache, rateLimit } = c.get('ctx')
   await rateLimit(c, 'users.block')
@@ -489,10 +491,11 @@ usersRoute.post('/:handle/block', requireAuth(), async (c) => {
   // Both sides' feeds change — the blocker stops seeing the target, and the target stops
   // seeing the blocker. Drop both cached feeds.
   await cache.del(homeFeedCacheKey(session.user.id), homeFeedCacheKey(user.id))
+  c.get('ctx').track('user_blocked', session.user.id)
   return c.json({ ok: true })
 })
 
-usersRoute.delete('/:handle/block', requireAuth(), async (c) => {
+usersRoute.delete('/:handle/block', requireHandle(), async (c) => {
   const session = c.get('session')!
   const { db, cache } = c.get('ctx')
   const user = await resolveHandle(db, c.req.param('handle'))
@@ -503,11 +506,12 @@ usersRoute.delete('/:handle/block', requireAuth(), async (c) => {
     .where(and(eq(schema.blocks.blockerId, session.user.id), eq(schema.blocks.blockedId, user.id)))
 
   await cache.del(homeFeedCacheKey(session.user.id), homeFeedCacheKey(user.id))
+  c.get('ctx').track('user_unblocked', session.user.id)
   return c.json({ ok: true })
 })
 
 // Mute / unmute (one-way).
-usersRoute.post('/:handle/mute', requireAuth(), async (c) => {
+usersRoute.post('/:handle/mute', requireHandle(), async (c) => {
   const session = c.get('session')!
   const { db, cache, rateLimit } = c.get('ctx')
   await rateLimit(c, 'users.mute')
@@ -527,10 +531,11 @@ usersRoute.post('/:handle/mute', requireAuth(), async (c) => {
     })
 
   await cache.del(homeFeedCacheKey(session.user.id))
+  c.get('ctx').track('user_muted', session.user.id)
   return c.json({ ok: true })
 })
 
-usersRoute.delete('/:handle/mute', requireAuth(), async (c) => {
+usersRoute.delete('/:handle/mute', requireHandle(), async (c) => {
   const session = c.get('session')!
   const { db, cache } = c.get('ctx')
   const user = await resolveHandle(db, c.req.param('handle'))
@@ -541,6 +546,7 @@ usersRoute.delete('/:handle/mute', requireAuth(), async (c) => {
     .where(and(eq(schema.mutes.muterId, session.user.id), eq(schema.mutes.mutedId, user.id)))
 
   await cache.del(homeFeedCacheKey(session.user.id))
+  c.get('ctx').track('user_unmuted', session.user.id)
   return c.json({ ok: true })
 })
 

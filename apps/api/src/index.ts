@@ -71,12 +71,25 @@ app.use(
   cors({
     origin: ctx.env.AUTH_TRUSTED_ORIGINS,
     credentials: true,
-    allowHeaders: ['Content-Type', 'Authorization'],
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Db-Anon-Id', 'X-Db-Session-Id'],
     allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     exposeHeaders: ['Set-Cookie'],
     maxAge: 86400,
   }),
 )
+// Hard kill switch. Runs after CORS so the 503 response carries the right CORS headers and
+// the browser can read the body. Health probes bypass so orchestrators don't route the
+// instance out while we're locking the app down.
+app.use('*', async (c, next) => {
+  if (!ctx.env.MAINTENANCE_MODE) return next()
+  const path = c.req.path
+  if (path === '/healthz' || path === '/readyz') return next()
+  c.header('Retry-After', '300')
+  return c.json(
+    { error: 'maintenance', message: ctx.env.MAINTENANCE_MESSAGE },
+    503,
+  )
+})
 app.use('*', sessionMiddleware(ctx))
 app.use('*', requireSameOrigin(ctx.env.AUTH_TRUSTED_ORIGINS))
 

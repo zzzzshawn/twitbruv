@@ -7,7 +7,7 @@ import {
   SCHEDULE_MAX_LEAD_DAYS,
 } from '@workspace/validators'
 import { handleRateLimitError } from '@workspace/rate-limit'
-import { requireAuth, type HonoEnv } from '../middleware/session.ts'
+import { requireHandle, type HonoEnv } from '../middleware/session.ts'
 import { linkHashtags } from '../lib/hashtags.ts'
 import { linkMentions } from '../lib/mentions.ts'
 import { notify } from '../lib/notify.ts'
@@ -15,7 +15,7 @@ import { homeFeedCacheKey } from './feed.ts'
 
 export const scheduledPostsRoute = new Hono<HonoEnv>()
 
-scheduledPostsRoute.use('*', requireAuth())
+scheduledPostsRoute.use('*', requireHandle())
 
 // List the viewer's drafts and/or scheduled posts.
 // ?kind=draft → only drafts (scheduledFor IS NULL)
@@ -140,6 +140,7 @@ scheduledPostsRoute.post('/:id/publish', async (c) => {
   if (!result.ok) return c.json({ error: result.error }, result.status as never)
 
   await cache.del(homeFeedCacheKey(session.user.id))
+  c.get('ctx').track('scheduled_post_published', session.user.id)
   return c.json({ postId: result.postId })
 })
 
