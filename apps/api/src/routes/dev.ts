@@ -197,16 +197,73 @@ devRoute.post("/seed", requireAuth(), async (c) => {
 	const r8 = await createPost({ authorId: eve, text: "we wrote a codemod that converts the JSON config to CLI flags. runs in about 2 seconds.", minutesAgo: 21, replyToId: r7, rootId: p8, conversationDepth: 2 })
 	await createPost({ authorId: bob, text: "this is the way. config files are where developer experience goes to die.", minutesAgo: 21, replyToId: r8, rootId: p8, conversationDepth: 3 })
 
+	// ─── 5b. Deep thread: design systems debate ───────────────────────
+
+	const dt1 = await createPost({ authorId: bob, text: "controversial opinion: design tokens are overengineered for 90% of products. just use CSS variables and move on with your life.", minutesAgo: 180 })
+	const dt2 = await createPost({ authorId: alice, text: "hard disagree. design tokens aren't about the tech — they're about having a shared language between design and engineering. CSS variables don't give you that.", minutesAgo: 178, replyToId: dt1, rootId: dt1, conversationDepth: 1 })
+	const dt3 = await createPost({ authorId: carol, text: "alice is right. we tried the \"just CSS variables\" approach and ended up with 400+ variables that nobody could find or remember. tokens with proper naming = searchability.", minutesAgo: 175, replyToId: dt2, rootId: dt1, conversationDepth: 2 })
+	const dt4 = await createPost({ authorId: bob, text: "ok but how many of those 400 variables did you actually need? sounds like the problem was not having a system, not the lack of tokens.", minutesAgo: 172, replyToId: dt3, rootId: dt1, conversationDepth: 3 })
+	const dt5 = await createPost({ authorId: eve, text: "I think the real answer is: it depends on your team size. 2-3 engineers? CSS variables are fine. 10+ engineers across multiple platforms? you need tokens.", minutesAgo: 170, replyToId: dt4, rootId: dt1, conversationDepth: 4 })
+	const dt6 = await createPost({ authorId: alice, text: "this. we have web, iOS, and Android all consuming the same token set. try doing that with CSS variables.", minutesAgo: 168, replyToId: dt5, rootId: dt1, conversationDepth: 5 })
+	const dt7 = await createPost({ authorId: dave, text: "just use tailwind", minutesAgo: 167, replyToId: dt6, rootId: dt1, conversationDepth: 6 })
+	const dt8 = await createPost({ authorId: bob, text: "lmao dave with the nuclear take", minutesAgo: 166, replyToId: dt7, rootId: dt1, conversationDepth: 7 })
+	await createPost({ authorId: carol, text: "dave woke up and chose violence today", minutesAgo: 165, replyToId: dt7, rootId: dt1, conversationDepth: 7 })
+
+	// Branch off dt2 — side discussion about naming conventions
+	const dt_b1 = await createPost({ authorId: eve, text: "the naming part is actually the hardest part. do you go semantic (color-primary) or descriptive (blue-500)?", minutesAgo: 176, replyToId: dt2, rootId: dt1, conversationDepth: 2 })
+	const dt_b2 = await createPost({ authorId: alice, text: "semantic for anything consumer-facing. descriptive for the scale definitions. so you have blue-500 in your primitives and color-primary maps to it.", minutesAgo: 174, replyToId: dt_b1, rootId: dt1, conversationDepth: 3 })
+	await createPost({ authorId: bob, text: "we do the same. two layers: raw scale + semantic aliases. works well across themes too.", minutesAgo: 173, replyToId: dt_b2, rootId: dt1, conversationDepth: 4 })
+	await createPost({ authorId: carol, text: "this is exactly how we set it up. changed our lives. dark mode went from 2 weeks to 2 hours.", minutesAgo: 171, replyToId: dt_b2, rootId: dt1, conversationDepth: 4 })
+
+	// Branch off dt1 — different angle
+	await createPost({ authorId: dave, text: "genuinely curious — what do you use for your design system?", minutesAgo: 179, replyToId: dt1, rootId: dt1, conversationDepth: 1 })
+
+	// ─── 5c. Deep thread: deployment horror story ──────────────────────
+
+	const dp1 = await createPost({ authorId: eve, text: "storytime: our deploy pipeline went down at 2am. what followed was the most chaotic 4 hours of my career. thread 🧵", minutesAgo: 300 })
+	const dp2 = await createPost({ authorId: eve, text: "so our CD system uses a custom Kubernetes operator. turns out someone merged a PR that changed the CRD schema without updating the operator. deployments just... stopped.", minutesAgo: 298, replyToId: dp1, rootId: dp1, conversationDepth: 1 })
+	const dp3 = await createPost({ authorId: eve, text: "we didn't notice for 3 hours because the monitoring was also deployed via the same pipeline. monitoring was stuck on the old version. no alerts fired.", minutesAgo: 296, replyToId: dp2, rootId: dp1, conversationDepth: 2 })
+	const dp4 = await createPost({ authorId: eve, text: "by the time we figured it out, there were 47 queued deployments. rolling them all forward at once caused a cascading OOM across the cluster.", minutesAgo: 294, replyToId: dp3, rootId: dp1, conversationDepth: 3 })
+	const dp5 = await createPost({ authorId: eve, text: "lesson learned: never deploy your monitoring through the same pipeline as your application. and always have a manual escape hatch.", minutesAgo: 292, replyToId: dp4, rootId: dp1, conversationDepth: 4 })
+	await createPost({ authorId: bob, text: "we had almost the exact same thing happen. our fix was a simple cron job that checks if deployments are stuck and pages on-call. saved us twice since.", minutesAgo: 290, replyToId: dp5, rootId: dp1, conversationDepth: 5 })
+	await createPost({ authorId: alice, text: "the monitoring monitoring the monitoring. it's turtles all the way down.", minutesAgo: 289, replyToId: dp5, rootId: dp1, conversationDepth: 5 })
+
+	// Branch off dp2 — people sharing similar experiences
+	const dp_b1 = await createPost({ authorId: bob, text: "CRD schema changes are terrifying. we now have a CI check that diffs the CRD and blocks the PR if the operator isn't updated too.", minutesAgo: 297, replyToId: dp2, rootId: dp1, conversationDepth: 2 })
+	await createPost({ authorId: eve, text: "that's smart. we've added something similar since. also made the operator backwards compatible so old CRDs still work.", minutesAgo: 295, replyToId: dp_b1, rootId: dp1, conversationDepth: 3 })
+
+	// Branch off dp3 — discussion about monitoring
+	const dp_b2 = await createPost({ authorId: carol, text: "this is why we run our monitoring completely separately. different cluster, different cloud account, different deploy pipeline.", minutesAgo: 295, replyToId: dp3, rootId: dp1, conversationDepth: 3 })
+	await createPost({ authorId: alice, text: "same. and we have a dead-simple health check that runs from a lambda every 30 seconds. if it doesn't get a 200 from the monitoring API, it pages.", minutesAgo: 293, replyToId: dp_b2, rootId: dp1, conversationDepth: 4 })
+	await createPost({ authorId: dave, text: "we just use uptime robot for this lol", minutesAgo: 291, replyToId: dp_b2, rootId: dp1, conversationDepth: 4 })
+
+	// ─── 5d. Thread: quick back-and-forth ──────────────────────────────
+
+	const qb1 = await createPost({ authorId: carol, text: "what's everyone's go-to monospace font for coding? I've been using JetBrains Mono but thinking about switching.", minutesAgo: 100 })
+	const qb2 = await createPost({ authorId: alice, text: "Berkeley Mono. worth every penny.", minutesAgo: 99, replyToId: qb1, rootId: qb1, conversationDepth: 1 })
+	const qb3 = await createPost({ authorId: bob, text: "Fira Code. free, ligatures are nice, and it's been reliable for years.", minutesAgo: 98, replyToId: qb1, rootId: qb1, conversationDepth: 1 })
+	const qb4 = await createPost({ authorId: dave, text: "comic sans", minutesAgo: 97, replyToId: qb1, rootId: qb1, conversationDepth: 1 })
+	await createPost({ authorId: eve, text: "Monaspace Neon. the texture healing feature is genuinely useful.", minutesAgo: 96, replyToId: qb1, rootId: qb1, conversationDepth: 1 })
+	await createPost({ authorId: carol, text: "dave I'm going to block you", minutesAgo: 96, replyToId: qb4, rootId: qb1, conversationDepth: 2 })
+	await createPost({ authorId: dave, text: "you joke but Comic Mono (the monospace fork) is actually surprisingly readable", minutesAgo: 95, replyToId: qb4, rootId: qb1, conversationDepth: 2 })
+	await createPost({ authorId: alice, text: "I tried it ironically and now I actually like it. what is happening to me.", minutesAgo: 94, replyToId: qb4, rootId: qb1, conversationDepth: 2 })
+	await createPost({ authorId: carol, text: "ooh I hadn't seen Berkeley Mono. that italic is gorgeous.", minutesAgo: 98, replyToId: qb2, rootId: qb1, conversationDepth: 2 })
+	await createPost({ authorId: bob, text: "tried Monaspace — the argon variant with the wider spacing is really nice for presentations.", minutesAgo: 93, replyToId: qb1, rootId: qb1, conversationDepth: 1 })
+
 	// ─── 6. Reposts ─────────────────────────────────────────────────────
 
 	await createPost({ authorId: bob, text: "", minutesAgo: 1, repostOfId: p1 })
 	await createPost({ authorId: eve, text: "", minutesAgo: 7, repostOfId: p3 })
 	await createPost({ authorId: dave, text: "", minutesAgo: 4, repostOfId: p2 })
+	await createPost({ authorId: carol, text: "", minutesAgo: 160, repostOfId: dt1 })
+	await createPost({ authorId: alice, text: "", minutesAgo: 280, repostOfId: dp1 })
 
 	// ─── 7. Quote tweets ────────────────────────────────────────────────
 
 	await createPost({ authorId: carol, text: "this is why I always say: design the API first, build the implementation second. if the API feels wrong, the implementation will never feel right.", minutesAgo: 0, quoteOfId: p1 })
 	await createPost({ authorId: alice, text: "this is exactly the kind of bold product decision more tools need. flags > files when the option count is small.", minutesAgo: 24, quoteOfId: p8 })
+	await createPost({ authorId: bob, text: "required reading for anyone running infrastructure. the monitoring part is chef's kiss.", minutesAgo: 285, quoteOfId: dp1 })
+	await createPost({ authorId: dave, text: "the correct answer is obviously comic sans", minutesAgo: 95, quoteOfId: qb1 })
 
 	// ─── 8. Posts for the current user ──────────────────────────────────
 
@@ -234,6 +291,17 @@ devRoute.post("/seed", requireAuth(), async (c) => {
 		{ userId: alice, postId: cu1 }, { userId: bob, postId: cu1 }, { userId: carol, postId: cu1 },
 		// Current user likes some posts
 		{ userId: currentUserId, postId: p1 }, { userId: currentUserId, postId: p5 }, { userId: currentUserId, postId: p14 },
+		// Likes on deep threads
+		{ userId: alice, postId: dt1 }, { userId: carol, postId: dt1 }, { userId: eve, postId: dt1 },
+		{ userId: bob, postId: dt2 }, { userId: carol, postId: dt3 }, { userId: eve, postId: dt4 },
+		{ userId: alice, postId: dt5 }, { userId: bob, postId: dt5 }, { userId: carol, postId: dt5 },
+		{ userId: alice, postId: dt7 }, { userId: bob, postId: dt7 }, { userId: carol, postId: dt7 }, { userId: eve, postId: dt7 },
+		{ userId: bob, postId: dt8 },
+		{ userId: alice, postId: dp1 }, { userId: bob, postId: dp1 }, { userId: carol, postId: dp1 }, { userId: dave, postId: dp1 },
+		{ userId: alice, postId: dp5 }, { userId: bob, postId: dp5 },
+		{ userId: alice, postId: qb1 }, { userId: bob, postId: qb1 }, { userId: eve, postId: qb1 },
+		{ userId: carol, postId: qb4 }, { userId: eve, postId: qb4 },
+		{ userId: currentUserId, postId: dt1 }, { userId: currentUserId, postId: dp1 }, { userId: currentUserId, postId: qb1 },
 	]
 
 	await db.insert(schema.likes).values(likePairs).onConflictDoNothing()
@@ -267,11 +335,11 @@ devRoute.post("/seed", requireAuth(), async (c) => {
 		counts: {
 			users: seededUsers.length,
 			images: mediaIds.length,
-			posts: 16,
+			posts: "~50 top-level + threads",
 			currentUserPosts: 3,
-			replies: 9,
-			reposts: 3,
-			quoteTweets: 2,
+			threads: "4 deep threads with branching",
+			reposts: 5,
+			quoteTweets: 4,
 			likes: likePairs.length,
 			follows: followPairs.length,
 		},
