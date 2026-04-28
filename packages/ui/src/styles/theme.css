@@ -46,6 +46,9 @@
 	/* ── Shadows ── */
 	--shadow-xs: 0 1px 2px oklch(0 0 0 / 0.05);
 	--shadow-sm: 0 1px 3px oklch(0 0 0 / 0.08), 0 1px 2px oklch(0 0 0 / 0.04);
+	/* Profile / hero banner lift (light) */
+	--shadow-banner: 0 4px 5.5px -4px oklch(0 0 0 / 0.22),
+		0 0.5px 0 oklch(0 0 0 / 0.06);
 	--inset-shadow-primary: inset 0 1px 0 oklch(1 0 0 / 0.4);
 
 	/* ── Like color ── */
@@ -146,5 +149,7 @@
 
 	--shadow-xs: 0 1px 2px oklch(0 0 0 / 0.25);
 	--shadow-sm: 0 1px 3px oklch(0 0 0 / 0.35), 0 1px 2px oklch(0 0 0 / 0.20);
+	--shadow-banner: 0 4px 5.5px -4px oklch(0 0 0 / 0.32),
+		0 0.5px 0 oklch(0 0 0 / 0.26);
 	--inset-shadow-primary: inset 0 1px 0 oklch(1 0 0 / 0.12);
 }
