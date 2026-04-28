@@ -12,6 +12,7 @@ import { ImageLightbox } from "../components/image-lightbox"
 import { RichText } from "../components/rich-text"
 import { MacfolioCardFromText } from "../components/macfolio-card"
 import { GithubBlock } from "../components/github-block"
+import { MetaPill } from "../components/meta-pill"
 import { VerifiedBadge } from "../components/verified-badge"
 import {
   NotFoundPanel,
@@ -60,7 +61,7 @@ export const Route = createFileRoute("/$handle/")({
     const name = user.displayName || `@${user.handle}`
     const description = clipDescription(
       user.bio ||
-        `@${user.handle} on ${APP_NAME} — ${user.counts.followers} followers, ${user.counts.posts} posts.`
+      `@${user.handle} on ${APP_NAME} — ${user.counts.followers} followers, ${user.counts.posts} posts.`
     )
     return {
       meta: buildSeoMeta({
@@ -139,105 +140,122 @@ function Profile() {
     .toUpperCase()
 
   return (
-    <>
+    <section className="relative">
       <ImageLightbox
         images={user.bannerUrl ? [{ src: user.bannerUrl }] : []}
         title={`${displayName}'s banner`}
         disabled={!user.bannerUrl}
-        className="block w-full overflow-hidden rounded-b-2xl shadow-[0_12px_40px_-16px_rgba(0,0,0,0.22)] dark:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)]"
+        className="block w-full rounded-b-2xl "
       >
-        <div className="bg-muted h-52 w-full">
+        <div className="bg-muted h-52 w-full rounded-b-2xl shadow-banner">
           {user.bannerUrl && (
             <img
               src={user.bannerUrl}
               alt=""
-              className="h-full w-full object-cover"
+              className="h-full w-full object-cover rounded-b-2xl "
             />
           )}
         </div>
       </ImageLightbox>
       <div className="">
-        <div className="bg-card/75 dark:bg-card/35 relative z-1 -mt-8 rounded-2xl p-5 shadow-sm ring-black/4 backdrop-blur-md dark:ring-white/6">
+        <div className="bg-card/75 dark:bg-card/35 relative z-1 -mt-8 rounded-2xl p-5">
           <div className="-mt-16 flex items-end justify-between gap-4">
             <ImageLightbox
               images={user.avatarUrl ? [{ src: user.avatarUrl }] : []}
               title={`${displayName}'s avatar`}
               disabled={!user.avatarUrl}
             >
-              <Avatar
-                initial={initial}
-                src={user.avatarUrl}
-                size="xl"
-                className="size-28"
-              />
-            </ImageLightbox>
-            <div className="pb-2">
-              {me?.id === user.id ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  nativeButton={false}
-                  render={<Link to="/settings" hash="profile" />}
-                >
-                  Edit profile
-                </Button>
-              ) : (
-                <ProfileActions
-                  profile={user}
-                  onChange={(next) => qc.setQueryData(qk.user(handle), next)}
+              <div className="p-1 bg-base-1 rounded-full ">
+                <Avatar
+                  initial={initial}
+                  src={user.avatarUrl}
+                  size="xl"
+                  className="size-28"
                 />
-              )}
-            </div>
+              </div>
+            </ImageLightbox>
+            {me?.id === user.id ? (
+              <Button
+                size="sm"
+                variant="primary"
+                nativeButton={false}
+                render={<Link to="/settings" hash="profile" />}
+              >
+                Edit profile
+              </Button>
+            ) : (
+              <ProfileActions
+                profile={user}
+                onChange={(next) => qc.setQueryData(qk.user(handle), next)}
+              />
+            )}
           </div>
           <div className="mt-1">
             <h1 className="flex items-center gap-1.5 text-2xl font-bold tracking-tight">
               {displayName}
               {user.isVerified && <VerifiedBadge size={22} role={user.role} />}
             </h1>
-            <p className="text-muted-foreground mt-0.5 text-sm">
+            <p className="text-secondary text-sm">
               @{user.handle}
             </p>
           </div>
           {user.bio && (
-            <p className="mt-4 text-[15px] leading-relaxed whitespace-pre-wrap">
+            <p className="mt-3 text-[15px] leading-relaxed whitespace-pre-wrap">
               <RichText text={user.bio} />
             </p>
           )}
           {user.bio && <MacfolioCardFromText text={user.bio} />}
-          <div className="text-muted-foreground mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px]">
+          <div className="text-muted-foreground mt-3 flex flex-wrap items-center gap-x-2 gap-y-2 text-[13px]">
             {user.location && (
-              <span className="bg-muted/40 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1">
-                <MapPinIcon className="size-3.5 shrink-0" aria-hidden />
+              <MetaPill
+                icon={
+                  <MapPinIcon
+                    strokeWidth={2}
+                    className="mt-px size-3.5 shrink-0"
+                    aria-hidden
+                  />
+                }
+              >
                 {user.location}
-              </span>
+              </MetaPill>
             )}
             {user.websiteUrl && (
-              <a
+              <MetaPill
                 href={user.websiteUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="bg-muted/40 hover:bg-muted/60 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-primary no-underline transition-colors hover:underline"
+                icon={
+                  <LinkIcon
+                    strokeWidth={2}
+                    className="size-3.5 shrink-0"
+                    aria-hidden
+                  />
+                }
               >
-                <LinkIcon className="size-3.5 shrink-0" aria-hidden />
                 {user.websiteUrl.replace(/^https?:\/\//, "")}
-              </a>
+              </MetaPill>
             )}
-            <span className="bg-muted/40 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1">
-              <CalendarIcon className="size-3.5 shrink-0" aria-hidden />
+            <MetaPill
+              icon={
+                <CalendarIcon
+                  strokeWidth={2}
+                  className="size-3.5 shrink-0"
+                  aria-hidden
+                />
+              }
+            >
               Joined{" "}
               {new Intl.DateTimeFormat(undefined, {
                 month: "long",
                 year: "numeric",
               }).format(new Date(user.createdAt))}
-            </span>
+            </MetaPill>
           </div>
-          <div className="mt-4 flex flex-wrap items-center gap-2">
+          <div className="mt-3 px-2.5 flex flex-wrap items-center gap-3">
             {user.handle && (
               <>
                 <Link
                   to="/$handle/following"
                   params={{ handle: user.handle }}
-                  className="bg-muted/45 hover:bg-muted/75 text-foreground rounded-full px-3.5 py-1.5 text-sm no-underline transition-colors"
+                  className="bg-muted/45 hover:bg-muted/75 text-foreground rounded-full py-1.5 text-sm no-underline transition-colors"
                 >
                   <span className="font-semibold tabular-nums">
                     {user.counts.following}
@@ -247,7 +265,7 @@ function Profile() {
                 <Link
                   to="/$handle/followers"
                   params={{ handle: user.handle }}
-                  className="bg-muted/45 hover:bg-muted/75 text-foreground rounded-full px-3.5 py-1.5 text-sm no-underline transition-colors"
+                  className="bg-muted/45 hover:bg-muted/75 text-foreground rounded-full py-1.5 text-sm no-underline transition-colors"
                 >
                   <span className="font-semibold tabular-nums">
                     {user.counts.followers}
@@ -256,7 +274,7 @@ function Profile() {
                 </Link>
               </>
             )}
-            <span className="bg-muted/45 text-foreground rounded-full px-3.5 py-1.5 text-sm">
+            <span className="bg-muted/45 text-foreground rounded-full py-1.5 text-sm">
               <span className="font-semibold tabular-nums">
                 {user.counts.posts}
               </span>{" "}
@@ -267,7 +285,7 @@ function Profile() {
       </div>
       {user.handle && <GithubBlock handle={user.handle} />}
       {user.handle && <ProfileLists handle={user.handle} />}
-      <div className="border-border border-t">
+      <div className="mt-1.5">
         <Feed
           queryKey={qk.userPosts(handle)}
           load={load}
@@ -280,7 +298,7 @@ function Profile() {
           }
         />
       </div>
-    </>
+    </section>
   )
 }
 
