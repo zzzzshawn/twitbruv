@@ -120,9 +120,11 @@ function Analytics() {
   })
 
   const error =
-    overviewErr instanceof Error ? overviewErr.message : overviewErr
-      ? "failed to load"
-      : null
+    overviewErr instanceof Error
+      ? overviewErr.message
+      : overviewErr
+        ? "failed to load"
+        : null
 
   const onDays = useCallback((v: string | null) => {
     if (v == null) return
@@ -154,16 +156,12 @@ function Analytics() {
 
   return (
     <PageFrame>
-      <main>
-        {error && <PageError message={error} />}
-        {overviewPending && !overview && !error && (
-          <PageLoading label="Loading…" />
-        )}
+      {error && <PageError message={error} />}
+      {overviewPending && !overview && !error && (
+        <PageLoading label="Loading…" />
+      )}
 
-        {overview ? (
-          <AnalyticsLoaded data={overview} days={days} />
-        ) : null}
-      </main>
+      {overview ? <AnalyticsLoaded data={overview} days={days} /> : null}
     </PageFrame>
   )
 }
@@ -246,20 +244,20 @@ function AnalyticsLoaded({
 
       <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Stat
-            icon={<EyeIcon className="size-[18px]" />}
-            label="Impressions"
+          icon={<EyeIcon className="size-[18px]" />}
+          label="Impressions"
           value={data.totals.impressions}
           hint="Feed or profile surfaces of your posts (client-reported)"
         />
         <Stat
-            icon={<BoltIcon className="size-[18px]" />}
-            label="Engagements"
+          icon={<BoltIcon className="size-[18px]" />}
+          label="Engagements"
           value={data.totals.engagements}
           hint="Likes, reposts, replies, bookmarks, quotes on your posts"
         />
         <Stat
-            icon={<ArrowTrendingUpIcon className="size-[18px]" />}
-            label="Engagement rate"
+          icon={<ArrowTrendingUpIcon className="size-[18px]" />}
+          label="Engagement rate"
           value={`${(data.totals.engagementRate * 100).toFixed(1)}%`}
           hint={
             data.totals.impressions === 0
@@ -398,9 +396,7 @@ function SnapshotCard({
       <div className="min-w-0">
         <div className="text-xs text-tertiary">{label}</div>
         <div className="mt-0.5 text-xl font-semibold tabular-nums">{value}</div>
-        <p className="mt-1 text-[11px] leading-snug text-tertiary">
-          {hint}
-        </p>
+        <p className="mt-1 text-[11px] leading-snug text-tertiary">{hint}</p>
       </div>
     </div>
   )
@@ -462,7 +458,7 @@ function BreakdownRow({
         </span>
         <div className="h-1 w-full overflow-hidden rounded-full bg-base-2 sm:max-w-[12rem]">
           <div
-            className="h-full rounded-full bg-primary transition-[width]"
+            className="bg-primary h-full rounded-full transition-[width]"
             style={{ width: `${Math.min(100, Math.max(0, pct))}%` }}
           />
         </div>

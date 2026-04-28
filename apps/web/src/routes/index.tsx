@@ -6,10 +6,11 @@ import {
 } from "@tanstack/react-router"
 import { useCallback, useState } from "react"
 import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@workspace/ui/components/alert"
+  IdentificationIcon,
+  PencilSquareIcon,
+  SparklesIcon,
+  UserPlusIcon,
+} from "@heroicons/react/24/solid"
 import { Button } from "@workspace/ui/components/button"
 import { SegmentedControl } from "@workspace/ui/components/segmented-control"
 import { authClient } from "../lib/auth"
@@ -18,8 +19,12 @@ import { api } from "../lib/api"
 import { qk } from "../lib/query-keys"
 import { useMe } from "../lib/me"
 import { Compose } from "../components/compose"
-import { useOnModalPostCreated } from "../components/compose-provider"
+import {
+  useCompose,
+  useOnModalPostCreated,
+} from "../components/compose-provider"
 import { Feed } from "../components/feed"
+import { PageEmpty } from "../components/page-surface"
 import { PageFrame } from "../components/page-frame"
 import { PageLoading } from "../components/page-surface"
 import type { Post } from "../lib/api"
@@ -34,11 +39,6 @@ const TAB_LABELS: Record<FeedTab, string> = {
 }
 
 export const Route = createFileRoute("/")({
-  beforeLoad: async () => {
-    const { hasSessionCookie } = await checkSessionCookie()
-    if (!hasSessionCookie) throw redirect({ to: "/welcome" })
-  },
-  component: Home,
   validateSearch: (search: Record<string, unknown>): { tab?: FeedTab } => {
     const raw = search.tab
     if (typeof raw === "string" && FEED_TABS.includes(raw as FeedTab)) {
@@ -46,34 +46,96 @@ export const Route = createFileRoute("/")({
     }
     return {}
   },
+  beforeLoad: async () => {
+    const { hasSessionCookie } = await checkSessionCookie()
+    if (!hasSessionCookie) throw redirect({ to: "/welcome" })
+  },
+  component: Home,
 })
 
 function Home() {
   const { isPending } = authClient.useSession()
   const { me } = useMe()
   const navigate = useNavigate()
+  const { open: openCompose } = useCompose()
   const { tab: searchTab } = Route.useSearch()
   const tab: FeedTab = searchTab ?? "following"
   const [newPost, setNewPost] = useState<Post | null>(null)
 
-  // Prepend posts created from the modal composer (e.g. quote posts)
   useOnModalPostCreated(
     useCallback((post: Post) => {
       setNewPost(post)
-    }, []),
+    }, [])
   )
 
   const loadFeed = useCallback((cursor?: string) => api.feed(cursor), [])
   const loadPublic = useCallback(
     (cursor?: string) => api.publicTimeline(cursor),
-    [],
+    []
   )
   const loadNetwork = useCallback(
     (cursor?: string) => api.networkFeed(cursor),
-    [],
+    []
   )
 
   const needsHandle = me && !me.handle
+
+  const emptyState =
+    tab === "following" ? (
+      <PageEmpty
+        icon={<UserPlusIcon />}
+        title="Build your timeline"
+        description="Follow people to see their posts here. Try the public timeline to find someone interesting."
+        actions={
+          <>
+            <Button
+              size="sm"
+              variant="primary"
+              nativeButton={false}
+              render={<Link to="/search" />}
+            >
+              Find people
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              nativeButton={false}
+              render={<Link to="/" search={{ tab: "all" }} />}
+            >
+              View public timeline
+            </Button>
+          </>
+        }
+      />
+    ) : tab === "network" ? (
+      <PageEmpty
+        icon={<SparklesIcon />}
+        title="Your network is quiet"
+        description="Posts liked or reposted by people you follow will surface here. Until then, browse the public timeline."
+        actions={
+          <Button
+            size="sm"
+            variant="outline"
+            nativeButton={false}
+            render={<Link to="/" search={{ tab: "all" }} />}
+          >
+            View public timeline
+          </Button>
+        }
+      />
+    ) : (
+      <PageEmpty
+        icon={<PencilSquareIcon />}
+        title="Be the first to post"
+        description="Nothing here yet. Share something to get the conversation started."
+        actions={
+          <Button size="sm" variant="primary" onClick={() => openCompose()}>
+            Write a post
+          </Button>
+        }
+      />
+    )
+
   return (
     <PageFrame>
       <header className="sticky top-0 z-40 flex h-12 items-center bg-base-1/80 px-4 backdrop-blur-md">
@@ -94,28 +156,28 @@ function Home() {
         />
       </header>
       {needsHandle ? (
-        <Alert className="m-4">
-          <AlertTitle>Finish setup</AlertTitle>
-          <AlertDescription>
-            Choose a handle so others can find you. Handles are permanent in
-            v1.
-          </AlertDescription>
-          <div className="mt-3">
+        <PageEmpty
+          icon={<IdentificationIcon />}
+          title="Finish setting up your account"
+          description="Pick a handle so others can find and mention you. Handles are permanent in v1, so choose wisely."
+          actions={
             <Button
               size="sm"
+              variant="primary"
               nativeButton={false}
               render={<Link to="/settings" />}
             >
               Claim your handle
             </Button>
-          </div>
-        </Alert>
+          }
+          className="px-4"
+        />
       ) : (
         <Compose onCreated={(p) => setNewPost(p)} collapsible />
       )}
       {isPending ? (
         <PageLoading />
-      ) : (
+      ) : needsHandle ? null : (
         <Feed
           queryKey={qk.feed(tab)}
           load={
@@ -125,13 +187,7 @@ function Home() {
                 ? loadNetwork
                 : loadPublic
           }
-          emptyMessage={
-            tab === "following"
-              ? "Follow people to see posts here. Switch to All to see the public timeline."
-              : tab === "network"
-                ? "No posts from your network's likes/reposts yet."
-                : "No posts yet. Be the first."
-          }
+          emptyState={emptyState}
           prependItem={newPost}
           renderActivityBanner={
             tab === "network"

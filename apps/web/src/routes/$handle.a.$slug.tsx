@@ -5,6 +5,7 @@ import { ApiError, api } from "../lib/api"
 import { qk } from "../lib/query-keys"
 import type { RouterAppContext } from "../lib/router-context"
 import { Editor } from "../components/editor/editor"
+import { PageFrame } from "../components/page-frame"
 import { VerifiedBadge } from "../components/verified-badge"
 import { authClient } from "../lib/auth"
 import { APP_NAME } from "../lib/env"
@@ -95,8 +96,7 @@ function ArticleView() {
     isPending,
   } = useQuery({
     queryKey: qk.articles.userBySlug(handle, slug),
-    queryFn: async () =>
-      (await api.userArticleBySlug(handle, slug)).article,
+    queryFn: async () => (await api.userArticleBySlug(handle, slug)).article,
     retry: false,
   })
 
@@ -105,16 +105,20 @@ function ArticleView() {
 
   if (articleError) {
     return (
-      <main className="px-4 py-16 text-center">
-        <p className="text-sm text-muted-foreground">article not found</p>
-      </main>
+      <PageFrame>
+        <div className="px-4 py-16 text-center">
+          <p className="text-muted-foreground text-sm">article not found</p>
+        </div>
+      </PageFrame>
     )
   }
   if (isPending || !article) {
     return (
-      <main className="px-4 py-16">
-        <p className="text-sm text-muted-foreground">loading…</p>
-      </main>
+      <PageFrame>
+        <div className="px-4 py-16">
+          <p className="text-muted-foreground text-sm">loading…</p>
+        </div>
+      </PageFrame>
     )
   }
 
@@ -123,7 +127,7 @@ function ArticleView() {
   )
 
   return (
-    <main className="">
+    <PageFrame>
       {article.coverUrl && (
         <img
           src={article.coverUrl}
@@ -131,14 +135,14 @@ function ArticleView() {
           className="aspect-[3/1] w-full object-cover"
         />
       )}
-      <header className="border-b border-border px-4 py-6">
+      <header className="border-border border-b px-4 py-6">
         <div className="flex items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight">
               {article.title}
             </h1>
             {article.subtitle && (
-              <p className="mt-2 text-base text-muted-foreground">
+              <p className="text-muted-foreground mt-2 text-base">
                 {article.subtitle}
               </p>
             )}
@@ -151,12 +155,12 @@ function ArticleView() {
             </Link>
           )}
         </div>
-        <div className="mt-4 flex items-center gap-3 text-xs text-muted-foreground">
+        <div className="text-muted-foreground mt-4 flex items-center gap-3 text-xs">
           {article.author.handle && (
             <Link
               to="/$handle"
               params={{ handle: article.author.handle }}
-              className="flex items-center gap-1 font-medium text-foreground hover:underline"
+              className="text-foreground flex items-center gap-1 font-medium hover:underline"
             >
               {article.author.displayName || `@${article.author.handle}`}
               {article.author.isVerified && (
@@ -183,6 +187,6 @@ function ArticleView() {
         </div>
       </header>
       <Editor initialStateJson={article.bodyJson ?? null} readOnly />
-    </main>
+    </PageFrame>
   )
 }

@@ -39,7 +39,7 @@ function AdminLayout() {
     }
     return {
       title: "Admin" as const,
-      action: <span className="text-xs text-muted-foreground">{me.role}</span>,
+      action: <span className="text-muted-foreground text-xs">{me.role}</span>,
     }
   }, [session, me])
   usePageHeader(appHeader)
@@ -50,7 +50,7 @@ function AdminLayout() {
 
   return (
     <div className="mx-auto flex h-[calc(100svh-3rem)] w-full max-w-7xl flex-col overflow-hidden border-x border-b">
-      <header className="shrink-0 border-b border-border bg-background/80 px-4 py-3 backdrop-blur-sm">
+      <header className="border-border bg-background/80 shrink-0 border-b px-4 py-3 backdrop-blur-sm">
         <UnderlineTabRow>
           <UnderlineTabLink
             to="/admin/stats"

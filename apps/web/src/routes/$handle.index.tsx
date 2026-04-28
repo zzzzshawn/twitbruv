@@ -1,6 +1,9 @@
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useCallback, useMemo } from "react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { CalendarIcon, LinkIcon, MapPinIcon } from "@heroicons/react/24/outline"
+import { Avatar } from "@workspace/ui/components/avatar"
+import { PencilSquareIcon } from "@heroicons/react/24/solid"
 import { Button } from "@workspace/ui/components/button"
 import { ApiError, api } from "../lib/api"
 import { Feed } from "../components/feed"
@@ -10,10 +13,13 @@ import { RichText } from "../components/rich-text"
 import { MacfolioCardFromText } from "../components/macfolio-card"
 import { GithubBlock } from "../components/github-block"
 import { VerifiedBadge } from "../components/verified-badge"
-import { NotFoundPanel, PageLoading } from "../components/page-surface"
+import {
+  NotFoundPanel,
+  PageEmpty,
+  PageLoading,
+} from "../components/page-surface"
 import { useMe } from "../lib/me"
 import { qk } from "../lib/query-keys"
-import type { RouterAppContext } from "../lib/router-context"
 import { APP_NAME, WEB_URL } from "../lib/env"
 import { buildSeoMeta, canonicalLink, clipDescription } from "../lib/seo"
 import type { UserList } from "../lib/api"
@@ -21,10 +27,9 @@ import type { UserList } from "../lib/api"
 export const Route = createFileRoute("/$handle/")({
   component: Profile,
   loader: async ({ params, context }) => {
-    const ctx = context as RouterAppContext
+    const ctx = context
     try {
       const { user } = await api.user(params.handle)
-      if (!user) return { user: null }
       ctx.queryClient.setQueryData(qk.user(params.handle), user)
       await ctx.queryClient.prefetchQuery({
         queryKey: qk.userLists(params.handle),
@@ -110,11 +115,7 @@ function Profile() {
   )
 
   const profileError =
-    error instanceof ApiError
-      ? error.message
-      : error
-        ? "not found"
-        : null
+    error instanceof ApiError ? error.message : error ? "not found" : null
 
   if (profileError) {
     return (
@@ -126,9 +127,9 @@ function Profile() {
   }
   if (isPending || !user) {
     return (
-      <main className="px-4 py-12">
+      <div className="px-4 py-12">
         <PageLoading />
-      </main>
+      </div>
     )
   }
 
@@ -138,14 +139,14 @@ function Profile() {
     .toUpperCase()
 
   return (
-    <main>
+    <>
       <ImageLightbox
         images={user.bannerUrl ? [{ src: user.bannerUrl }] : []}
         title={`${displayName}'s banner`}
         disabled={!user.bannerUrl}
-        className="block w-full"
+        className="block w-full overflow-hidden rounded-b-2xl shadow-[0_12px_40px_-16px_rgba(0,0,0,0.22)] dark:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.55)]"
       >
-        <div className="h-44 w-full bg-muted">
+        <div className="bg-muted h-52 w-full">
           {user.bannerUrl && (
             <img
               src={user.bannerUrl}
@@ -155,117 +156,131 @@ function Profile() {
           )}
         </div>
       </ImageLightbox>
-      <div className="px-4 pb-4">
-        <div className="-mt-12 flex items-end justify-between gap-4">
-          <ImageLightbox
-            images={user.avatarUrl ? [{ src: user.avatarUrl }] : []}
-            title={`${displayName}'s avatar`}
-            disabled={!user.avatarUrl}
-          >
-            <div className="size-24 overflow-hidden rounded-full ring-4 ring-background">
-              {user.avatarUrl ? (
-                <img
-                  src={user.avatarUrl}
-                  alt=""
-                  className="h-full w-full object-cover"
-                />
+      <div className="">
+        <div className="bg-card/75 dark:bg-card/35 relative z-1 -mt-8 rounded-2xl p-5 shadow-sm ring-black/4 backdrop-blur-md dark:ring-white/6">
+          <div className="-mt-16 flex items-end justify-between gap-4">
+            <ImageLightbox
+              images={user.avatarUrl ? [{ src: user.avatarUrl }] : []}
+              title={`${displayName}'s avatar`}
+              disabled={!user.avatarUrl}
+            >
+              <Avatar
+                initial={initial}
+                src={user.avatarUrl}
+                size="xl"
+                className="size-28"
+              />
+            </ImageLightbox>
+            <div className="pb-2">
+              {me?.id === user.id ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  nativeButton={false}
+                  render={<Link to="/settings" hash="profile" />}
+                >
+                  Edit profile
+                </Button>
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-muted text-3xl font-semibold text-foreground/80 uppercase">
-                  {initial}
-                </div>
+                <ProfileActions
+                  profile={user}
+                  onChange={(next) => qc.setQueryData(qk.user(handle), next)}
+                />
               )}
             </div>
-          </ImageLightbox>
-          <div className="pb-1">
-            {me?.id === user.id ? (
-              <Button
-                size="sm"
-                variant="outline"
-                nativeButton={false}
-                render={<Link to="/settings" hash="profile" />}
-              >
-                Edit profile
-              </Button>
-            ) : (
-              <ProfileActions
-                profile={user}
-                onChange={(next) =>
-                  qc.setQueryData(qk.user(handle), next)
-                }
-              />
-            )}
           </div>
-        </div>
-        <div className="mt-3">
-          <h1 className="flex items-center gap-1.5 text-xl font-semibold">
-            {displayName}
-            {user.isVerified && <VerifiedBadge size={20} role={user.role} />}
-          </h1>
-          <p className="text-sm text-muted-foreground">@{user.handle}</p>
-        </div>
-        {user.bio && (
-          <p className="mt-3 text-sm leading-relaxed whitespace-pre-wrap">
-            <RichText text={user.bio} />
-          </p>
-        )}
-        {user.bio && <MacfolioCardFromText text={user.bio} />}
-        <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
-          {user.location && <span>{user.location}</span>}
-          {user.websiteUrl && (
-            <a
-              href={user.websiteUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="text-primary hover:underline"
-            >
-              {user.websiteUrl.replace(/^https?:\/\//, "")}
-            </a>
+          <div className="mt-1">
+            <h1 className="flex items-center gap-1.5 text-2xl font-bold tracking-tight">
+              {displayName}
+              {user.isVerified && <VerifiedBadge size={22} role={user.role} />}
+            </h1>
+            <p className="text-muted-foreground mt-0.5 text-sm">
+              @{user.handle}
+            </p>
+          </div>
+          {user.bio && (
+            <p className="mt-4 text-[15px] leading-relaxed whitespace-pre-wrap">
+              <RichText text={user.bio} />
+            </p>
           )}
-          <span>joined {new Date(user.createdAt).toLocaleDateString()}</span>
-        </div>
-        <div className="mt-3 flex items-center gap-5 text-xs">
-          {user.handle && (
-            <>
-              <Link
-                to="/$handle/following"
-                params={{ handle: user.handle }}
-                className="hover:underline"
+          {user.bio && <MacfolioCardFromText text={user.bio} />}
+          <div className="text-muted-foreground mt-4 flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px]">
+            {user.location && (
+              <span className="bg-muted/40 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1">
+                <MapPinIcon className="size-3.5 shrink-0" aria-hidden />
+                {user.location}
+              </span>
+            )}
+            {user.websiteUrl && (
+              <a
+                href={user.websiteUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="bg-muted/40 hover:bg-muted/60 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-primary no-underline transition-colors hover:underline"
               >
-                <span className="font-semibold tabular-nums">
-                  {user.counts.following}
-                </span>{" "}
-                <span className="text-muted-foreground">following</span>
-              </Link>
-              <Link
-                to="/$handle/followers"
-                params={{ handle: user.handle }}
-                className="hover:underline"
-              >
-                <span className="font-semibold tabular-nums">
-                  {user.counts.followers}
-                </span>{" "}
-                <span className="text-muted-foreground">followers</span>
-              </Link>
-            </>
-          )}
-          <span>
-            <span className="font-semibold tabular-nums">
-              {user.counts.posts}
-            </span>{" "}
-            <span className="text-muted-foreground">posts</span>
-          </span>
+                <LinkIcon className="size-3.5 shrink-0" aria-hidden />
+                {user.websiteUrl.replace(/^https?:\/\//, "")}
+              </a>
+            )}
+            <span className="bg-muted/40 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1">
+              <CalendarIcon className="size-3.5 shrink-0" aria-hidden />
+              Joined{" "}
+              {new Intl.DateTimeFormat(undefined, {
+                month: "long",
+                year: "numeric",
+              }).format(new Date(user.createdAt))}
+            </span>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            {user.handle && (
+              <>
+                <Link
+                  to="/$handle/following"
+                  params={{ handle: user.handle }}
+                  className="bg-muted/45 hover:bg-muted/75 text-foreground rounded-full px-3.5 py-1.5 text-sm no-underline transition-colors"
+                >
+                  <span className="font-semibold tabular-nums">
+                    {user.counts.following}
+                  </span>{" "}
+                  <span className="text-muted-foreground">following</span>
+                </Link>
+                <Link
+                  to="/$handle/followers"
+                  params={{ handle: user.handle }}
+                  className="bg-muted/45 hover:bg-muted/75 text-foreground rounded-full px-3.5 py-1.5 text-sm no-underline transition-colors"
+                >
+                  <span className="font-semibold tabular-nums">
+                    {user.counts.followers}
+                  </span>{" "}
+                  <span className="text-muted-foreground">followers</span>
+                </Link>
+              </>
+            )}
+            <span className="bg-muted/45 text-foreground rounded-full px-3.5 py-1.5 text-sm">
+              <span className="font-semibold tabular-nums">
+                {user.counts.posts}
+              </span>{" "}
+              <span className="text-muted-foreground">posts</span>
+            </span>
+          </div>
         </div>
       </div>
       {user.handle && <GithubBlock handle={user.handle} />}
       {user.handle && <ProfileLists handle={user.handle} />}
-      <div className="border-t border-border">
+      <div className="border-border border-t">
         <Feed
           queryKey={qk.userPosts(handle)}
           load={load}
-          emptyMessage={`@${user.handle} hasn't posted yet.`}
+          emptyState={
+            <PageEmpty
+              icon={<PencilSquareIcon />}
+              title={`@${user.handle} hasn't posted yet`}
+              description="Check back later, or follow them so their first post lands in your feed."
+            />
+          }
         />
       </div>
-    </main>
+    </>
   )
 }
 
@@ -283,19 +298,16 @@ function ProfileLists({ handle }: { handle: string }) {
     () => (myLists ?? []).filter((l: UserList) => l.pinnedAt),
     [myLists]
   )
-  const listedOn = useMemo(
-    () => (listedFull ?? []).slice(0, 10),
-    [listedFull]
-  )
+  const listedOn = useMemo(() => (listedFull ?? []).slice(0, 10), [listedFull])
 
   if (pinned.length === 0 && listedOn.length === 0) {
     return null
   }
   return (
-    <div className="border-t border-border px-4 py-3 text-xs">
+    <div className="px-4 py-3 text-xs">
       {pinned.length > 0 && (
         <div className="mb-2">
-          <h2 className="mb-1.5 text-xs font-medium text-muted-foreground">
+          <h2 className="text-muted-foreground mb-1.5 text-xs font-medium">
             Pinned lists
           </h2>
           <div className="flex flex-wrap gap-1.5">
@@ -304,10 +316,10 @@ function ProfileLists({ handle }: { handle: string }) {
                 key={l.id}
                 to="/lists/$id"
                 params={{ id: l.id }}
-                className="rounded-full border border-border bg-muted/40 px-2.5 py-1 hover:bg-muted"
+                className="border-border bg-muted/40 hover:bg-muted rounded-full border px-2.5 py-1"
               >
                 {l.title}
-                <span className="ml-1.5 text-muted-foreground tabular-nums">
+                <span className="text-muted-foreground ml-1.5 tabular-nums">
                   {l.memberCount}
                 </span>
               </Link>
@@ -317,7 +329,7 @@ function ProfileLists({ handle }: { handle: string }) {
       )}
       {listedOn.length > 0 && (
         <div>
-          <h2 className="mb-1.5 text-xs font-medium text-muted-foreground">
+          <h2 className="text-muted-foreground mb-1.5 text-xs font-medium">
             Lists @{handle} is on
           </h2>
           <div className="flex flex-wrap gap-1.5">
@@ -326,11 +338,11 @@ function ProfileLists({ handle }: { handle: string }) {
                 key={l.id}
                 to="/lists/$id"
                 params={{ id: l.id }}
-                className="rounded-full border border-border px-2.5 py-1 hover:bg-muted/40"
+                className="border-border hover:bg-muted/40 rounded-full border px-2.5 py-1"
               >
                 {l.title}
                 {l.ownerHandle && (
-                  <span className="ml-1.5 text-muted-foreground">
+                  <span className="text-muted-foreground ml-1.5">
                     @{l.ownerHandle}
                   </span>
                 )}

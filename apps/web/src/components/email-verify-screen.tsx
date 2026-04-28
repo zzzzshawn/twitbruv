@@ -95,17 +95,19 @@ export function EmailVerifyScreen({ email }: { email: string }) {
       : "Resend email"
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
+    <div className="bg-background flex min-h-screen items-center justify-center px-4 py-12">
       <Card className="w-full max-w-md">
         <Card.Header>
-          <span className="text-sm font-medium text-primary">Verify your email</span>
+          <span className="text-sm font-medium text-primary">
+            Verify your email
+          </span>
           <span className="text-xs text-tertiary">
             We sent a verification link to <strong>{email}</strong>. Click it to
             unlock your account.
           </span>
         </Card.Header>
         <Card.Content className="flex flex-col gap-4">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             This page will refresh automatically once your email is verified.
             Check your spam folder if the email doesn't arrive within a minute.
           </p>
@@ -122,12 +124,12 @@ export function EmailVerifyScreen({ email }: { email: string }) {
             type="button"
             onClick={onSignOut}
             disabled={signingOut}
-            className="text-center text-xs text-muted-foreground underline-offset-4 hover:underline disabled:opacity-50"
+            className="text-muted-foreground text-center text-xs underline-offset-4 hover:underline disabled:opacity-50"
           >
             Use a different account
           </button>
         </Card.Content>
       </Card>
-    </main>
+    </div>
   )
 }

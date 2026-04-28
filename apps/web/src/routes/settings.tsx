@@ -88,16 +88,16 @@ function Settings() {
   if (isPending || !me) {
     return (
       <PageFrame>
-        <main className="mx-auto max-w-xl px-4 py-8">
+        <div className="px-4 py-8">
           <PageLoading />
-        </main>
+        </div>
       </PageFrame>
     )
   }
 
   return (
     <PageFrame>
-      <main className="mx-auto px-4 py-8">
+      <div className="px-4 py-8">
         {!me.handle && (
           <div className="mt-6">
             <ClaimHandle onClaimed={(h) => setMe({ ...me, handle: h })} />
@@ -171,7 +171,7 @@ function Settings() {
           )}
           {tab === "dev" && <DevToolsSection />}
         </div>
-      </main>
+      </div>
     </PageFrame>
   )
 }
@@ -272,7 +272,7 @@ function ProfileSection() {
       <form
         onSubmit={onSave}
         id="profile"
-        className="flex scroll-mt-4 flex-col gap-3 border-t border-border pt-6"
+        className="border-border flex scroll-mt-4 flex-col gap-3 border-t pt-6"
       >
         <h2 className="text-sm font-semibold">Profile details</h2>
         <div className="flex flex-col gap-1.5">
@@ -312,7 +312,7 @@ function ProfileSection() {
             placeholder="https://"
           />
         </div>
-        {status && <p className="text-xs text-muted-foreground">{status}</p>}
+        {status && <p className="text-muted-foreground text-xs">{status}</p>}
         <Button type="submit">Save</Button>
       </form>
     </div>
@@ -378,7 +378,7 @@ function AccountSection({ email }: { email: string }) {
 
       <form onSubmit={changeEmail} className="flex flex-col gap-2">
         <Label htmlFor="newEmail">Email</Label>
-        <p className="text-xs text-muted-foreground">Currently {email}.</p>
+        <p className="text-muted-foreground text-xs">Currently {email}.</p>
         <Input
           id="newEmail"
           type="email"
@@ -387,7 +387,7 @@ function AccountSection({ email }: { email: string }) {
           placeholder="new@example.com"
         />
         {emStatus && (
-          <p className="text-xs text-muted-foreground">{emStatus}</p>
+          <p className="text-muted-foreground text-xs">{emStatus}</p>
         )}
         <Button
           type="submit"
@@ -417,7 +417,7 @@ function AccountSection({ email }: { email: string }) {
           placeholder="New password (10+ characters)"
         />
         {pwStatus && (
-          <p className="text-xs text-muted-foreground">{pwStatus}</p>
+          <p className="text-muted-foreground text-xs">{pwStatus}</p>
         )}
         <Button
           type="submit"
@@ -498,13 +498,13 @@ function SessionsSection({
           Sign out other devices
         </Button>
       </div>
-      {error && <p className="text-xs text-destructive">{error}</p>}
-      {!sessions && <p className="text-xs text-muted-foreground">loading…</p>}
+      {error && <p className="text-destructive text-xs">{error}</p>}
+      {!sessions && <p className="text-muted-foreground text-xs">loading…</p>}
       {sessions && sessions.length === 0 && (
-        <p className="text-xs text-muted-foreground">No sessions found.</p>
+        <p className="text-muted-foreground text-xs">No sessions found.</p>
       )}
       {sessions && sessions.length > 0 && (
-        <ul className="divide-y divide-border rounded-md border border-border">
+        <ul className="divide-border border-border divide-y rounded-md border">
           {sessions.map((s) => {
             const isCurrent = s.id === currentSessionId
             return (
@@ -516,7 +516,7 @@ function SessionsSection({
                   <div className="font-medium">
                     {s.userAgent ? truncate(s.userAgent, 60) : "Unknown device"}
                     {isCurrent && (
-                      <span className="ml-1 text-[10px] tracking-wider text-muted-foreground uppercase">
+                      <span className="text-muted-foreground ml-1 text-[10px] tracking-wider uppercase">
                         this device
                       </span>
                     )}
@@ -615,7 +615,7 @@ function PrivacySection() {
         </Button>
       </div>
       {tab === "blocks" && blocksQuery.isError && (
-        <p className="text-xs text-destructive">
+        <p className="text-destructive text-xs">
           {blocksQuery.error instanceof ApiError
             ? blocksQuery.error.message
             : "couldn't load blocks"}
@@ -623,9 +623,7 @@ function PrivacySection() {
       )}
       {tab === "blocks" && !blocksQuery.isError && (
         <PrivacyList
-          users={
-            blocksQuery.isPending ? null : (blocksQuery.data ?? [])
-          }
+          users={blocksQuery.isPending ? null : (blocksQuery.data ?? [])}
           emptyText="You haven't blocked anyone."
           renderTrailing={(u) => (
             <Button
@@ -643,7 +641,7 @@ function PrivacySection() {
         />
       )}
       {tab === "mutes" && mutesQuery.isError && (
-        <p className="text-xs text-destructive">
+        <p className="text-destructive text-xs">
           {mutesQuery.error instanceof ApiError
             ? mutesQuery.error.message
             : "couldn't load mutes"}
@@ -651,9 +649,7 @@ function PrivacySection() {
       )}
       {tab === "mutes" && !mutesQuery.isError && (
         <PrivacyList
-          users={
-            mutesQuery.isPending ? null : (mutesQuery.data ?? [])
-          }
+          users={mutesQuery.isPending ? null : (mutesQuery.data ?? [])}
           emptyText="You haven't muted anyone."
           renderTrailing={(u) => (
             <Button
@@ -701,13 +697,13 @@ function PrivacyList<
   renderMeta: (u: T) => string
 }) {
   if (users === null) {
-    return <p className="text-xs text-muted-foreground">loading…</p>
+    return <p className="text-muted-foreground text-xs">loading…</p>
   }
   if (users.length === 0) {
-    return <p className="text-xs text-muted-foreground">{emptyText}</p>
+    return <p className="text-muted-foreground text-xs">{emptyText}</p>
   }
   return (
-    <ul className="divide-y divide-border rounded-md border border-border">
+    <ul className="divide-border border-border divide-y rounded-md border">
       {users.map((u) => (
         <li
           key={u.id}
@@ -741,7 +737,7 @@ function PrivacyList<
                   {u.isVerified && <VerifiedBadge size={13} role={u.role} />}
                 </span>
               )}
-              <p className="truncate text-xs text-muted-foreground">
+              <p className="text-muted-foreground truncate text-xs">
                 {renderMeta(u)}
               </p>
             </div>
@@ -780,11 +776,11 @@ function DangerZone({ onDeleted }: { onDeleted: () => void }) {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-sm font-semibold text-destructive">Danger zone</h2>
-      <p className="text-xs text-muted-foreground">
+      <h2 className="text-destructive text-sm font-semibold">Danger zone</h2>
+      <p className="text-muted-foreground text-xs">
         Deleting your account is permanent. Posts, articles, and DMs you
         authored will be removed. Type{" "}
-        <code className="rounded bg-muted px-1">{requiredText}</code> to
+        <code className="bg-muted rounded px-1">{requiredText}</code> to
         confirm.
       </p>
       <Input
@@ -792,7 +788,7 @@ function DangerZone({ onDeleted }: { onDeleted: () => void }) {
         onChange={(e) => setConfirm(e.target.value)}
         placeholder={requiredText}
       />
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {error && <p className="text-destructive text-xs">{error}</p>}
       <Button
         variant="danger"
         size="sm"
@@ -878,48 +874,48 @@ function ConnectionsSection() {
   return (
     <section className="space-y-4">
       <h2 className="text-sm font-semibold">Connections</h2>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-muted-foreground text-xs">
         Link external accounts to enrich your profile. We never post on your
         behalf.
       </p>
 
       {connected === "github" && (
-        <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-xs">
+        <div className="border-border bg-muted/40 rounded-md border px-3 py-2 text-xs">
           GitHub connected.
         </div>
       )}
       {connectError && (
-        <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+        <div className="border-destructive/40 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-xs">
           GitHub connection failed: {connectError}
         </div>
       )}
 
-      <div className="rounded-md border border-border p-3">
+      <div className="border-border rounded-md border p-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="text-sm font-semibold">GitHub</div>
             {isPending && !state && (
-              <p className="text-xs text-muted-foreground">loading…</p>
+              <p className="text-muted-foreground text-xs">loading…</p>
             )}
             {state && state.configured === false && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 The server isn't configured for GitHub connections yet.
               </p>
             )}
             {state?.connected === false && state.configured && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Show your contributions graph and pinned repos on your profile.
               </p>
             )}
             {state?.connected === true && (
-              <div className="space-y-1 text-xs text-muted-foreground">
+              <div className="text-muted-foreground space-y-1 text-xs">
                 <div>
                   Connected as{" "}
                   <a
                     href={`https://github.com/${state.login}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="font-medium text-foreground hover:underline"
+                    className="text-foreground font-medium hover:underline"
                   >
                     @{state.login}
                   </a>
@@ -981,7 +977,7 @@ function ConnectionsSection() {
           </label>
         )}
         {status && (
-          <p className="mt-2 text-xs text-muted-foreground">{status}</p>
+          <p className="text-muted-foreground mt-2 text-xs">{status}</p>
         )}
       </div>
     </section>
@@ -1006,7 +1002,12 @@ function DevToolsSection() {
       })
       const data = await res.json()
       if (data.ok) {
-        setStatus(data.message + (data.counts ? ` (${data.counts.users} users, ${data.counts.posts} posts, ${data.counts.images} images)` : ""))
+        setStatus(
+          data.message +
+            (data.counts
+              ? ` (${data.counts.users} users, ${data.counts.posts} posts, ${data.counts.images} images)`
+              : "")
+        )
       } else {
         setStatus("Failed to seed")
       }
@@ -1034,9 +1035,7 @@ function DevToolsSection() {
         >
           Seed posts
         </Button>
-        {status && (
-          <p className="mt-2 text-xs text-secondary">{status}</p>
-        )}
+        {status && <p className="mt-2 text-xs text-secondary">{status}</p>}
       </div>
     </section>
   )

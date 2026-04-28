@@ -12,7 +12,7 @@ const sessionCookieMiddleware = createMiddleware({ type: "request" }).server(
     const hasSessionCookie =
       getSessionCookie(request, { cookiePrefix: COOKIE_PREFIX }) !== null
     return next({ context: { hasSessionCookie } })
-  },
+  }
 )
 
 export const startInstance = createStart(() => ({

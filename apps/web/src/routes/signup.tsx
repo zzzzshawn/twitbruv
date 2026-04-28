@@ -52,10 +52,12 @@ function SignUp() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-md px-4 py-12">
+    <div className="mx-auto w-full max-w-md px-4 py-12">
       <Card>
         <Card.Header>
-          <span className="text-sm font-medium text-primary">Create an account</span>
+          <span className="text-sm font-medium text-primary">
+            Create an account
+          </span>
           <span className="text-xs text-tertiary">
             Free, no ads. Verify your email before you post.
           </span>
@@ -110,7 +112,7 @@ function SignUp() {
                 autoComplete="new-password"
                 required
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 At least 10 characters.
               </p>
             </div>
@@ -123,7 +125,7 @@ function SignUp() {
               {loading ? "Creating account…" : "Create account"}
             </Button>
           </form>
-          <p className="text-center text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-center text-xs">
             Already have an account?{" "}
             <Link
               to="/login"
@@ -134,6 +136,6 @@ function SignUp() {
           </p>
         </Card.Content>
       </Card>
-    </main>
+    </div>
   )
 }

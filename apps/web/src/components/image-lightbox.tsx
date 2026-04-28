@@ -119,7 +119,7 @@ export function ImageLightbox({
               >
                 <ChevronRightIcon className="size-5" />
               </Button>
-              <div className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 text-xs text-muted-foreground">
+              <div className="text-muted-foreground pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 text-xs">
                 {index + 1} / {images.length}
               </div>
             </>

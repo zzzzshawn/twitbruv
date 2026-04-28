@@ -27,11 +27,11 @@ function Followers() {
           <Link
             to="/$handle"
             params={{ handle }}
-            className="shrink-0 text-xs text-muted-foreground hover:underline"
+            className="text-muted-foreground shrink-0 text-xs hover:underline"
           >
             ← @{handle}
           </Link>
-          <h1 className="truncate text-base leading-tight font-semibold text-foreground">
+          <h1 className="text-foreground truncate text-base leading-tight font-semibold">
             Followers
           </h1>
         </div>
@@ -43,13 +43,12 @@ function Followers() {
 
   return (
     <PageFrame>
-      <main>
-        <UserList
-          queryKey={listKey}
-          load={load}
-          emptyMessage="No followers yet."
-        />
-      </main>
+      <UserList
+        queryKey={listKey}
+        load={load}
+        emptyTitle="No followers yet"
+        emptyMessage={`When someone follows @${handle}, they'll show up here.`}
+      />
     </PageFrame>
   )
 }

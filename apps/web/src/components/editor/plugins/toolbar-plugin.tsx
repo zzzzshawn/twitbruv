@@ -113,7 +113,7 @@ export function ToolbarPlugin() {
   }
 
   return (
-    <div className="sticky top-0 z-10 flex flex-wrap items-center gap-0.5 border-b border-border bg-background/90 px-2 py-1.5 backdrop-blur-sm">
+    <div className="border-border bg-background/90 sticky top-0 z-10 flex flex-wrap items-center gap-0.5 border-b px-2 py-1.5 backdrop-blur-sm">
       <Button
         variant="transparent"
         size="sm"
@@ -130,7 +130,7 @@ export function ToolbarPlugin() {
       >
         <ArrowUUpRightIcon className="size-4" />
       </Button>
-      <div className="mx-1 h-4 w-px bg-border" />
+      <div className="bg-border mx-1 h-4 w-px" />
       <Button
         variant="transparent"
         size="sm"
@@ -176,7 +176,7 @@ export function ToolbarPlugin() {
       >
         <CodeIcon className="size-4" />
       </Button>
-      <div className="mx-1 h-4 w-px bg-border" />
+      <div className="bg-border mx-1 h-4 w-px" />
       <Button
         variant="transparent"
         size="sm"
@@ -217,7 +217,7 @@ export function ToolbarPlugin() {
       >
         <BracketsCurlyIcon className="size-4" />
       </Button>
-      <div className="mx-1 h-4 w-px bg-border" />
+      <div className="bg-border mx-1 h-4 w-px" />
       <Button
         variant="transparent"
         size="sm"

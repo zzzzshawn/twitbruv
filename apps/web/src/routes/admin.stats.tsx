@@ -14,6 +14,7 @@ import {
 import { api } from "../lib/api"
 import { qk } from "../lib/query-keys"
 import { PageError } from "../components/page-surface"
+import { PageFrame } from "../components/page-frame"
 import type { AdminOnline } from "../lib/api"
 
 type Icon = React.ComponentType<{ className?: string }>
@@ -102,7 +103,7 @@ function HeroCard({
   const a = ACCENT[accent]
   const isLoading = value === null || value === undefined
   return (
-    <div className="group relative overflow-hidden rounded-lg border border-neutral bg-base-1 p-4 transition-colors hover:border-primary/20">
+    <div className="group hover:border-primary/20 relative overflow-hidden rounded-lg border border-neutral bg-base-1 p-4 transition-colors">
       <div
         className={`pointer-events-none absolute -top-6 -right-6 size-20 rounded-full opacity-60 blur-2xl ${a.bg}`}
       />
@@ -239,7 +240,7 @@ function OnlineNow({ online }: { online: AdminOnline | null }) {
                 <span
                   key={u.id}
                   title={u.handle ? `@${u.handle}` : (u.displayName ?? u.id)}
-                  className="inline-flex size-7 items-center justify-center overflow-hidden rounded-full border-2 border-base-1 bg-base-2 text-[10px] font-semibold text-tertiary"
+                  className="border-base-1 inline-flex size-7 items-center justify-center overflow-hidden rounded-full border-2 bg-base-2 text-[10px] font-semibold text-tertiary"
                 >
                   {u.avatarUrl ? (
                     <img
@@ -268,8 +269,7 @@ function OnlineNow({ online }: { online: AdminOnline | null }) {
 function AdminStatsPage() {
   const [visible, setVisible] = useState(
     () =>
-      typeof document !== "undefined" &&
-      document.visibilityState === "visible"
+      typeof document !== "undefined" && document.visibilityState === "visible"
   )
 
   useEffect(() => {
@@ -279,10 +279,7 @@ function AdminStatsPage() {
     return () => document.removeEventListener("visibilitychange", fn)
   }, [])
 
-  const {
-    data: stats,
-    error: statsError,
-  } = useQuery({
+  const { data: stats, error: statsError } = useQuery({
     queryKey: qk.admin.stats(),
     queryFn: () => api.adminStats(),
     staleTime: 60_000,
@@ -305,14 +302,14 @@ function AdminStatsPage() {
 
   if (error) {
     return (
-      <main className="flex min-h-0 flex-1 flex-col">
+      <PageFrame className="flex min-h-0 flex-1 flex-col">
         <PageError message={error} />
-      </main>
+      </PageFrame>
     )
   }
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col overflow-auto overscroll-contain">
+    <PageFrame className="flex min-h-0 flex-1 flex-col overflow-auto overscroll-contain">
       <div className="space-y-4 bg-gradient-to-b from-base-2/30 via-base-1 to-base-1 p-4">
         <OnlineNow online={online ?? null} />
 
@@ -469,6 +466,6 @@ function AdminStatsPage() {
           </Section>
         </div>
       </div>
-    </main>
+    </PageFrame>
   )
 }

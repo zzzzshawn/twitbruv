@@ -131,11 +131,11 @@ export function ChatWidget() {
           initial={false}
           animate={{ opacity: isExpanded ? 0 : 1 }}
           transition={{ duration: 0.2, delay: isExpanded ? 0 : 0.15 }}
-          className={`flex size-14 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-foreground shadow-xl shadow-primary/30 ${isExpanded ? "pointer-events-none" : ""} `}
+          className={`bg-primary text-primary-foreground shadow-primary/30 flex size-14 cursor-pointer items-center justify-center rounded-full shadow-xl ${isExpanded ? "pointer-events-none" : ""} `}
         >
           <ChatBubbleLeftIcon className="size-6" />
           {unreadCount > 0 && (
-            <span className="text-destructive-foreground absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full bg-destructive text-[10px] font-bold">
+            <span className="text-destructive-foreground bg-destructive absolute -top-1 -right-1 flex size-5 items-center justify-center rounded-full text-[10px] font-bold">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -178,9 +178,7 @@ function ConversationList({
           <p className="p-4 text-sm text-tertiary">loading...</p>
         )}
         {conversations && conversations.length === 0 && (
-          <p className="p-4 text-sm text-tertiary">
-            no conversations yet
-          </p>
+          <p className="p-4 text-sm text-tertiary">no conversations yet</p>
         )}
         {conversations && conversations.length > 0 && (
           <ul>
@@ -222,7 +220,7 @@ function ConversationRow({
         </p>
       </div>
       {conversation.unreadCount > 0 && (
-        <span className="shrink-0 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
+        <span className="bg-primary text-primary-foreground shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold">
           {conversation.unreadCount}
         </span>
       )}
@@ -375,7 +373,7 @@ function ChatView({
       onDrop={onDrop}
     >
       {dragOver && (
-        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-md border-2 border-dashed border-primary bg-primary/10 text-sm font-medium text-primary">
+        <div className="border-primary bg-primary/10 pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-md border-2 border-dashed text-sm font-medium text-primary">
           Drop image to attach
         </div>
       )}
@@ -391,9 +389,7 @@ function ChatView({
 
       <div className="flex-1 overflow-y-auto px-3 py-2">
         {loading ? (
-          <p className="py-4 text-center text-sm text-tertiary">
-            loading...
-          </p>
+          <p className="py-4 text-center text-sm text-tertiary">loading...</p>
         ) : messages.length === 0 ? (
           <p className="py-4 text-center text-sm text-tertiary">
             no messages yet
@@ -537,14 +533,14 @@ function ConversationAvatar({
           <Avatar
             initial={initialFor(a)}
             src={a.avatarUrl}
-            className="absolute top-0 left-0 size-6 ring-2 ring-base-1"
+            className="ring-base-1 absolute top-0 left-0 size-6 ring-2"
           />
         )}
         {b && (
           <Avatar
             initial={initialFor(b)}
             src={b.avatarUrl}
-            className="absolute right-0 bottom-0 size-6 ring-2 ring-base-1"
+            className="ring-base-1 absolute right-0 bottom-0 size-6 ring-2"
           />
         )}
       </div>

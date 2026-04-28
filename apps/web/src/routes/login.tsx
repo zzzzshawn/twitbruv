@@ -59,11 +59,13 @@ function Login() {
     errorLower.includes("check your email") &&
     !errorLower.includes("enter your email")
   return (
-    <main className="mx-auto w-full max-w-md px-4 py-12">
+    <div className="mx-auto w-full max-w-md px-4 py-12">
       <Card>
         <Card.Header>
           <span className="text-sm font-medium text-primary">Sign in</span>
-          <span className="text-xs text-tertiary">Use your email and password.</span>
+          <span className="text-xs text-tertiary">
+            Use your email and password.
+          </span>
         </Card.Header>
         <Card.Content className="flex flex-col gap-4">
           {error && (
@@ -125,7 +127,7 @@ function Login() {
               </Button>
             </div>
           */}
-          <p className="text-center text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-center text-xs">
             No account?{" "}
             <Link
               to="/signup"
@@ -136,6 +138,6 @@ function Login() {
           </p>
         </Card.Content>
       </Card>
-    </main>
+    </div>
   )
 }

@@ -2,22 +2,19 @@ import type { ComponentProps } from "react"
 import { cn } from "@workspace/ui/lib/utils"
 
 const textareaStyles = [
-	"rounded-md border border-neutral bg-base-2 px-3 py-2 text-sm text-primary",
-	"outline-none resize-y min-h-20",
-	"placeholder:text-tertiary",
-	"ring-neutral ring-0 transition-[box-shadow,color,border-color] duration-150 ease-out",
-	"focus:ring-2 focus:border-neutral-strong",
-	"motion-reduce:transition-none",
-	"disabled:cursor-not-allowed disabled:opacity-50",
+  "rounded-md border border-neutral bg-base-2 px-3 py-2 text-sm text-primary",
+  "outline-none resize-y min-h-20",
+  "placeholder:text-tertiary",
+  "ring-neutral ring-0 transition-[box-shadow,color,border-color] duration-150 ease-out",
+  "focus:ring-2 focus:border-neutral-strong",
+  "motion-reduce:transition-none",
+  "disabled:cursor-not-allowed disabled:opacity-50",
 ]
 
 export interface TextareaProps extends ComponentProps<"textarea"> {}
 
 export function Textarea({ className, ...props }: TextareaProps) {
-	return (
-		<textarea
-			className={cn(textareaStyles, "w-full", className)}
-			{...props}
-		/>
-	)
+  return (
+    <textarea className={cn(textareaStyles, "w-full", className)} {...props} />
+  )
 }

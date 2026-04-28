@@ -47,6 +47,7 @@ import { qk, type AdminPostFilters } from "../lib/query-keys"
 import { useInfiniteScrollSentinel } from "../lib/use-infinite-scroll-sentinel"
 import { Avatar } from "../components/avatar"
 import { PageError, PageLoading } from "../components/page-surface"
+import { PageFrame } from "../components/page-frame"
 import { VerifiedBadge } from "../components/verified-badge"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { AdminPost, AdminPostSort, AdminPostType } from "../lib/api"
@@ -124,9 +125,7 @@ function StatHeader({
       type="button"
       onClick={() => onSort(sortKey)}
       className={`flex items-center gap-1 text-xs ${
-        active
-          ? "text-primary"
-          : "text-tertiary hover:text-primary"
+        active ? "text-primary" : "text-tertiary hover:text-primary"
       }`}
     >
       {icon}
@@ -191,10 +190,7 @@ function AdminPosts() {
     getNextPageParam: (last) => last.nextCursor ?? undefined,
   })
 
-  const posts = useMemo(
-    () => data?.pages.flatMap((p) => p.posts) ?? [],
-    [data]
-  )
+  const posts = useMemo(() => data?.pages.flatMap((p) => p.posts) ?? [], [data])
 
   const loadError =
     error instanceof Error ? error.message : error ? "failed" : null
@@ -227,9 +223,7 @@ function AdminPosts() {
         cell: ({ row }) => {
           const a = row.original.author
           if (!a) {
-            return (
-              <span className="text-xs text-tertiary">(unknown)</span>
-            )
+            return <span className="text-xs text-tertiary">(unknown)</span>
           }
           return (
             <div className="flex min-w-0 items-center gap-2">
@@ -251,7 +245,9 @@ function AdminPosts() {
                     <span className="truncate">
                       {a.displayName ?? a.handle}
                     </span>
-                    {a.isVerified && <VerifiedBadge className="size-3" role={a.role} />}
+                    {a.isVerified && (
+                      <VerifiedBadge className="size-3" role={a.role} />
+                    )}
                   </Link>
                 ) : (
                   <span className="text-xs font-semibold">
@@ -283,15 +279,11 @@ function AdminPosts() {
                   className="line-clamp-2 text-xs whitespace-pre-wrap hover:underline"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {p.text || (
-                    <span className="text-tertiary">(no text)</span>
-                  )}
+                  {p.text || <span className="text-tertiary">(no text)</span>}
                 </Link>
               ) : (
                 <span className="line-clamp-2 text-xs whitespace-pre-wrap">
-                  {p.text || (
-                    <span className="text-tertiary">(no text)</span>
-                  )}
+                  {p.text || <span className="text-tertiary">(no text)</span>}
                 </span>
               )}
               <div className="flex flex-wrap gap-1 text-[10px] text-tertiary">
@@ -304,9 +296,7 @@ function AdminPosts() {
                   </span>
                 )}
                 {p.editedAt && <span>edited</span>}
-                {p.deletedAt && (
-                  <span className="text-danger">deleted</span>
-                )}
+                {p.deletedAt && <span className="text-danger">deleted</span>}
               </div>
             </div>
           )
@@ -488,7 +478,7 @@ function AdminPosts() {
   )
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col">
+    <PageFrame className="flex min-h-0 flex-1 flex-col">
       <div className="shrink-0 space-y-3 border-b border-neutral p-4">
         <Input
           value={q}
@@ -676,7 +666,7 @@ function AdminPosts() {
           }
         }}
       />
-    </main>
+    </PageFrame>
   )
 }
 
@@ -741,9 +731,7 @@ function DeletePostDialog({
         {target && (
           <div className="rounded-md border border-neutral p-3 text-xs">
             <p className="line-clamp-4 whitespace-pre-wrap">
-              {target.text || (
-                <span className="text-tertiary">(no text)</span>
-              )}
+              {target.text || <span className="text-tertiary">(no text)</span>}
             </p>
             {target.author?.handle && (
               <p className="mt-2 text-[10px] text-tertiary">
@@ -768,15 +756,15 @@ function DeletePostDialog({
         </div>
         {error && <p className="text-xs text-danger">{error}</p>}
         <DialogFooter>
-          <Button size="sm" variant="transparent" onClick={onClose} disabled={busy}>
-            Cancel
-          </Button>
           <Button
             size="sm"
-            variant="danger"
-            onClick={submit}
+            variant="transparent"
+            onClick={onClose}
             disabled={busy}
           >
+            Cancel
+          </Button>
+          <Button size="sm" variant="danger" onClick={submit} disabled={busy}>
             {busy ? "Deleting…" : "Delete post"}
           </Button>
         </DialogFooter>

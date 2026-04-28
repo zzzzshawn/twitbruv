@@ -44,6 +44,8 @@ export const qk = {
 
   trending: () => ["trendingHashtags"] as const,
 
+  suggestedUsers: () => ["suggestedUsers"] as const,
+
   search: (q: string) => ["search", q] as const,
 
   savedSearches: () => ["savedSearches"] as const,
@@ -77,7 +79,8 @@ export const qk = {
 
   connectors: {
     githubMe: () => ["connectors", "github", "me"] as const,
-    userGithub: (handle: string) => ["connectors", "github", "user", handle] as const,
+    userGithub: (handle: string) =>
+      ["connectors", "github", "user", handle] as const,
   },
 
   blocks: () => ["blocks"] as const,
@@ -103,11 +106,9 @@ export const qk = {
   admin: {
     stats: () => ["admin", "stats"] as const,
     online: () => ["admin", "online"] as const,
-    users: (filters: AdminUsersFilters) =>
-      ["admin", "users", filters] as const,
+    users: (filters: AdminUsersFilters) => ["admin", "users", filters] as const,
     user: (id: string) => ["admin", "user", id] as const,
-    posts: (filters: AdminPostFilters) =>
-      ["admin", "posts", filters] as const,
+    posts: (filters: AdminPostFilters) => ["admin", "posts", filters] as const,
     reports: (status?: string) =>
       ["admin", "reports", status ?? "all"] as const,
     report: (id: string) => ["admin", "report", id] as const,

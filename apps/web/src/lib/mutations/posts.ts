@@ -11,7 +11,9 @@ export function useTogglePostLike(innerPost: Post) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: () =>
-      innerPost.viewer?.liked ? api.unlike(innerPost.id) : api.like(innerPost.id),
+      innerPost.viewer?.liked
+        ? api.unlike(innerPost.id)
+        : api.like(innerPost.id),
     onMutate: () => {
       const was = innerPost.viewer?.liked ?? false
       updatePostEverywhere(qc, innerPost.id, (p) => ({

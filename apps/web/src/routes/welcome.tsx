@@ -15,8 +15,8 @@ export const Route = createFileRoute("/welcome")({
 
 function Welcome() {
   return (
-    <PageFrame>
-      <main className="mx-auto max-w-3xl px-4 py-14">
+    <PageFrame width="marketing">
+      <div className="px-4 py-14">
         <h1 className="text-2xl font-semibold tracking-tight text-primary">
           A calm place to build in public
         </h1>
@@ -79,7 +79,7 @@ function Welcome() {
             </Card.Header>
           </Card>
         </div>
-      </main>
+      </div>
     </PageFrame>
   )
 }

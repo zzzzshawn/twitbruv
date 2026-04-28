@@ -10,6 +10,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
+import { ShieldCheckIcon } from "@heroicons/react/24/solid"
 import { Button } from "@workspace/ui/components/button"
 import { Textarea } from "@workspace/ui/components/textarea"
 import {
@@ -33,6 +34,7 @@ import { qk } from "../lib/query-keys"
 import { useInfiniteScrollSentinel } from "../lib/use-infinite-scroll-sentinel"
 import { Avatar } from "../components/avatar"
 import { PageEmpty, PageLoading } from "../components/page-surface"
+import { PageFrame } from "../components/page-frame"
 import {
   UnderlineTabButton,
   UnderlineTabRow,
@@ -64,18 +66,13 @@ function AdminReports() {
   const sentinelRef = useRef<HTMLDivElement | null>(null)
   const [scrollRoot, setScrollRoot] = useState<HTMLDivElement | null>(null)
 
-  const {
-    data,
-    isPending,
-    isFetchingNextPage,
-    fetchNextPage,
-    hasNextPage,
-  } = useInfiniteQuery({
-    queryKey: qk.admin.reports(status),
-    queryFn: ({ pageParam }) => api.adminReports(status, pageParam),
-    initialPageParam: undefined as string | undefined,
-    getNextPageParam: (last) => last.nextCursor ?? undefined,
-  })
+  const { data, isPending, isFetchingNextPage, fetchNextPage, hasNextPage } =
+    useInfiniteQuery({
+      queryKey: qk.admin.reports(status),
+      queryFn: ({ pageParam }) => api.adminReports(status, pageParam),
+      initialPageParam: undefined as string | undefined,
+      getNextPageParam: (last) => last.nextCursor ?? undefined,
+    })
 
   const reports = useMemo(
     () => data?.pages.flatMap((p) => p.reports) ?? [],
@@ -109,7 +106,7 @@ function AdminReports() {
         id: "subject",
         header: "Subject",
         cell: ({ row }) => (
-          <span className="font-mono text-xs text-muted-foreground">
+          <span className="text-muted-foreground font-mono text-xs">
             {row.original.subjectType} {row.original.subjectId.slice(0, 8)}
           </span>
         ),
@@ -121,7 +118,7 @@ function AdminReports() {
           const rep = row.original.reporter
           if (!rep) {
             return (
-              <span className="text-xs text-muted-foreground">(unknown)</span>
+              <span className="text-muted-foreground text-xs">(unknown)</span>
             )
           }
           return (
@@ -143,7 +140,7 @@ function AdminReports() {
                   @{rep.handle}
                 </Link>
               ) : (
-                <span className="text-xs text-muted-foreground">(unknown)</span>
+                <span className="text-muted-foreground text-xs">(unknown)</span>
               )}
             </div>
           )
@@ -153,7 +150,7 @@ function AdminReports() {
         id: "createdAt",
         header: "Reported",
         cell: ({ row }) => (
-          <time className="text-xs text-muted-foreground">
+          <time className="text-muted-foreground text-xs">
             {new Date(row.original.createdAt).toLocaleString()}
           </time>
         ),
@@ -169,7 +166,7 @@ function AdminReports() {
   })
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col">
+    <PageFrame className="flex min-h-0 flex-1 flex-col">
       <UnderlineTabRow className="px-0">
         {STATUSES.map((s) => (
           <UnderlineTabButton
@@ -191,14 +188,15 @@ function AdminReports() {
         )}
         {!isPending && reports.length === 0 && (
           <PageEmpty
+            icon={<ShieldCheckIcon />}
             title={`No ${status} reports`}
-            description="Change the status filter or check back later."
+            description="Change the status filter above or check back later. The queue is clear."
             className="py-8"
           />
         )}
         {reports.length > 0 && (
           <Table>
-            <TableHeader className="sticky top-0 z-10 bg-background">
+            <TableHeader className="bg-background sticky top-0 z-10">
               {table.getHeaderGroups().map((hg) => (
                 <TableRow key={hg.id}>
                   {hg.headers.map((header) => (
@@ -239,7 +237,7 @@ function AdminReports() {
         )}
         <div ref={sentinelRef} aria-hidden className="h-px" />
         {hasNextPage && (
-          <div className="flex justify-center py-3 text-xs text-muted-foreground">
+          <div className="text-muted-foreground flex justify-center py-3 text-xs">
             {isFetchingNextPage ? "loading…" : ""}
           </div>
         )}
@@ -252,7 +250,7 @@ function AdminReports() {
           void qc.invalidateQueries({ queryKey: qk.admin.reports(status) })
         }}
       />
-    </main>
+    </PageFrame>
   )
 }
 
@@ -267,10 +265,7 @@ function ReportSheet({
 }) {
   const qc = useQueryClient()
 
-  const {
-    data: detail,
-    isPending: loading,
-  } = useQuery({
+  const { data: detail, isPending: loading } = useQuery({
     queryKey: qk.admin.report(reportId ?? ""),
     queryFn: () => api.adminReportDetail(reportId!),
     enabled: !!reportId,
@@ -312,7 +307,7 @@ function ReportSheet({
         side="right"
         className="flex w-full flex-col gap-0 sm:max-w-md"
       >
-        <SheetHeader className="border-b border-border">
+        <SheetHeader className="border-border border-b">
           <SheetTitle>{detail?.reason ?? "Report"}</SheetTitle>
           <SheetDescription>
             {detail
@@ -335,7 +330,7 @@ function ReportSheet({
               <SubjectPreview subject={detail.subject} />
               {detail.resolutionNote && !isOpen && (
                 <Section label="Resolution note">
-                  <p className="whitespace-pre-wrap text-muted-foreground">
+                  <p className="text-muted-foreground whitespace-pre-wrap">
                     {detail.resolutionNote}
                   </p>
                 </Section>
@@ -355,7 +350,7 @@ function ReportSheet({
           )}
         </div>
         {isOpen && (
-          <SheetFooter className="flex-row justify-end gap-2 border-t border-border">
+          <SheetFooter className="border-border flex-row justify-end gap-2 border-t">
             <Button
               size="sm"
               variant="transparent"
@@ -396,7 +391,7 @@ function Section({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase">
+      <span className="text-muted-foreground text-[10px] font-semibold tracking-wider uppercase">
         {label}
       </span>
       {children}
@@ -452,7 +447,7 @@ function SubjectPreview({ subject }: { subject: AdminReportSubject | null }) {
     const p = subject.post
     return (
       <Section label="Reported post">
-        <div className="rounded-md border border-border p-3">
+        <div className="border-border rounded-md border p-3">
           <div className="mb-2 flex items-center gap-2">
             <Avatar
               initial={(p.author?.displayName || p.author?.handle || "?")
@@ -473,18 +468,18 @@ function SubjectPreview({ subject }: { subject: AdminReportSubject | null }) {
               ) : (
                 <span className="font-semibold">(deleted user)</span>
               )}
-              <span className="ml-2 text-muted-foreground">
+              <span className="text-muted-foreground ml-2">
                 {new Date(p.createdAt).toLocaleString()}
               </span>
             </div>
           </div>
           {p.deletedAt && (
-            <p className="mb-2 text-xs text-destructive">
+            <p className="text-destructive mb-2 text-xs">
               Deleted {new Date(p.deletedAt).toLocaleString()}
             </p>
           )}
           {p.sensitive && (
-            <p className="mb-2 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mb-2 text-xs">
               Marked sensitive{p.contentWarning ? `: ${p.contentWarning}` : ""}
             </p>
           )}
@@ -493,7 +488,7 @@ function SubjectPreview({ subject }: { subject: AdminReportSubject | null }) {
             <Link
               to="/$handle/p/$id"
               params={{ handle: p.author.handle, id: p.id }}
-              className="mt-2 inline-block text-xs text-muted-foreground hover:underline"
+              className="text-muted-foreground mt-2 inline-block text-xs hover:underline"
               target="_blank"
               rel="noreferrer"
             >
@@ -508,7 +503,7 @@ function SubjectPreview({ subject }: { subject: AdminReportSubject | null }) {
     const u = subject.user
     return (
       <Section label="Reported user">
-        <div className="flex items-center gap-2 rounded-md border border-border p-3">
+        <div className="border-border flex items-center gap-2 rounded-md border p-3">
           <Avatar
             initial={(u.displayName || u.handle || "?")
               .slice(0, 1)
@@ -539,7 +534,7 @@ function SubjectPreview({ subject }: { subject: AdminReportSubject | null }) {
   }
   return (
     <Section label="Subject">
-      <span className="font-mono text-xs text-muted-foreground">
+      <span className="text-muted-foreground font-mono text-xs">
         {subject.subjectType} {subject.subjectId}
       </span>
     </Section>

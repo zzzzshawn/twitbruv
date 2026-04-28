@@ -1,7 +1,13 @@
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo, useState } from "react"
-import { LockClosedIcon, MapPinIcon, UsersIcon } from "@heroicons/react/24/solid"
+import {
+  ListBulletIcon,
+  LockClosedIcon,
+  MapPinIcon,
+  PlusIcon,
+  UsersIcon,
+} from "@heroicons/react/24/solid"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
@@ -14,6 +20,7 @@ import { authClient } from "../lib/auth"
 import { usePageHeader } from "../components/app-page-header"
 import { PageEmpty, PageError, PageLoading } from "../components/page-surface"
 import { PageFrame } from "../components/page-frame"
+
 export const Route = createFileRoute("/lists/")({ component: ListsIndex })
 
 function ListsIndex() {
@@ -37,7 +44,11 @@ function ListsIndex() {
   })
 
   const error =
-    listsErr instanceof ApiError ? listsErr.message : listsErr ? "load failed" : null
+    listsErr instanceof ApiError
+      ? listsErr.message
+      : listsErr
+        ? "load failed"
+        : null
 
   const refresh = useCallback(async () => {
     await qc.invalidateQueries({ queryKey: qk.lists.mine() })
@@ -62,99 +73,101 @@ function ListsIndex() {
 
   return (
     <PageFrame>
-      <main>
-        {creating && (
-          <CreateListForm
-            onCancel={() => setCreating(false)}
-            onCreated={async () => {
-              setCreating(false)
-              await refresh()
-            }}
-          />
-        )}
+      {creating && (
+        <CreateListForm
+          onCancel={() => setCreating(false)}
+          onCreated={async () => {
+            setCreating(false)
+            await refresh()
+          }}
+        />
+      )}
 
-        {error && <PageError message={error} />}
+      {error && <PageError message={error} />}
 
-        {listsPending ? (
-          <PageLoading label="Loading…" />
-        ) : lists.length === 0 ? (
-          <PageEmpty
-            title="No lists yet"
-            description="Create a list, then add members to build a focused timeline."
-          />
-        ) : (
-          <ul className="divide-y divide-neutral">
-            {lists.map((list) => (
-              <li
-                key={list.id}
-                className="flex items-start gap-2 px-4 py-3 transition hover:bg-base-2/40"
+      {listsPending ? (
+        <PageLoading label="Loading…" />
+      ) : lists.length === 0 ? (
+        <PageEmpty
+          icon={<ListBulletIcon />}
+          title="No lists yet"
+          description="Curate a focused timeline by grouping people you don't want to lose in the main feed."
+          actions={
+            !creating ? (
+              <Button size="sm" variant="primary" onClick={toggleCreating}>
+                New list
+              </Button>
+            ) : null
+          }
+        />
+      ) : (
+        <ul className="divide-y divide-neutral">
+          {lists.map((list) => (
+            <li
+              key={list.id}
+              className="flex items-start gap-2 px-4 py-3 transition hover:bg-base-2/40"
+            >
+              <Link
+                to="/lists/$id"
+                params={{ id: list.id }}
+                className="min-w-0 flex-1"
               >
-                <Link
-                  to="/lists/$id"
-                  params={{ id: list.id }}
-                  className="min-w-0 flex-1"
-                >
-                  <div className="flex items-center justify-between">
-                    <h2 className="flex items-center gap-1.5 text-sm font-semibold">
-                      {list.pinnedAt && (
-                        <MapPinIcon
-                          className="size-3 text-primary"
-                        />
-                      )}
-                      {list.title}
-                    </h2>
-                    {list.isPrivate && (
-                        <span className="flex items-center gap-1 text-xs text-tertiary">
-                        <LockClosedIcon className="size-3" /> private
-                      </span>
+                <div className="flex items-center justify-between">
+                  <h2 className="flex items-center gap-1.5 text-sm font-semibold">
+                    {list.pinnedAt && (
+                      <MapPinIcon className="size-3 text-primary" />
                     )}
-                  </div>
-                  {list.description && (
-                    <p className="mt-1 text-sm text-tertiary">
-                      {list.description}
-                    </p>
+                    {list.title}
+                  </h2>
+                  {list.isPrivate && (
+                    <span className="flex items-center gap-1 text-xs text-tertiary">
+                      <LockClosedIcon className="size-3" /> private
+                    </span>
                   )}
-                  <p className="mt-1 flex items-center gap-1 text-xs text-tertiary">
-                    <UsersIcon className="size-3" />
-                    {list.memberCount}{" "}
-                    {list.memberCount === 1 ? "member" : "members"}
+                </div>
+                {list.description && (
+                  <p className="mt-1 text-sm text-tertiary">
+                    {list.description}
                   </p>
-                </Link>
-                <Button
-                  size="sm"
-                  variant="transparent"
-                  aria-label={
-                    list.pinnedAt ? "unpin list" : "pin list to profile"
+                )}
+                <p className="mt-1 flex items-center gap-1 text-xs text-tertiary">
+                  <UsersIcon className="size-3" />
+                  {list.memberCount}{" "}
+                  {list.memberCount === 1 ? "member" : "members"}
+                </p>
+              </Link>
+              <Button
+                size="sm"
+                variant="transparent"
+                aria-label={
+                  list.pinnedAt ? "unpin list" : "pin list to profile"
+                }
+                title={
+                  list.pinnedAt
+                    ? "Pinned to your profile — click to unpin"
+                    : "Pin to your profile"
+                }
+                onClick={async (e) => {
+                  e.preventDefault()
+                  try {
+                    if (list.pinnedAt) await api.unpinList(list.id)
+                    else await api.pinList(list.id)
+                    await refresh()
+                  } catch {
+                    /* swallow — refresh on next mount */
                   }
-                  title={
-                    list.pinnedAt
-                      ? "Pinned to your profile — click to unpin"
-                      : "Pin to your profile"
-                  }
-                  onClick={async (e) => {
-                    e.preventDefault()
-                    try {
-                      if (list.pinnedAt) await api.unpinList(list.id)
-                      else await api.pinList(list.id)
-                      await refresh()
-                    } catch {
-                      /* swallow — refresh on next mount */
-                    }
-                  }}
-                >
-                  {list.pinnedAt ? (
-                    <MapPinIcon
-                      className="size-3.5 text-primary"
-                    />
-                  ) : (
-                    <MapPinIcon className="size-3.5" />
-                  )}
-                </Button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </main>
+                }}
+              >
+                {list.pinnedAt ? (
+                  <MapPinIcon className="size-3.5 text-primary" />
+                ) : (
+                  <MapPinIcon className="size-3.5" />
+                )}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
     </PageFrame>
   )
 }
@@ -251,10 +264,7 @@ function CreateListForm({
           />
         </div>
         <div className="flex items-center justify-between gap-2 pt-0.5">
-          <Label
-            htmlFor="list-private"
-            className="text-xs text-tertiary"
-          >
+          <Label htmlFor="list-private" className="text-xs text-tertiary">
             Private list
           </Label>
           <Switch
@@ -266,7 +276,12 @@ function CreateListForm({
       </div>
       {error && <p className="text-xs text-danger">{error}</p>}
       <div className="mt-2 flex items-center justify-end gap-2">
-        <Button size="sm" variant="transparent" onClick={onCancel} disabled={busy}>
+        <Button
+          size="sm"
+          variant="transparent"
+          onClick={onCancel}
+          disabled={busy}
+        >
           Cancel
         </Button>
         <Button

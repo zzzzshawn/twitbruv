@@ -5,9 +5,11 @@ import {
   BookmarkIcon,
   MagnifyingGlassIcon,
   SparklesIcon,
+  UserPlusIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid"
 import { BookmarkIcon as BookmarkIconOutline } from "@heroicons/react/24/outline"
+import { Avatar } from "../components/avatar"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Alert, AlertDescription } from "@workspace/ui/components/alert"
@@ -47,9 +49,7 @@ function SearchInner({ initialQuery }: { initialQuery: string }) {
   const qc = useQueryClient()
   const { me } = useMe()
   const [draft, setDraft] = useState(initialQuery)
-  const [savedActionError, setSavedActionError] = useState<string | null>(
-    null
-  )
+  const [savedActionError, setSavedActionError] = useState<string | null>(null)
 
   const query = draft.trim()
 
@@ -76,6 +76,13 @@ function SearchInner({ initialQuery }: { initialQuery: string }) {
     queryKey: qk.search(query),
     queryFn: () => api.search(query),
     enabled: query.length >= 2,
+  })
+
+  const { data: suggested = [] } = useQuery({
+    queryKey: qk.suggestedUsers(),
+    queryFn: async () => (await api.suggestedUsers()).users,
+    enabled: !!me && query.length < 2,
+    staleTime: 5 * 60 * 1000,
   })
 
   const users: Array<PublicUser> = searchResult?.users ?? []
@@ -130,181 +137,179 @@ function SearchInner({ initialQuery }: { initialQuery: string }) {
 
   return (
     <PageFrame>
-      <main>
-        <div className="border-b border-neutral">
-          <form onSubmit={onSubmit} className="px-4 py-3">
-            <div className="relative">
-              <MagnifyingGlassIcon
-                className="pointer-events-none absolute top-1/2 left-2 -translate-y-1/2 size-3.5 text-tertiary"
-              />
-              <Input
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                placeholder='Search people and posts. Try "from:lucas has:media".'
-                className="pl-7"
-                aria-label="search"
-              />
+      <div className="border-b border-neutral">
+        <form onSubmit={onSubmit} className="px-4 py-3">
+          <div className="relative">
+            <MagnifyingGlassIcon className="pointer-events-none absolute top-1/2 left-2 size-3.5 -translate-y-1/2 text-tertiary" />
+            <Input
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              placeholder='Search people and posts. Try "from:lucas has:media".'
+              className="pl-7"
+              aria-label="search"
+            />
+          </div>
+          {me && query.length >= 2 && (
+            <div className="mt-2 flex items-center justify-between gap-2 text-xs">
+              <button
+                type="button"
+                onClick={toggleSaved}
+                className="text-primary hover:underline"
+                aria-pressed={Boolean(activeSavedId)}
+              >
+                {activeSavedId ? (
+                  <span className="inline-flex items-center gap-1">
+                    <BookmarkIcon className="size-3.5" />
+                    Saved
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1">
+                    <BookmarkIconOutline className="size-3.5" />
+                    Save this search
+                  </span>
+                )}
+              </button>
+              <details className="text-tertiary">
+                <summary className="cursor-pointer select-none">
+                  Operators
+                </summary>
+                <div className="mt-1 max-w-md text-right text-[11px] leading-snug">
+                  <code>from:user</code> · <code>to:user</code> ·{" "}
+                  <code>has:media</code> · <code>has:link</code> ·{" "}
+                  <code>has:poll</code> · <code>lang:en</code> ·{" "}
+                  <code>since:YYYY-MM-DD</code> · <code>until:YYYY-MM-DD</code>{" "}
+                  · <code>min_likes:10</code> · <code>min_replies:5</code>
+                </div>
+              </details>
             </div>
-            {me && query.length >= 2 && (
-              <div className="mt-2 flex items-center justify-between gap-2 text-xs">
-                <button
-                  type="button"
-                  onClick={toggleSaved}
-                  className="text-primary hover:underline"
-                  aria-pressed={Boolean(activeSavedId)}
+          )}
+          {(savedError || savedActionError) && (
+            <Alert variant="destructive" className="mt-2 text-left">
+              <AlertDescription className="text-xs">
+                {savedActionError ?? savedError}
+              </AlertDescription>
+            </Alert>
+          )}
+        </form>
+      </div>
+
+      {me && saved.length > 0 && (
+        <section className="border-b border-neutral px-4 py-2">
+          <h2 className="mb-1 text-xs font-medium text-tertiary">
+            Saved searches
+          </h2>
+          <div className="flex flex-wrap gap-1.5">
+            {saved.map((s) => (
+              <span key={s.id} className="inline-flex items-center gap-0.5">
+                <Button
+                  size="sm"
+                  variant={s.query === query ? "outline" : "transparent"}
+                  onClick={() => {
+                    setDraft(s.query)
+                    navigate({ to: "/search", search: { q: s.query } })
+                  }}
+                  className="rounded-full"
                 >
-                  {activeSavedId ? (
-                    <span className="inline-flex items-center gap-1">
-                      <BookmarkIcon className="size-3.5" />
-                      Saved
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1">
-                      <BookmarkIconOutline className="size-3.5" />
-                      Save this search
-                    </span>
+                  <span className="max-w-[18ch] truncate">{s.query}</span>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="transparent"
+                  aria-label={`delete saved search ${s.query}`}
+                  onClick={async () => {
+                    try {
+                      await api.deleteSavedSearch(s.id)
+                      await qc.invalidateQueries({
+                        queryKey: qk.savedSearches(),
+                      })
+                    } catch {
+                      await qc.invalidateQueries({
+                        queryKey: qk.savedSearches(),
+                      })
+                    }
+                  }}
+                >
+                  <XMarkIcon className="size-2.5" />
+                </Button>
+              </span>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {isChessSearch && (
+        <section className="flex items-center justify-between border-b border-neutral p-4 hover:bg-base-2/40">
+          <div className="flex items-center gap-4">
+            <div className="flex size-12 items-center justify-center rounded bg-base-2">
+              <SparklesIcon className="text-foreground size-6" />
+            </div>
+            <div>
+              <h3 className="font-semibold">Play chess online</h3>
+              <p className="text-sm text-tertiary">
+                Challenge friends or find a match.
+              </p>
+            </div>
+          </div>
+
+          <Dialog>
+            <Button render={<DialogTrigger />}>Play now</Button>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Challenge to Chess</DialogTitle>
+              </DialogHeader>
+              <form
+                onSubmit={submitChallenge}
+                className="mt-4 flex flex-col gap-4"
+              >
+                <div className="flex flex-col gap-2">
+                  <label htmlFor="targetUser" className="text-sm font-medium">
+                    Opponent's Handle
+                  </label>
+                  <Input
+                    id="targetUser"
+                    placeholder="@handle"
+                    value={challengeTarget}
+                    onChange={(e) => setChallengeTarget(e.target.value)}
+                  />
+                  {challengeError && (
+                    <p className="text-destructive text-xs">{challengeError}</p>
                   )}
-                </button>
-                <details className="text-tertiary">
-                  <summary className="cursor-pointer select-none">
-                    Operators
-                  </summary>
-                  <div className="mt-1 max-w-md text-right text-[11px] leading-snug">
-                    <code>from:user</code> · <code>to:user</code> ·{" "}
-                    <code>has:media</code> · <code>has:link</code> ·{" "}
-                    <code>has:poll</code> · <code>lang:en</code> ·{" "}
-                    <code>since:YYYY-MM-DD</code> ·{" "}
-                    <code>until:YYYY-MM-DD</code> · <code>min_likes:10</code> ·{" "}
-                    <code>min_replies:5</code>
-                  </div>
-                </details>
-              </div>
-            )}
-            {(savedError || savedActionError) && (
-              <Alert variant="destructive" className="mt-2 text-left">
-                <AlertDescription className="text-xs">
-                  {savedActionError ?? savedError}
-                </AlertDescription>
-              </Alert>
-            )}
-          </form>
-        </div>
+                </div>
+                <Button type="submit" disabled={!challengeTarget}>
+                  Send Challenge
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </section>
+      )}
 
-        {me && saved.length > 0 && (
-          <section className="border-b border-neutral px-4 py-2">
-            <h2 className="mb-1 text-xs font-medium text-tertiary">
-              Saved searches
-            </h2>
-            <div className="flex flex-wrap gap-1.5">
-              {saved.map((s) => (
-                <span key={s.id} className="inline-flex items-center gap-0.5">
-                  <Button
-                    size="sm"
-                    variant={s.query === query ? "outline" : "transparent"}
-                    onClick={() => {
-                      setDraft(s.query)
-                      navigate({ to: "/search", search: { q: s.query } })
-                    }}
-                    className="rounded-full"
-                  >
-                    <span className="max-w-[18ch] truncate">{s.query}</span>
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="transparent"
-                    aria-label={`delete saved search ${s.query}`}
-                    onClick={async () => {
-                      try {
-                        await api.deleteSavedSearch(s.id)
-                        await qc.invalidateQueries({
-                          queryKey: qk.savedSearches(),
-                        })
-                      } catch {
-                        await qc.invalidateQueries({
-                          queryKey: qk.savedSearches(),
-                        })
-                      }
-                    }}
-                  >
-                    <XMarkIcon className="size-2.5" />
-                  </Button>
-                </span>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {isChessSearch && (
-          <section className="flex items-center justify-between border-b border-neutral p-4 hover:bg-base-2/40">
-            <div className="flex items-center gap-4">
-              <div className="flex size-12 items-center justify-center rounded bg-base-2">
-                <SparklesIcon className="size-6 text-foreground" />
-              </div>
-              <div>
-                <h3 className="font-semibold">Play chess online</h3>
-                <p className="text-sm text-tertiary">
-                  Challenge friends or find a match.
-                </p>
-              </div>
-            </div>
-
-            <Dialog>
-              <Button render={<DialogTrigger />}>Play now</Button>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Challenge to Chess</DialogTitle>
-                </DialogHeader>
-                <form
-                  onSubmit={submitChallenge}
-                  className="mt-4 flex flex-col gap-4"
-                >
-                  <div className="flex flex-col gap-2">
-                    <label htmlFor="targetUser" className="text-sm font-medium">
-                      Opponent's Handle
-                    </label>
-                    <Input
-                      id="targetUser"
-                      placeholder="@handle"
-                      value={challengeTarget}
-                      onChange={(e) => setChallengeTarget(e.target.value)}
-                    />
-                    {challengeError && (
-                      <p className="text-xs text-destructive">
-                        {challengeError}
-                      </p>
-                    )}
-                  </div>
-                  <Button type="submit" disabled={!challengeTarget}>
-                    Send Challenge
-                  </Button>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </section>
-        )}
-
-        {query.length < 2 ? (
-          <p className="px-4 py-6 text-sm text-tertiary">
+      {query.length < 2 ? (
+        <>
+          <p className="px-4 py-4 text-xs text-tertiary">
             Enter at least 2 characters. Operators like <code>from:</code>,{" "}
             <code>has:media</code>, and <code>since:</code> are supported.
           </p>
-        ) : loading ? (
-          <PageLoading label="Searching…" />
-        ) : (
-          <>
-            {users.length > 0 && (
-              <section className="border-b border-neutral">
-                <h2 className="px-4 py-2 text-xs font-medium text-tertiary">
-                  People
-                </h2>
-                {users.map((u) =>
-                  u.handle ? (
-                    <Link
-                      key={u.id}
-                      to="/$handle"
-                      params={{ handle: u.handle }}
-                      className="block border-t border-neutral px-4 py-3 hover:bg-base-2/40"
-                    >
+          {me && suggested.length > 0 && (
+            <section>
+              <h2 className="flex items-center gap-1.5 border-t border-neutral px-4 py-2 text-xs font-medium text-tertiary">
+                <UserPlusIcon className="size-3.5" />
+                Suggested for you
+              </h2>
+              {suggested.map((u) =>
+                u.handle ? (
+                  <Link
+                    key={u.id}
+                    to="/$handle"
+                    params={{ handle: u.handle }}
+                    className="flex items-start gap-3 border-t border-neutral px-4 py-3 hover:bg-base-2/40"
+                  >
+                    <Avatar
+                      src={u.avatarUrl}
+                      initial={(u.displayName || u.handle).slice(0, 2)}
+                      size={40}
+                    />
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1 text-sm font-medium">
                         <span className="truncate">
                           {u.displayName || `@${u.handle}`}
@@ -313,39 +318,75 @@ function SearchInner({ initialQuery }: { initialQuery: string }) {
                           <VerifiedBadge size={14} role={u.role} />
                         )}
                       </div>
-                      <div className="text-xs text-tertiary">
-                        @{u.handle}
-                      </div>
+                      <div className="text-xs text-tertiary">@{u.handle}</div>
                       {u.bio && (
                         <p className="mt-1 line-clamp-2 text-xs text-tertiary">
                           {u.bio}
                         </p>
                       )}
-                    </Link>
-                  ) : null
-                )}
-              </section>
-            )}
-            {posts.length > 0 && (
-              <section>
-                <h2 className="px-4 py-2 text-xs font-medium text-tertiary">
-                  Posts
-                </h2>
-                {posts.map((p) => (
-                  <PostCard key={p.id} post={p} />
-                ))}
-              </section>
-            )}
-            {users.length === 0 && posts.length === 0 && (
-              <PageEmpty
-                title="No matches"
-                description="Try a different term or a search operator from the help above."
-                className="py-8"
-              />
-            )}
-          </>
-        )}
-      </main>
+                    </div>
+                  </Link>
+                ) : null
+              )}
+            </section>
+          )}
+        </>
+      ) : loading ? (
+        <PageLoading label="Searching…" />
+      ) : (
+        <>
+          {users.length > 0 && (
+            <section className="border-b border-neutral">
+              <h2 className="px-4 py-2 text-xs font-medium text-tertiary">
+                People
+              </h2>
+              {users.map((u) =>
+                u.handle ? (
+                  <Link
+                    key={u.id}
+                    to="/$handle"
+                    params={{ handle: u.handle }}
+                    className="block border-t border-neutral px-4 py-3 hover:bg-base-2/40"
+                  >
+                    <div className="flex items-center gap-1 text-sm font-medium">
+                      <span className="truncate">
+                        {u.displayName || `@${u.handle}`}
+                      </span>
+                      {u.isVerified && (
+                        <VerifiedBadge size={14} role={u.role} />
+                      )}
+                    </div>
+                    <div className="text-xs text-tertiary">@{u.handle}</div>
+                    {u.bio && (
+                      <p className="mt-1 line-clamp-2 text-xs text-tertiary">
+                        {u.bio}
+                      </p>
+                    )}
+                  </Link>
+                ) : null
+              )}
+            </section>
+          )}
+          {posts.length > 0 && (
+            <section>
+              <h2 className="px-4 py-2 text-xs font-medium text-tertiary">
+                Posts
+              </h2>
+              {posts.map((p) => (
+                <PostCard key={p.id} post={p} />
+              ))}
+            </section>
+          )}
+          {users.length === 0 && posts.length === 0 && (
+            <PageEmpty
+              icon={<MagnifyingGlassIcon />}
+              title="No matches"
+              description="Try a different term, or use a search operator like from: or has:media."
+              className="py-8"
+            />
+          )}
+        </>
+      )}
     </PageFrame>
   )
 }

@@ -1,15 +1,25 @@
 import type { ReactNode } from "react"
 
-const base = "mx-auto w-full min-w-0 md:max-w-[640px]"
+const base = "mx-auto w-full min-w-0"
+
+const widthClass = {
+  narrow: "md:max-w-md",
+  default: "md:max-w-feed",
+  wide: "md:max-w-4xl",
+  marketing: "md:max-w-3xl",
+} as const
+
+export type PageFrameWidth = keyof typeof widthClass
 
 export function PageFrame({
   children,
   className,
+  width = "default",
 }: {
   children: ReactNode
   className?: string
+  width?: PageFrameWidth
 }) {
-  return (
-    <div className={className ? `${base} ${className}` : base}>{children}</div>
-  )
+  const classes = [base, widthClass[width], className].filter(Boolean).join(" ")
+  return <div className={classes}>{children}</div>
 }

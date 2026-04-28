@@ -26,10 +26,7 @@ function EditArticle() {
     if (!isPending && !session) router.navigate({ to: "/login" })
   }, [isPending, session, router])
 
-  const {
-    data: article,
-    error: articleQueryError,
-  } = useQuery({
+  const { data: article, error: articleQueryError } = useQuery({
     queryKey: qk.articles.byId(id),
     queryFn: async () => (await api.article(id)).article,
   })
@@ -97,14 +94,14 @@ function EditArticle() {
     return {
       plainTitle: true,
       title: (
-        <span className="truncate text-sm font-semibold text-muted-foreground">
+        <span className="text-muted-foreground truncate text-sm font-semibold">
           {article.status === "draft" ? "draft" : "editing"} ·{" "}
           {article.readingMinutes} min read
         </span>
       ),
       action: (
         <div className="flex items-center gap-2">
-          {error && <span className="text-xs text-destructive">{error}</span>}
+          {error && <span className="text-destructive text-xs">{error}</span>}
           {article.status !== "published" && (
             <Button
               variant="outline"
@@ -135,18 +132,18 @@ function EditArticle() {
   if (loadError) {
     return (
       <PageFrame>
-        <main className="px-4 py-16 text-center">
-          <p className="text-sm text-muted-foreground">article not found</p>
-        </main>
+        <div className="px-4 py-16 text-center">
+          <p className="text-muted-foreground text-sm">article not found</p>
+        </div>
       </PageFrame>
     )
   }
   if (!article && !loadError) {
     return (
       <PageFrame>
-        <main className="px-4 py-16">
-          <p className="text-sm text-muted-foreground">loading…</p>
-        </main>
+        <div className="px-4 py-16">
+          <p className="text-muted-foreground text-sm">loading…</p>
+        </div>
       </PageFrame>
     )
   }
@@ -157,29 +154,27 @@ function EditArticle() {
 
   return (
     <PageFrame>
-      <main>
-        <div className="px-4 pt-6">
-          <CoverPicker
-            initialUrl={article.coverUrl ?? null}
-            onChange={setCoverMediaId}
-          />
-          <Input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="title"
-            className="mt-4 h-auto border-0 px-0 text-2xl font-semibold shadow-none focus-visible:ring-0"
-            maxLength={150}
-          />
-          <Input
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
-            placeholder="subtitle (optional)"
-            className="mt-2 h-auto border-0 px-0 text-sm text-muted-foreground shadow-none focus-visible:ring-0"
-            maxLength={200}
-          />
-        </div>
-        <Editor initialStateJson={initialStateJson} onChange={setBody} />
-      </main>
+      <div className="px-4 pt-6">
+        <CoverPicker
+          initialUrl={article.coverUrl ?? null}
+          onChange={setCoverMediaId}
+        />
+        <Input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="title"
+          className="mt-4 h-auto border-0 px-0 text-2xl font-semibold shadow-none focus-visible:ring-0"
+          maxLength={150}
+        />
+        <Input
+          value={subtitle}
+          onChange={(e) => setSubtitle(e.target.value)}
+          placeholder="subtitle (optional)"
+          className="text-muted-foreground mt-2 h-auto border-0 px-0 text-sm shadow-none focus-visible:ring-0"
+          maxLength={200}
+        />
+      </div>
+      <Editor initialStateJson={initialStateJson} onChange={setBody} />
     </PageFrame>
   )
 }

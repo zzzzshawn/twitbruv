@@ -27,11 +27,11 @@ function Following() {
           <Link
             to="/$handle"
             params={{ handle }}
-            className="shrink-0 text-xs text-muted-foreground hover:underline"
+            className="text-muted-foreground shrink-0 text-xs hover:underline"
           >
             ← @{handle}
           </Link>
-          <h1 className="truncate text-base leading-tight font-semibold text-foreground">
+          <h1 className="text-foreground truncate text-base leading-tight font-semibold">
             Following
           </h1>
         </div>
@@ -43,13 +43,12 @@ function Following() {
 
   return (
     <PageFrame>
-      <main>
-        <UserList
-          queryKey={listKey}
-          load={load}
-          emptyMessage={`@${handle} isn't following anyone yet.`}
-        />
-      </main>
+      <UserList
+        queryKey={listKey}
+        load={load}
+        emptyTitle={`@${handle} isn't following anyone yet`}
+        emptyMessage="Once they follow people, you'll see them here."
+      />
     </PageFrame>
   )
 }

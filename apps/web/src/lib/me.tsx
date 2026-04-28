@@ -39,8 +39,7 @@ export function MeProvider({
     qc.removeQueries({ queryKey: qk.me() })
     try {
       await authClient.signOut()
-    } catch {
-    }
+    } catch {}
     if (
       typeof window !== "undefined" &&
       window.location.pathname !== "/login"
@@ -96,8 +95,7 @@ export function MeProvider({
     me = meQuery.data?.user ?? null
   }
 
-  const isLoading =
-    Boolean(session) && !sessionPending && meQuery.isPending
+  const isLoading = Boolean(session) && !sessionPending && meQuery.isPending
 
   const wasAuthed = useRef(false)
   useEffect(() => {

@@ -12,6 +12,7 @@ import { DatabuddyDevtools } from "@databuddy/devtools/react"
 import { Toaster } from "sonner"
 import appCss from "@workspace/ui/globals.css?url"
 import { Button } from "@workspace/ui/components/button"
+import { Agentation } from "agentation"
 import { AppShell } from "../components/app-shell"
 import { EmailVerifiedGate } from "../components/email-verified-gate"
 import { MaintenanceScreen } from "../components/maintenance-screen"
@@ -22,9 +23,9 @@ import { APP_NAME, DATABUDDY_CLIENT_ID } from "../lib/env"
 import { useMaintenance } from "../lib/maintenance"
 import { MeProvider } from "../lib/me"
 import { queryClient } from "../lib/query-client"
-import type { RouterAppContext } from "../lib/router-context"
 import { buildSeoMeta } from "../lib/seo"
 import { getServerAuthState } from "../lib/auth-fns"
+import type { RouterAppContext } from "../lib/router-context"
 
 const DESCRIPTION = `${APP_NAME} — open-source, free-for-everyone social platform. No AI ranking, no paywalls, no ads.`
 
@@ -113,6 +114,7 @@ function RootComponent() {
                 maskPatterns={["/inbox/*", "/admin/*"]}
               />
             ) : null}
+            {process.env.NODE_ENV === "development" && <Agentation />}
             <DatabuddyDevtools enabled={import.meta.env.DEV} />
           </MeProvider>
           {import.meta.env.DEV ? (

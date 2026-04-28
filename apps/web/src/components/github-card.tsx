@@ -42,7 +42,7 @@ function CardChrome({
       data-post-card-ignore-open
       onClick={(e) => e.stopPropagation()}
       className={cn(
-        "mt-3 block max-w-[560px] overflow-hidden rounded-xl border border-border bg-background transition-all hover:bg-muted/40 hover:shadow-sm",
+        "border-border bg-background hover:bg-muted/40 mt-3 block max-w-[560px] overflow-hidden rounded-xl border transition-all hover:shadow-sm",
         className
       )}
     >
@@ -59,7 +59,7 @@ function GithubChromeHeader({
   ownerAvatarUrl?: string | null
 }) {
   return (
-    <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-3 py-1.5 text-[11px] text-muted-foreground">
+    <div className="border-border bg-muted/30 text-muted-foreground flex items-center gap-2 border-b px-3 py-1.5 text-[11px]">
       <GithubMark className="size-3.5" />
       {ownerAvatarUrl && (
         <img
@@ -99,7 +99,7 @@ function RepoCard({
           {card.isPrivate && <Badge tone="neutral">private</Badge>}
         </div>
         {card.description && (
-          <p className="line-clamp-2 text-[13px] text-muted-foreground">
+          <p className="text-muted-foreground line-clamp-2 text-[13px]">
             {card.description}
           </p>
         )}
@@ -108,14 +108,14 @@ function RepoCard({
             {card.topics.slice(0, 6).map((t) => (
               <span
                 key={t}
-                className="rounded-full bg-muted px-2 py-px text-[10.5px] text-muted-foreground"
+                className="bg-muted text-muted-foreground rounded-full px-2 py-px text-[10.5px]"
               >
                 {t}
               </span>
             ))}
           </div>
         )}
-        <div className="flex items-center gap-3 text-[11.5px] text-muted-foreground">
+        <div className="text-muted-foreground flex items-center gap-3 text-[11.5px]">
           {card.primaryLanguage && (
             <span className="flex items-center gap-1">
               <span
@@ -157,7 +157,7 @@ function IssueCard({
           </h3>
         </div>
         {card.excerpt && (
-          <p className="line-clamp-2 text-[13px] text-muted-foreground">
+          <p className="text-muted-foreground line-clamp-2 text-[13px]">
             {card.excerpt}
           </p>
         )}
@@ -178,7 +178,7 @@ function IssueCard({
             ))}
           </div>
         )}
-        <div className="flex items-center gap-3 text-[11.5px] text-muted-foreground">
+        <div className="text-muted-foreground flex items-center gap-3 text-[11.5px]">
           <span>#{card.number}</span>
           {card.authorLogin && <span>by @{card.authorLogin}</span>}
           {card.comments > 0 && <span>{card.comments} comments</span>}
@@ -209,11 +209,11 @@ function PullCard({
           </h3>
         </div>
         {card.excerpt && (
-          <p className="line-clamp-2 text-[13px] text-muted-foreground">
+          <p className="text-muted-foreground line-clamp-2 text-[13px]">
             {card.excerpt}
           </p>
         )}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-muted-foreground">
+        <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px]">
           <span>#{card.number}</span>
           {card.authorLogin && <span>by @{card.authorLogin}</span>}
           <span className="flex items-center gap-1 font-mono">
@@ -254,7 +254,7 @@ function CommitCard({
       />
       <div className="space-y-2 p-3">
         <div className="flex items-start gap-2">
-          <span className="mt-0.5 inline-flex h-5 items-center rounded-md bg-muted px-1.5 font-mono text-[11px] text-muted-foreground">
+          <span className="bg-muted text-muted-foreground mt-0.5 inline-flex h-5 items-center rounded-md px-1.5 font-mono text-[11px]">
             <GitCommitIcon className="mr-1 size-3" />
             {card.shortSha}
           </span>
@@ -263,11 +263,11 @@ function CommitCard({
           </h3>
         </div>
         {card.messageBody && (
-          <pre className="line-clamp-2 font-mono text-[12px] whitespace-pre-wrap text-muted-foreground">
+          <pre className="text-muted-foreground line-clamp-2 font-mono text-[12px] whitespace-pre-wrap">
             {card.messageBody}
           </pre>
         )}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-muted-foreground">
+        <div className="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px]">
           {(card.authorLogin || card.authorName) && (
             <span>
               by {card.authorLogin ? `@${card.authorLogin}` : card.authorName}

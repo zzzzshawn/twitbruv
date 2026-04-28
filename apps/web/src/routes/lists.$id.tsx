@@ -1,7 +1,14 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback, useDeferredValue, useMemo, useState } from "react"
-import { LockClosedIcon, TrashIcon, XMarkIcon } from "@heroicons/react/24/solid"
+import {
+  ListBulletIcon,
+  LockClosedIcon,
+  PencilSquareIcon,
+  TrashIcon,
+  UserPlusIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/solid"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
@@ -114,53 +121,66 @@ function ListDetail() {
   if (loading) {
     return (
       <PageFrame>
-        <main>
-          <PageLoading />
-        </main>
+        <PageLoading />
       </PageFrame>
     )
   }
   if (!list) {
     return (
       <PageFrame>
-        <main>
-          {error ? (
-            <PageError message={error} />
-          ) : (
-            <PageEmpty
-              title="List not found"
-              description="It may have been deleted or you may not have access."
-            />
-          )}
-        </main>
+        {error ? (
+          <PageError message={error} />
+        ) : (
+          <PageEmpty
+            icon={<ListBulletIcon />}
+            title="List not found"
+            description="It may have been deleted or you may not have access."
+          />
+        )}
       </PageFrame>
     )
   }
 
   return (
     <PageFrame>
-      <main>
-        {(error || opError) && (
-          <PageError
-            message={error ?? opError ?? ""}
-            className="border-b border-neutral"
-          />
-        )}
-
-        {isOwner && showAdd && (
-          <ManageMembers listId={id} members={members} onChanged={refresh} />
-        )}
-
-        <Feed
-          queryKey={qk.lists.timeline(id)}
-          load={load}
-          emptyMessage={
-            isOwner
-              ? "no posts yet. Add members to populate this list."
-              : "no posts from list members yet."
-          }
+      {(error || opError) && (
+        <PageError
+          message={error ?? opError ?? ""}
+          className="border-b border-neutral"
         />
-      </main>
+      )}
+
+      {isOwner && showAdd && (
+        <ManageMembers listId={id} members={members} onChanged={refresh} />
+      )}
+
+      <Feed
+        queryKey={qk.lists.timeline(id)}
+        load={load}
+        emptyState={
+          <PageEmpty
+            icon={isOwner ? <UserPlusIcon /> : <PencilSquareIcon />}
+            title={isOwner ? "This list is empty" : "Nothing from members yet"}
+            description={
+              isOwner
+                ? "Add members to start building a focused timeline."
+                : "When list members post, you'll see them here."
+            }
+            actions={
+              isOwner ? (
+                <Button
+                  size="sm"
+                  variant="primary"
+                  onClick={() => setShowAdd(true)}
+                >
+                  <UserPlusIcon className="size-3.5" />
+                  Add members
+                </Button>
+              ) : null
+            }
+          />
+        }
+      />
     </PageFrame>
   )
 }
@@ -216,7 +236,7 @@ function ManageMembers({
           {members.map((m) => (
             <li
               key={m.id}
-              className="flex items-center gap-2 rounded-full border border-neutral bg-card/40 py-1 pr-2 pl-1 text-xs"
+              className="bg-card/40 flex items-center gap-2 rounded-full border border-neutral py-1 pr-2 pl-1 text-xs"
             >
               <Avatar
                 src={m.avatarUrl}
@@ -234,7 +254,7 @@ function ManageMembers({
                 variant="transparent"
                 onClick={() => remove(m.id)}
                 disabled={busy}
-                className="shrink-0 text-tertiary hover:text-destructive"
+                className="hover:text-destructive shrink-0 text-tertiary"
                 aria-label="Remove"
               >
                 <XMarkIcon className="size-3" />
@@ -244,10 +264,7 @@ function ManageMembers({
         </ul>
       )}
       <div className="mt-3">
-        <Label
-          htmlFor="list-member-search"
-          className="text-xs text-tertiary"
-        >
+        <Label htmlFor="list-member-search" className="text-xs text-tertiary">
           Add a user
         </Label>
         <Input
@@ -278,9 +295,7 @@ function ManageMembers({
                       <div className="font-medium">
                         {u.displayName ?? `@${u.handle}`}
                       </div>
-                      <div className="text-xs text-tertiary">
-                        @{u.handle}
-                      </div>
+                      <div className="text-xs text-tertiary">@{u.handle}</div>
                     </div>
                   </div>
                   <Button

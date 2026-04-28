@@ -68,9 +68,7 @@ export function BannerUpload({
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-primary">Banner</span>
         <div className="flex items-center gap-3 text-xs">
-          {uploading && (
-            <span className="text-tertiary">uploading…</span>
-          )}
+          {uploading && <span className="text-tertiary">uploading…</span>}
           {error && <span className="text-danger">{error}</span>}
           {currentUrl && !uploading && (
             <Button
@@ -94,7 +92,7 @@ export function BannerUpload({
         onDrop={onDrop}
         onPaste={onPaste}
         className={`group relative block h-36 w-full overflow-hidden rounded-md border bg-base-2 transition ${
-          dragOver ? "border-accent ring-2 ring-accent" : "border-neutral"
+          dragOver ? "border-accent ring-accent ring-2" : "border-neutral"
         }`}
         aria-label="upload banner"
       >

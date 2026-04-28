@@ -3,7 +3,9 @@ import { useInfiniteQuery } from "@tanstack/react-query"
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useWindowVirtualizer } from "@tanstack/react-virtual"
 import type { InfiniteData } from "@tanstack/react-query"
+import { UsersIcon } from "@heroicons/react/24/solid"
 import { useInfiniteScrollSentinel } from "../lib/use-infinite-scroll-sentinel"
+import { PageEmpty } from "./page-surface"
 import { VerifiedBadge } from "./verified-badge"
 import type { PublicUser, UserListPage } from "../lib/api"
 
@@ -24,10 +26,16 @@ export function UserList({
   queryKey,
   load,
   emptyMessage = "No users yet.",
+  emptyTitle = "No one here yet",
+  emptyIcon,
+  emptyActions,
 }: {
   queryKey: readonly unknown[]
   load: (cursor?: string) => Promise<UserListPage>
   emptyMessage?: string
+  emptyTitle?: string
+  emptyIcon?: React.ReactNode
+  emptyActions?: React.ReactNode
 }) {
   const {
     data,
@@ -49,10 +57,7 @@ export function UserList({
     getNextPageParam: (last) => last.nextCursor ?? undefined,
   })
 
-  const users = useMemo(
-    () => data?.pages.flatMap((p) => p.users) ?? [],
-    [data]
-  )
+  const users = useMemo(() => data?.pages.flatMap((p) => p.users) ?? [], [data])
 
   const visibleUsers = useMemo(
     () => users.filter((u): u is PublicUser & { handle: string } => !!u.handle),
@@ -87,17 +92,20 @@ export function UserList({
 
   if (isPending)
     return (
-      <div className="px-4 py-6 text-sm text-muted-foreground">loading…</div>
+      <div className="text-muted-foreground px-4 py-6 text-sm">loading…</div>
     )
   if (error)
     return (
-      <div className="px-4 py-6 text-sm text-destructive">{error.message}</div>
+      <div className="text-destructive px-4 py-6 text-sm">{error.message}</div>
     )
   if (visibleUsers.length === 0)
     return (
-      <div className="px-4 py-6 text-sm text-muted-foreground">
-        {emptyMessage}
-      </div>
+      <PageEmpty
+        title={emptyTitle}
+        description={emptyMessage}
+        icon={emptyIcon ?? <UsersIcon />}
+        actions={emptyActions}
+      />
     )
 
   const virtualItems = virtualizer.getVirtualItems()
@@ -131,7 +139,7 @@ export function UserList({
               <Link
                 to="/$handle"
                 params={{ handle: u.handle }}
-                className="block border-b border-border px-4 py-3 hover:bg-muted/40"
+                className="border-border hover:bg-muted/40 block border-b px-4 py-3"
               >
                 <div className="flex items-center gap-1 text-sm font-medium">
                   <span className="truncate">
@@ -139,9 +147,9 @@ export function UserList({
                   </span>
                   {u.isVerified && <VerifiedBadge size={14} role={u.role} />}
                 </div>
-                <div className="text-xs text-muted-foreground">@{u.handle}</div>
+                <div className="text-muted-foreground text-xs">@{u.handle}</div>
                 {u.bio && (
-                  <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                  <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">
                     {u.bio}
                   </p>
                 )}
@@ -152,7 +160,7 @@ export function UserList({
       </div>
       <div ref={sentinelRef} aria-hidden className="h-px" />
       {hasNextPage && (
-        <div className="flex justify-center py-4 text-xs text-muted-foreground">
+        <div className="text-muted-foreground flex justify-center py-4 text-xs">
           {isFetchingNextPage ? "loading…" : ""}
         </div>
       )}

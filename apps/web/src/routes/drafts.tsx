@@ -104,50 +104,48 @@ function Drafts() {
 
   return (
     <PageFrame>
-      <main>
-        <UnderlineTabRow>
-          {(["drafts", "scheduled"] as Array<Tab>).map((t) => (
-            <UnderlineTabButton
-              key={t}
-              active={tab === t}
-              onClick={() => setTab(t)}
-            >
-              {t === "drafts" ? "Drafts" : "Scheduled"}
-            </UnderlineTabButton>
+      <UnderlineTabRow>
+        {(["drafts", "scheduled"] as Array<Tab>).map((t) => (
+          <UnderlineTabButton
+            key={t}
+            active={tab === t}
+            onClick={() => setTab(t)}
+          >
+            {t === "drafts" ? "Drafts" : "Scheduled"}
+          </UnderlineTabButton>
+        ))}
+      </UnderlineTabRow>
+
+      {(error || actionError) && (
+        <PageError message={(error ?? actionError)!} />
+      )}
+
+      {itemsPending ? (
+        <PageLoading label="Loading…" />
+      ) : items.length === 0 ? (
+        <PageEmpty
+          title={tab === "drafts" ? "No drafts yet" : "No scheduled posts"}
+          description={
+            tab === "drafts"
+              ? "Compose a post and save it as a draft, or schedule one for later."
+              : "Schedule a draft to see it here."
+          }
+        />
+      ) : (
+        <ul className="divide-border divide-y">
+          {items.map((item) => (
+            <DraftRow
+              key={item.id}
+              item={item}
+              busy={busyId === item.id}
+              onPublish={() => publish(item.id)}
+              onDelete={() => remove(item.id)}
+              onReschedule={(t) => reschedule(item.id, t)}
+              tab={tab}
+            />
           ))}
-        </UnderlineTabRow>
-
-        {(error || actionError) && (
-          <PageError message={(error ?? actionError)!} />
-        )}
-
-        {itemsPending ? (
-          <PageLoading label="Loading…" />
-        ) : items.length === 0 ? (
-          <PageEmpty
-            title={tab === "drafts" ? "No drafts yet" : "No scheduled posts"}
-            description={
-              tab === "drafts"
-                ? "Compose a post and save it as a draft, or schedule one for later."
-                : "Schedule a draft to see it here."
-            }
-          />
-        ) : (
-          <ul className="divide-y divide-border">
-            {items.map((item) => (
-              <DraftRow
-                key={item.id}
-                item={item}
-                busy={busyId === item.id}
-                onPublish={() => publish(item.id)}
-                onDelete={() => remove(item.id)}
-                onReschedule={(t) => reschedule(item.id, t)}
-                tab={tab}
-              />
-            ))}
-          </ul>
-        )}
-      </main>
+        </ul>
+      )}
     </PageFrame>
   )
 }
@@ -179,7 +177,7 @@ function DraftRow({
           <span className="text-muted-foreground">(empty draft)</span>
         )}
       </p>
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+      <div className="text-muted-foreground mt-2 flex flex-wrap items-center justify-between gap-2 text-xs">
         <span>
           {tab === "scheduled" && item.scheduledFor
             ? `Scheduled for ${new Date(item.scheduledFor).toLocaleString()}`
@@ -196,7 +194,12 @@ function DraftRow({
               Schedule
             </Button>
           )}
-          <Button size="sm" variant="transparent" onClick={onPublish} disabled={busy}>
+          <Button
+            size="sm"
+            variant="transparent"
+            onClick={onPublish}
+            disabled={busy}
+          >
             Post now
           </Button>
           <Button
@@ -254,7 +257,7 @@ function DraftRow({
         </div>
       )}
       {item.failureReason && (
-        <p className="mt-2 text-xs text-destructive">
+        <p className="text-destructive mt-2 text-xs">
           Last attempt failed: {item.failureReason}
         </p>
       )}

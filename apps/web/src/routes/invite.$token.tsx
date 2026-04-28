@@ -16,8 +16,7 @@ export const Route = createFileRoute("/invite/$token")({
 function invitePreviewErrMsg(e: unknown): string {
   if (e instanceof ApiError) {
     if (e.code === "expired") return "This invite has expired."
-    if (e.code === "exhausted")
-      return "This invite has reached its max uses."
+    if (e.code === "exhausted") return "This invite has reached its max uses."
     if (e.code === "revoked") return "This invite has been revoked."
     return "This invite is invalid or no longer exists."
   }
@@ -68,21 +67,21 @@ function InvitePage() {
   if (previewErr && !isPending) {
     return (
       <PageFrame>
-        <main className="mx-auto max-w-md px-4 py-16 text-center">
+        <div className="mx-auto max-w-md px-4 py-16 text-center">
           <h1 className="text-lg font-semibold">Can't join</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="text-muted-foreground mt-2 text-sm">
             {invitePreviewErrMsg(previewErr)}
           </p>
-        </main>
+        </div>
       </PageFrame>
     )
   }
   if (isPending || !preview) {
     return (
       <PageFrame>
-        <main className="px-4 py-16 text-center text-sm text-muted-foreground">
+        <div className="text-muted-foreground px-4 py-16 text-center text-sm">
           loading…
-        </main>
+        </div>
       </PageFrame>
     )
   }
@@ -101,11 +100,13 @@ function InvitePage() {
 
   return (
     <PageFrame>
-      <main className="mx-auto max-w-md px-4 py-16">
+      <div className="mx-auto max-w-md px-4 py-16">
         {acceptError && (
-          <p className="mb-4 text-center text-sm text-destructive">{acceptError}</p>
+          <p className="text-destructive mb-4 text-center text-sm">
+            {acceptError}
+          </p>
         )}
-        <div className="rounded-lg border border-border p-6 text-center">
+        <div className="border-border rounded-lg border p-6 text-center">
           <div className="mb-4 flex justify-center -space-x-2">
             {conv.previewMembers.slice(0, 4).map((m) => (
               <Avatar
@@ -114,7 +115,7 @@ function InvitePage() {
                   .slice(0, 1)
                   .toUpperCase()}
                 src={m.avatarUrl}
-                className="size-12 ring-2 ring-background"
+                className="ring-background size-12 ring-2"
               />
             ))}
           </div>
@@ -124,12 +125,12 @@ function InvitePage() {
               <VerifiedBadge size={16} role={soloPeer.role} />
             )}
           </h1>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="text-muted-foreground mt-1 text-xs">
             {conv.kind === "group" ? "Group conversation" : "Conversation"} ·{" "}
             {conv.memberCount} member{conv.memberCount === 1 ? "" : "s"}
           </p>
           {preview.expiresAt && (
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="text-muted-foreground mt-2 text-xs">
               Invite expires {new Date(preview.expiresAt).toLocaleString()}
             </p>
           )}
@@ -143,7 +144,7 @@ function InvitePage() {
             </Button>
           </div>
         </div>
-      </main>
+      </div>
     </PageFrame>
   )
 }

@@ -86,9 +86,7 @@ export function ArticleCardBlock({
     return (
       <div className="mt-2 rounded-md border border-neutral p-3 text-sm">
         <h3 className="font-semibold">{card.title}</h3>
-        {card.subtitle && (
-          <p className="mt-1 text-tertiary">{card.subtitle}</p>
-        )}
+        {card.subtitle && <p className="mt-1 text-tertiary">{card.subtitle}</p>}
         <p className="mt-2 text-xs text-tertiary">
           article · {card.readingMinutes} min read
         </p>
@@ -756,7 +754,7 @@ function RepostControl({
               disabled={disabled}
               className="flex cursor-pointer items-center gap-2 transition hover:text-primary"
             >
-        <ArrowPathIcon className="size-4" />
+              <ArrowPathIcon className="size-4" />
               <span className="text-xs">
                 {post.counts.reposts + post.counts.quotes}
               </span>
@@ -845,7 +843,7 @@ function EditHistoryDialog({
               {post.text}
             </p>
           </div>
-          {error && <p className="text-xs text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-xs">{error}</p>}
           {!error && edits === null && (
             <p className="text-xs text-tertiary">loading…</p>
           )}

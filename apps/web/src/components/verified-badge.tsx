@@ -16,7 +16,7 @@ const roleAriaLabel: Record<VerifiedBadgeRole, string> = {
 }
 
 export function VerifiedBadge({
-  size = 16,
+  size,
   role = "user",
   className,
 }: {
@@ -30,10 +30,10 @@ export function VerifiedBadge({
       aria-label={roleAriaLabel[resolvedRole]}
       className={cn(
         "inline-block shrink-0",
-        `size-[${size}px]`,
         roleColorClass[resolvedRole],
         className
       )}
+      style={size !== undefined ? { width: size, height: size } : undefined}
     />
   )
 }

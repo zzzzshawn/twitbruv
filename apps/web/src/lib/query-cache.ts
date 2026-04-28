@@ -1,4 +1,8 @@
-import type { InfiniteData, QueryClient, QueryFilters } from "@tanstack/react-query"
+import type {
+  InfiniteData,
+  QueryClient,
+  QueryFilters,
+} from "@tanstack/react-query"
 import type {
   FeedPage,
   HashtagPage,
@@ -76,16 +80,17 @@ function prependToFirstInfinitePage<T extends FeedPage>(
   }
 }
 
-function patchThreadData(old: Thread, postId: string, mapFn: (p: Post) => Post): Thread {
+function patchThreadData(
+  old: Thread,
+  postId: string,
+  mapFn: (p: Post) => Post
+): Thread {
   const mapReply = (r: ThreadReply): ThreadReply =>
     r.id === postId ? (mapFn(r as Post) as ThreadReply) : r
 
   return {
-    ancestors: old.ancestors.map((a) =>
-      a.id === postId ? mapFn(a) : a
-    ),
-    post:
-      old.post && old.post.id === postId ? mapFn(old.post) : old.post,
+    ancestors: old.ancestors.map((a) => (a.id === postId ? mapFn(a) : a)),
+    post: old.post && old.post.id === postId ? mapFn(old.post) : old.post,
     replies: old.replies.map(mapReply),
   }
 }
@@ -153,7 +158,10 @@ export function updatePostEverywhere(
     ) {
       return data
     }
-    return { ...(data as { post: Post }), post: mapFn((data as { post: Post }).post) }
+    return {
+      ...(data as { post: Post }),
+      post: mapFn((data as { post: Post }).post),
+    }
   })
 
   qc.setQueriesData({ queryKey: ["thread"] }, (data) => {
@@ -225,15 +233,13 @@ export function prependPostToFeeds(
   tabs?: ReadonlyArray<FeedTabKey>
 ) {
   const tabsToUse =
-    tabs ?? (["following", "network", "all"] as const satisfies readonly FeedTabKey[])
+    tabs ??
+    (["following", "network", "all"] as const satisfies readonly FeedTabKey[])
   for (const tab of tabsToUse) {
-    qc.setQueryData<InfiniteData<FeedPage>>(
-      qk.feed(tab),
-      (current) => {
-        if (!current || current.pages.length === 0) return current
-        return prependToFirstInfinitePage(current, post)
-      }
-    )
+    qc.setQueryData<InfiniteData<FeedPage>>(qk.feed(tab), (current) => {
+      if (!current || current.pages.length === 0) return current
+      return prependToFirstInfinitePage(current, post)
+    })
   }
 }
 

@@ -132,10 +132,10 @@ function ChessGamePage() {
 
   return (
     <PageFrame>
-      <main className="flex justify-center p-4">
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 md:flex-row">
+      <div className="flex justify-center p-4">
+        <div className="mx-auto flex w-full flex-col gap-4">
           {/* Left side: Board */}
-          <div className="mx-auto flex max-w-[600px] min-w-[300px] flex-1 flex-col md:mx-0">
+          <div className="mx-auto flex w-full min-w-[300px] flex-1 flex-col">
             {/* Top Player Info */}
             <div className="flex items-center gap-2 rounded-t-lg border border-b-0 border-neutral bg-base-2/20 p-2">
               <Avatar initial={topPlayer[0].toUpperCase()} size={32} />
@@ -199,11 +199,7 @@ function ChessGamePage() {
                 <HandRaisedIcon className="mr-1.5 size-4" />
                 Draw
               </Button>
-              <Button
-                variant="danger"
-                className="flex-1"
-                disabled={isFinished}
-              >
+              <Button variant="danger" className="flex-1" disabled={isFinished}>
                 <FlagIcon className="mr-1.5 size-4" />
                 Resign
               </Button>
@@ -215,7 +211,7 @@ function ChessGamePage() {
                 <button className="flex-1 border-r border-neutral py-2 text-center text-tertiary hover:bg-base-2/40">
                   Moves
                 </button>
-                <button className="flex-1 border-b-2 border-primary py-2 text-center text-primary">
+                <button className="border-primary flex-1 border-b-2 py-2 text-center text-primary">
                   Chat
                 </button>
               </div>
@@ -259,7 +255,7 @@ function ChessGamePage() {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </PageFrame>
   )
 }

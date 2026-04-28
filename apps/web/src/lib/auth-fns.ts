@@ -23,7 +23,7 @@ export const checkSessionCookie = createServerFn({ method: "GET" }).handler(
       hasSessionCookie:
         getSessionCookie(headers, { cookiePrefix: COOKIE_PREFIX }) !== null,
     }
-  },
+  }
 )
 
 /**
@@ -60,5 +60,5 @@ export const getServerAuthState = createServerFn({ method: "GET" }).handler(
     } catch {
       return { user: null }
     }
-  },
+  }
 )

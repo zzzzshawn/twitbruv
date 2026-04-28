@@ -76,6 +76,10 @@ export const api = {
     request<UserListPage>(`/api/users/${h(handle)}/followers${qs(cursor)}`),
   following: (handle: string, cursor?: string) =>
     request<UserListPage>(`/api/users/${h(handle)}/following${qs(cursor)}`),
+  suggestedUsers: (limit?: number) =>
+    request<{ users: Array<PublicUser> }>(
+      `/api/users/suggested${limit ? `?limit=${limit}` : ""}`
+    ),
 
   follow: (handle: string) =>
     request<{ ok: true }>(`/api/users/${h(handle)}/follow`, { method: "POST" }),

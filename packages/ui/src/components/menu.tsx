@@ -6,34 +6,34 @@ import { cn } from "@workspace/ui/lib/utils"
 // ---------------------------------------------------------------------------
 
 export interface MenuPanelProps extends ComponentProps<"div"> {
-	/** Minimum width utility class */
-	minWidth?: string
+  /** Minimum width utility class */
+  minWidth?: string
 }
 
 function MenuPanel({
-	minWidth,
-	className,
-	children,
-	...props
+  minWidth,
+  className,
+  children,
+  ...props
 }: MenuPanelProps) {
-	return (
-		<div
-			className={cn(
-				"flex flex-col rounded-xl bg-base-2 border border-neutral shadow-sm p-1",
-				minWidth,
-				// Animation (works with Base UI data attributes)
-				"origin-[var(--transform-origin)] will-change-[transform,opacity]",
-				"transition-[transform,scale,opacity] duration-200 ease-out-expo",
-				"data-[starting-style]:scale-[0.96] data-[starting-style]:opacity-0",
-				"data-[ending-style]:scale-[0.96] data-[ending-style]:opacity-0 data-[ending-style]:duration-150",
-				"motion-reduce:transition-none",
-				className,
-			)}
-			{...props}
-		>
-			{children}
-		</div>
-	)
+  return (
+    <div
+      className={cn(
+        "flex flex-col rounded-xl border border-neutral bg-base-2 p-1 shadow-sm",
+        minWidth,
+        // Animation (works with Base UI data attributes)
+        "origin-[var(--transform-origin)] will-change-[transform,opacity]",
+        "transition-[transform,scale,opacity] duration-200 ease-out-expo",
+        "data-[starting-style]:scale-[0.96] data-[starting-style]:opacity-0",
+        "data-[ending-style]:scale-[0.96] data-[ending-style]:opacity-0 data-[ending-style]:duration-150",
+        "motion-reduce:transition-none",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -41,55 +41,55 @@ function MenuPanel({
 // ---------------------------------------------------------------------------
 
 export interface MenuItemProps extends ComponentProps<"div"> {
-	/** Icon element rendered before the label */
-	icon?: ReactNode
-	/** Danger styling (red text) */
-	variant?: "default" | "danger"
+  /** Icon element rendered before the label */
+  icon?: ReactNode
+  /** Danger styling (red text) */
+  variant?: "default" | "danger"
 }
 
 function MenuItem({
-	icon,
-	variant = "default",
-	className,
-	children,
-	...props
+  icon,
+  variant = "default",
+  className,
+  children,
+  ...props
 }: MenuItemProps) {
-	return (
-		<div
-			className={cn(
-				"group relative flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer rounded-md select-none outline-none",
-				variant === "danger"
-					? "text-danger data-[highlighted]:text-danger"
-					: "text-primary",
-				className,
-			)}
-			{...props}
-		>
-			{/* Hover + press overlay */}
-			<div
-				className={cn(
-					"absolute inset-0 rounded-[inherit] bg-subtle opacity-0",
-					"group-data-[highlighted]:opacity-100",
-					// Squish on press
-					"transition-[inset] duration-150 ease-out-expo motion-reduce:transition-none",
-					"group-active:inset-px",
-				)}
-			/>
-			{icon && (
-				<span
-					className={cn(
-						"relative z-[1] flex size-5 shrink-0 items-center justify-center [&>svg]:size-4",
-						variant === "danger"
-							? "text-danger"
-							: "text-tertiary group-data-[highlighted]:text-primary",
-					)}
-				>
-					{icon}
-				</span>
-			)}
-			{children}
-		</div>
-	)
+  return (
+    <div
+      className={cn(
+        "group relative flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none select-none",
+        variant === "danger"
+          ? "text-danger data-[highlighted]:text-danger"
+          : "text-primary",
+        className
+      )}
+      {...props}
+    >
+      {/* Hover + press overlay */}
+      <div
+        className={cn(
+          "absolute inset-0 rounded-[inherit] bg-subtle opacity-0",
+          "group-data-[highlighted]:opacity-100",
+          // Squish on press
+          "transition-[inset] duration-150 ease-out-expo motion-reduce:transition-none",
+          "group-active:inset-px"
+        )}
+      />
+      {icon && (
+        <span
+          className={cn(
+            "relative z-[1] flex size-5 shrink-0 items-center justify-center [&>svg]:size-4",
+            variant === "danger"
+              ? "text-danger"
+              : "text-tertiary group-data-[highlighted]:text-primary"
+          )}
+        >
+          {icon}
+        </span>
+      )}
+      {children}
+    </div>
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -99,12 +99,9 @@ function MenuItem({
 export interface MenuSeparatorProps extends ComponentProps<"div"> {}
 
 function MenuSeparator({ className, ...props }: MenuSeparatorProps) {
-	return (
-		<div
-			className={cn("my-1 border-t border-neutral", className)}
-			{...props}
-		/>
-	)
+  return (
+    <div className={cn("my-1 border-t border-neutral", className)} {...props} />
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -114,21 +111,21 @@ function MenuSeparator({ className, ...props }: MenuSeparatorProps) {
 export interface MenuGroupLabelProps extends ComponentProps<"div"> {}
 
 function MenuGroupLabel({
-	className,
-	children,
-	...props
+  className,
+  children,
+  ...props
 }: MenuGroupLabelProps) {
-	return (
-		<div
-			className={cn(
-				"px-2 py-1.5 text-xs font-medium text-tertiary select-none",
-				className,
-			)}
-			{...props}
-		>
-			{children}
-		</div>
-	)
+  return (
+    <div
+      className={cn(
+        "px-2 py-1.5 text-xs font-medium text-tertiary select-none",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -138,15 +135,15 @@ function MenuGroupLabel({
 export interface MenuPositionerProps extends ComponentProps<"div"> {}
 
 function MenuPositioner({
-	className,
-	children,
-	...props
+  className,
+  children,
+  ...props
 }: MenuPositionerProps) {
-	return (
-		<div className={cn("z-50 outline-none", className)} {...props}>
-			{children}
-		</div>
-	)
+  return (
+    <div className={cn("z-50 outline-none", className)} {...props}>
+      {children}
+    </div>
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -154,9 +151,9 @@ function MenuPositioner({
 // ---------------------------------------------------------------------------
 
 export const Menu = {
-	Panel: MenuPanel,
-	Item: MenuItem,
-	Separator: MenuSeparator,
-	GroupLabel: MenuGroupLabel,
-	Positioner: MenuPositioner,
+  Panel: MenuPanel,
+  Item: MenuItem,
+  Separator: MenuSeparator,
+  GroupLabel: MenuGroupLabel,
+  Positioner: MenuPositioner,
 }

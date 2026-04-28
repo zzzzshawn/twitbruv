@@ -1,6 +1,7 @@
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
+  ChatBubbleLeftEllipsisIcon,
   EllipsisHorizontalIcon,
   Cog6ToothIcon,
   PaperClipIcon,
@@ -493,15 +494,15 @@ function Thread() {
 
   return (
     <PageFrame className="flex min-h-0 flex-1 flex-col">
-      <main
+      <div
         className="relative flex h-[calc(100vh-3.5rem)] flex-col"
         onDragOver={onDragOver}
         onDragLeave={onDragLeave}
         onDrop={onDrop}
       >
         {dragOver && (
-          <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center bg-primary/10 text-sm font-medium text-primary">
-            <div className="rounded-md border-2 border-dashed border-primary bg-base px-4 py-3 shadow-sm">
+          <div className="bg-primary/10 pointer-events-none absolute inset-0 z-20 flex items-center justify-center text-sm font-medium text-primary">
+            <div className="border-primary bg-base rounded-md border-2 border-dashed px-4 py-3 shadow-sm">
               Drop image to attach
             </div>
           </div>
@@ -534,9 +535,10 @@ function Thread() {
           {error && <PageError className="mb-3 max-w-prose" message={error} />}
           {messages.length === 0 && !error && (
             <PageEmpty
+              icon={<ChatBubbleLeftEllipsisIcon />}
               className="py-8"
               title="No messages yet"
-              description="Send a message to start the thread."
+              description="Say hello below to start the conversation."
             />
           )}
 
@@ -563,7 +565,7 @@ function Thread() {
                       .slice(0, 1)
                       .toUpperCase()}
                     src={m.avatarUrl}
-                    className="size-5 ring-2 ring-base"
+                    className="ring-base size-5 ring-2"
                   />
                 ))}
               </span>
@@ -589,7 +591,7 @@ function Thread() {
                 type="button"
                 onClick={clearPending}
                 aria-label="remove attachment"
-                className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full bg-base text-primary shadow-sm ring-1 ring-neutral hover:bg-base-2"
+                className="bg-base absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full text-primary shadow-sm ring-1 ring-neutral hover:bg-base-2"
               >
                 <XMarkIcon className="size-3" />
               </button>
@@ -652,7 +654,7 @@ function Thread() {
             </Button>
           </form>
         )}
-      </main>
+      </div>
     </PageFrame>
   )
 }
@@ -709,7 +711,12 @@ function RequestBanner({
       </p>
       <div className="flex items-center gap-2">
         {error && <span className="text-destructive">{error}</span>}
-        <Button size="sm" variant="transparent" disabled={busy} onClick={decline}>
+        <Button
+          size="sm"
+          variant="transparent"
+          disabled={busy}
+          onClick={decline}
+        >
           Decline
         </Button>
         <Button size="sm" disabled={busy} onClick={accept}>
@@ -829,7 +836,7 @@ function GroupBlock({
                         .slice(0, 1)
                         .toUpperCase()}
                       src={m.avatarUrl}
-                      className="size-3.5 ring-1 ring-base"
+                      className="ring-base size-3.5 ring-1"
                     />
                   ))}
                 </span>
@@ -960,7 +967,7 @@ function Bubble({
         type="button"
         onClick={() => setShowPicker((p) => !p)}
         aria-label="add reaction"
-        className="flex size-6 items-center justify-center rounded-full bg-base text-xs ring-1 ring-neutral hover:bg-base-2/40"
+        className="bg-base flex size-6 items-center justify-center rounded-full text-xs ring-1 ring-neutral hover:bg-base-2/40"
       >
         😀
       </button>
@@ -971,7 +978,7 @@ function Bubble({
               <button
                 type="button"
                 aria-label="message options"
-                className="flex size-6 items-center justify-center rounded-full bg-base ring-1 ring-neutral hover:bg-base-2/40"
+                className="bg-base flex size-6 items-center justify-center rounded-full ring-1 ring-neutral hover:bg-base-2/40"
               >
                 <EllipsisHorizontalIcon className="size-3" />
               </button>
@@ -999,7 +1006,7 @@ function Bubble({
       )}
       {showPicker && (
         <div
-          className={`absolute top-full z-20 mt-1 flex gap-1 rounded-full border border-neutral bg-base p-1 shadow-md ${
+          className={`bg-base absolute top-full z-20 mt-1 flex gap-1 rounded-full border border-neutral p-1 shadow-md ${
             isMine ? "right-0" : "left-0"
           }`}
         >
@@ -1053,7 +1060,7 @@ function Bubble({
                     node.setSelectionRange(node.value.length, node.value.length)
                   }
                 }}
-                className="min-h-0 rounded border-0 bg-base/30 px-2 py-1 text-primary"
+                className="bg-base/30 min-h-0 rounded border-0 px-2 py-1 text-primary"
               />
               <div className="flex justify-end gap-2 text-[11px]">
                 <button
@@ -1105,7 +1112,7 @@ function Bubble({
                 className={`flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-xs transition ${
                   g.mine
                     ? "border-primary/40 bg-primary/10"
-                    : "border-neutral bg-base hover:bg-base-2/40"
+                    : "bg-base border-neutral hover:bg-base-2/40"
                 }`}
               >
                 <span>{g.emoji}</span>
@@ -1127,7 +1134,7 @@ function MessageImage({ media }: { media: PostMedia }) {
   const full = pickVariantUrl(media, "large") ?? url
   if (!url) {
     return (
-      <div className="my-1 flex h-32 w-48 items-center justify-center rounded-md bg-base/30 text-xs">
+      <div className="bg-base/30 my-1 flex h-32 w-48 items-center justify-center rounded-md text-xs">
         {media.processingState === "failed" ? "media failed" : "processing…"}
       </div>
     )
@@ -1190,7 +1197,7 @@ function ThreadAppHeaderTitle({
                 .slice(0, 1)
                 .toUpperCase()}
               src={m.avatarUrl}
-              className={`absolute size-6 ring-2 ring-base ${
+              className={`ring-base absolute size-6 ring-2 ${
                 i === 0 ? "top-0 left-0" : "right-0 bottom-0"
               }`}
             />
@@ -1350,10 +1357,7 @@ function GroupSettingsDialog({
         <div className="space-y-4">
           {isAdmin ? (
             <div className="space-y-2">
-              <Label
-                htmlFor="group-name"
-                className="text-xs text-tertiary"
-              >
+              <Label htmlFor="group-name" className="text-xs text-tertiary">
                 Name
               </Label>
               <div className="flex gap-2">
@@ -1406,14 +1410,10 @@ function GroupSettingsDialog({
                         <VerifiedBadge size={13} role={m.role} />
                       )}
                       {m.chatRole === "admin" && (
-                        <span className="text-xs text-tertiary">
-                          (admin)
-                        </span>
+                        <span className="text-xs text-tertiary">(admin)</span>
                       )}
                       {m.id === me && (
-                        <span className="text-xs text-tertiary">
-                          (you)
-                        </span>
+                        <span className="text-xs text-tertiary">(you)</span>
                       )}
                     </div>
                   </div>

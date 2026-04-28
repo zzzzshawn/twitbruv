@@ -1,7 +1,11 @@
 import { Link, createFileRoute } from "@tanstack/react-router"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
-import { PencilSquareIcon } from "@heroicons/react/24/solid"
+import {
+  ChatBubbleLeftRightIcon,
+  EnvelopeIcon,
+  PencilSquareIcon,
+} from "@heroicons/react/24/solid"
 import { Button } from "@workspace/ui/components/button"
 import { Badge } from "@workspace/ui/components/badge"
 import { Skeleton } from "@workspace/ui/components/skeleton"
@@ -48,35 +52,33 @@ function InboxList() {
 
   return (
     <PageFrame>
-      <main>
-        <UnderlineTabRow>
-          <UnderlineTabButton
-            active={folder === "inbox"}
-            onClick={() => setFolder("inbox")}
-          >
-            Inbox
-          </UnderlineTabButton>
-          <UnderlineTabButton
-            active={folder === "requests"}
-            onClick={() => setFolder("requests")}
-          >
-            <span className="inline-flex items-center justify-center gap-2">
-              Requests
-              {requestCount > 0 ? (
-                <Badge variant="neutral" className="tabular-nums">
-                  {requestCount}
-                </Badge>
-              ) : null}
-            </span>
-          </UnderlineTabButton>
-        </UnderlineTabRow>
+      <UnderlineTabRow>
+        <UnderlineTabButton
+          active={folder === "inbox"}
+          onClick={() => setFolder("inbox")}
+        >
+          Inbox
+        </UnderlineTabButton>
+        <UnderlineTabButton
+          active={folder === "requests"}
+          onClick={() => setFolder("requests")}
+        >
+          <span className="inline-flex items-center justify-center gap-2">
+            Requests
+            {requestCount > 0 ? (
+              <Badge variant="neutral" className="tabular-nums">
+                {requestCount}
+              </Badge>
+            ) : null}
+          </span>
+        </UnderlineTabButton>
+      </UnderlineTabRow>
 
-        <ConversationList
-          key={folder}
-          folder={folder}
-          onRequestCount={setRequestCount}
-        />
-      </main>
+      <ConversationList
+        key={folder}
+        folder={folder}
+        onRequestCount={setRequestCount}
+      />
     </PageFrame>
   )
 }
@@ -141,13 +143,30 @@ function ConversationList({
   if (conversations.length === 0) {
     return (
       <PageEmpty
+        icon={
+          folder === "requests" ? <EnvelopeIcon /> : <ChatBubbleLeftRightIcon />
+        }
         title={
           folder === "requests" ? "No message requests" : "No conversations yet"
         }
         description={
           folder === "requests"
-            ? "When someone you don't follow messages you, it'll appear here."
-            : "Use New above, or open a profile and use the message action."
+            ? "When someone you don't follow messages you, their request will land here for you to accept or decline."
+            : "Start a thread by tapping New above, or open a profile and use the message action."
+        }
+        actions={
+          folder === "inbox" ? (
+            <Button
+              size="sm"
+              variant="primary"
+              nativeButton={false}
+              render={
+                <Link to="/inbox/new" className="flex items-center gap-2" />
+              }
+            >
+              New message
+            </Button>
+          ) : null
         }
       />
     )
@@ -185,7 +204,9 @@ function ConversationRow({ conversation }: { conversation: DmConversation }) {
           <div className="flex items-baseline justify-between gap-2">
             <span className="flex min-w-0 items-center gap-1 text-sm font-semibold">
               <span className="truncate">{title}</span>
-              {peer?.isVerified && <VerifiedBadge className="size-3.5" role={peer.role} />}
+              {peer?.isVerified && (
+                <VerifiedBadge className="size-3.5" role={peer.role} />
+              )}
             </span>
             <time className="shrink-0 text-xs text-tertiary">{ts}</time>
           </div>
@@ -195,7 +216,7 @@ function ConversationRow({ conversation }: { conversation: DmConversation }) {
           </p>
         </div>
         {conversation.unreadCount > 0 && (
-          <span className="ml-2 self-center rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-white">
+          <span className="bg-accent ml-2 self-center rounded-full px-2 py-0.5 text-[10px] font-semibold text-white">
             {conversation.unreadCount}
           </span>
         )}
@@ -219,14 +240,14 @@ function ConversationAvatar({
           <Avatar
             initial={initialFor(a)}
             src={a.avatarUrl}
-            className="absolute top-0 left-0 size-7 ring-2 ring-base-1"
+            className="ring-base-1 absolute top-0 left-0 size-7 ring-2"
           />
         )}
         {b && (
           <Avatar
             initial={initialFor(b)}
             src={b.avatarUrl}
-            className="absolute right-0 bottom-0 size-7 ring-2 ring-base-1"
+            className="ring-base-1 absolute right-0 bottom-0 size-7 ring-2"
           />
         )}
       </div>

@@ -65,6 +65,7 @@ export function Feed({
   queryKey,
   load,
   emptyMessage = "Nothing here yet.",
+  emptyState,
   prependItem,
   hideReplies = false,
   onlyReplies = false,
@@ -72,7 +73,10 @@ export function Feed({
 }: {
   queryKey: FeedQueryKey
   load: (cursor?: string) => Promise<FeedLoaderPage | FeedPage>
+  /** Legacy fallback. Used when `emptyState` is not provided. */
   emptyMessage?: string
+  /** Fully-custom empty state. Takes precedence over `emptyMessage`. */
+  emptyState?: React.ReactNode
   prependItem?: Post | null
   hideReplies?: boolean
   onlyReplies?: boolean
@@ -146,16 +150,16 @@ export function Feed({
       </div>
     )
   if (error) return <PageError message={error.message} className="px-4 py-6" />
-  if (posts.length === 0)
+  if (posts.length === 0) {
+    if (emptyState) return <>{emptyState}</>
     return <PageEmpty title="Nothing here yet" description={emptyMessage} />
+  }
 
   const renderRow = (post: Post) => {
     const banner = renderActivityBanner?.(post)
     return (
       <>
-        {banner && (
-          <div className="px-4 pt-2">{banner}</div>
-        )}
+        {banner && <div className="px-4 pt-2">{banner}</div>}
         <FeedPostCard post={post} />
       </>
     )
@@ -201,7 +205,7 @@ function FeedList(props: FeedListProps) {
           <div key={post.id}>{props.renderRow(post)}</div>
         ))}
         {props.hasNextPage && (
-          <div className="flex justify-center py-4 text-xs text-muted-foreground">
+          <div className="text-muted-foreground flex justify-center py-4 text-xs">
             {props.isFetchingNextPage ? "loading…" : ""}
           </div>
         )}
@@ -286,7 +290,7 @@ function WindowFeedList({
       </div>
       <div ref={sentinelRef} aria-hidden className="h-px" />
       {hasNextPage && (
-        <div className="flex justify-center py-4 text-xs text-muted-foreground">
+        <div className="text-muted-foreground flex justify-center py-4 text-xs">
           {isFetchingNextPage ? "loading…" : ""}
         </div>
       )}
@@ -352,7 +356,7 @@ function ContainerFeedList({
       </div>
       <div ref={sentinelRef} aria-hidden className="h-px" />
       {hasNextPage && (
-        <div className="flex justify-center py-4 text-xs text-muted-foreground">
+        <div className="text-muted-foreground flex justify-center py-4 text-xs">
           {isFetchingNextPage ? "loading…" : ""}
         </div>
       )}

@@ -12,9 +12,11 @@ import { useVirtualizer, useWindowVirtualizer } from "@tanstack/react-virtual"
 import {
   ArrowPathIcon,
   AtSymbolIcon,
+  BellIcon,
   ChatBubbleBottomCenterTextIcon,
   ChatBubbleOvalLeftIcon,
   HeartIcon,
+  PencilSquareIcon,
   UserPlusIcon,
 } from "@heroicons/react/24/solid"
 import { Button } from "@workspace/ui/components/button"
@@ -24,6 +26,8 @@ import { qk } from "../lib/query-keys"
 import { authClient } from "../lib/auth"
 import { Avatar } from "../components/avatar"
 import { usePageHeader } from "../components/app-page-header"
+import { useCompose } from "../components/compose-provider"
+import { PageEmpty } from "../components/page-surface"
 import { PageFrame } from "../components/page-frame"
 import { VerifiedBadge } from "../components/verified-badge"
 import { useInfiniteScrollSentinel } from "../lib/use-infinite-scroll-sentinel"
@@ -69,6 +73,7 @@ function Notifications() {
   const router = useRouter()
   const { data: session, isPending: sessionPending } = authClient.useSession()
   const queryClient = useQueryClient()
+  const { open: openCompose } = useCompose()
 
   useEffect(() => {
     if (!sessionPending && !session) router.navigate({ to: "/login" })
@@ -151,40 +156,52 @@ function Notifications() {
 
   return (
     <PageFrame>
-      <main>
-        {isPending ? (
-          <div>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-3 border-b border-neutral px-4 py-3"
-              >
-                <Skeleton className="size-10 shrink-0 rounded-full" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-2/3" />
-                  <Skeleton className="h-3 w-1/3" />
-                </div>
+      {isPending ? (
+        <div>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-start gap-3 border-b border-neutral px-4 py-3"
+            >
+              <Skeleton className="size-10 shrink-0 rounded-full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-2/3" />
+                <Skeleton className="h-3 w-1/3" />
               </div>
-            ))}
-          </div>
-        ) : error ? (
-          <p className="p-4 text-sm text-destructive">{error.message}</p>
-        ) : items.length === 0 ? (
-          <div className="px-4 py-16 text-center">
-            <p className="text-sm font-semibold">All caught up</p>
-            <p className="mt-1 text-xs text-tertiary">
-              New likes, replies, mentions, and follows will show up here.
-            </p>
-          </div>
-        ) : (
-          <NotificationsList
-            items={items}
-            hasNextPage={!!hasNextPage}
-            isFetchingNextPage={isFetchingNextPage}
-            fetchNextPage={fetchNextPage}
-          />
-        )}
-      </main>
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <p className="text-destructive p-4 text-sm">{error.message}</p>
+      ) : items.length === 0 ? (
+        <PageEmpty
+          icon={<BellIcon />}
+          title="All caught up"
+          description="New likes, replies, mentions, follows, and reposts will land here. Post or follow people to get the conversation going."
+          actions={
+            <>
+              <Button size="sm" variant="primary" onClick={() => openCompose()}>
+                Write a post
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                nativeButton={false}
+                render={<Link to="/search" />}
+              >
+                Find people
+              </Button>
+            </>
+          }
+        />
+      ) : (
+        <NotificationsList
+          items={items}
+          hasNextPage={!!hasNextPage}
+          isFetchingNextPage={isFetchingNextPage}
+          fetchNextPage={fetchNextPage}
+        />
+      )}
     </PageFrame>
   )
 }

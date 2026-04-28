@@ -45,6 +45,7 @@ import { useInfiniteScrollSentinel } from "../lib/use-infinite-scroll-sentinel"
 import { useMe } from "../lib/me"
 import { Avatar } from "../components/avatar"
 import { PageError, PageLoading } from "../components/page-surface"
+import { PageFrame } from "../components/page-frame"
 import { VerifiedBadge } from "../components/verified-badge"
 import type { ColumnDef } from "@tanstack/react-table"
 import type { AdminUser } from "../lib/api"
@@ -99,10 +100,7 @@ function AdminUsers() {
     getNextPageParam: (last) => last.nextCursor ?? undefined,
   })
 
-  const users = useMemo(
-    () => data?.pages.flatMap((p) => p.users) ?? [],
-    [data]
-  )
+  const users = useMemo(() => data?.pages.flatMap((p) => p.users) ?? [], [data])
 
   const loadError =
     error instanceof Error ? error.message : error ? "failed" : null
@@ -155,18 +153,20 @@ function AdminUsers() {
                     onClick={(e) => e.stopPropagation()}
                   >
                     {u.displayName ?? u.handle}
-                    {u.isVerified && <VerifiedBadge className="size-14" role={u.role} />}
+                    {u.isVerified && (
+                      <VerifiedBadge className="size-14" role={u.role} />
+                    )}
                   </Link>
                 ) : (
                   <span className="flex items-center gap-1 text-sm font-semibold">
                     {u.displayName ?? u.email}
-                    {u.isVerified && <VerifiedBadge className="size-14" role={u.role} />}
+                    {u.isVerified && (
+                      <VerifiedBadge className="size-14" role={u.role} />
+                    )}
                   </span>
                 )}
                 {u.handle && (
-                  <p className="truncate text-xs text-tertiary">
-                    @{u.handle}
-                  </p>
+                  <p className="truncate text-xs text-tertiary">@{u.handle}</p>
                 )}
               </div>
             </div>
@@ -255,15 +255,13 @@ function AdminUsers() {
             <div className="flex flex-col gap-0.5">
               <span
                 className={`text-xs ${
-                  status === "active"
-                    ? "text-tertiary"
-                    : "text-destructive"
+                  status === "active" ? "text-tertiary" : "text-destructive"
                 }`}
               >
                 {status}
               </span>
               {u.banReason && (
-                <span className="text-[10px] text-destructive">
+                <span className="text-destructive text-[10px]">
                   reason: {u.banReason}
                 </span>
               )}
@@ -388,7 +386,7 @@ function AdminUsers() {
   )
 
   return (
-    <main className="flex min-h-0 flex-1 flex-col">
+    <PageFrame className="flex min-h-0 flex-1 flex-col">
       <div className="shrink-0 border-b border-neutral p-4">
         <Input
           value={q}
@@ -498,7 +496,7 @@ function AdminUsers() {
         userId={selectedId}
         onClose={() => setSelectedId(null)}
       />
-    </main>
+    </PageFrame>
   )
 }
 
@@ -704,11 +702,16 @@ function ActionDialog({
             </div>
           )}
           {submitError && (
-            <p className="text-xs text-destructive">{submitError}</p>
+            <p className="text-destructive text-xs">{submitError}</p>
           )}
         </div>
         <DialogFooter>
-          <Button size="sm" variant="transparent" onClick={onClose} disabled={busy}>
+          <Button
+            size="sm"
+            variant="transparent"
+            onClick={onClose}
+            disabled={busy}
+          >
             Cancel
           </Button>
           <Button
@@ -786,11 +789,9 @@ function UserDetailSheet({
           </SheetDescription>
         </SheetHeader>
         <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-6 py-4 text-sm">
-          {loading && !detail && (
-            <p className="text-tertiary">loading…</p>
-          )}
+          {loading && !detail && <p className="text-tertiary">loading…</p>}
           {sheetErr && !loading && (
-            <p className="text-xs text-destructive">{sheetErr}</p>
+            <p className="text-destructive text-xs">{sheetErr}</p>
           )}
           {detail && u && (
             <>
@@ -805,7 +806,9 @@ function UserDetailSheet({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1 text-sm font-semibold">
                     {u.displayName ?? u.handle ?? u.email}
-                    {u.isVerified && <VerifiedBadge className="size-14" role={u.role} />}
+                    {u.isVerified && (
+                      <VerifiedBadge className="size-14" role={u.role} />
+                    )}
                   </div>
                   {u.handle && (
                     <Link
@@ -816,9 +819,7 @@ function UserDetailSheet({
                       @{u.handle}
                     </Link>
                   )}
-                  <p className="truncate text-xs text-tertiary">
-                    {u.email}
-                  </p>
+                  <p className="truncate text-xs text-tertiary">{u.email}</p>
                 </div>
               </div>
 
@@ -966,9 +967,7 @@ function UserDetailSheet({
                         </div>
                         <p className="line-clamp-3 whitespace-pre-wrap">
                           {p.text || (
-                            <span className="text-tertiary">
-                              (no text)
-                            </span>
+                            <span className="text-tertiary">(no text)</span>
                           )}
                         </p>
                       </li>

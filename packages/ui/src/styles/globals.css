@@ -12,6 +12,7 @@
 
 @theme inline {
 	--font-sans: "Inter Variable", sans-serif;
+	--container-feed: 600px;
 }
 
 * {
