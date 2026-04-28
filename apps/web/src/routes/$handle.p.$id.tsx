@@ -11,7 +11,6 @@ import { Compose } from "../components/compose"
 import { FeedPostCard } from "../components/feed-post-card"
 import { PageError } from "../components/page-surface"
 import { PageFrame } from "../components/page-frame"
-import type { RouterAppContext } from "../lib/router-context"
 import type { Post, Thread } from "../lib/api"
 
 export const Route = createFileRoute("/$handle/p/$id")({

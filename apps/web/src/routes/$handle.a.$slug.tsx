@@ -9,7 +9,6 @@ import { VerifiedBadge } from "../components/verified-badge"
 import { authClient } from "../lib/auth"
 import { APP_NAME } from "../lib/env"
 import { buildSeoMeta, canonicalLink, clipDescription } from "../lib/seo"
-import type { RouterAppContext } from "../lib/router-context"
 
 export const Route = createFileRoute("/$handle/a/$slug")({
   component: ArticleView,
@@ -133,7 +132,7 @@ function ArticleView() {
         <img
           src={article.coverUrl}
           alt=""
-          className="aspect-[3/1] w-full object-cover"
+          className="aspect-3/1 w-full object-cover"
         />
       )}
       <header className="border-border border-b px-4 py-6">
