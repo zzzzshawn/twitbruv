@@ -1,34 +1,21 @@
-import { createFileRoute } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
-import { useEffect, useState } from "react"
 import {
+  ArrowPathIcon,
   BookmarkIcon,
   ChatBubbleLeftIcon,
   EyeIcon,
   FlagIcon,
   HeartIcon,
-  ArrowPathIcon,
-  UsersIcon,
   UserGroupIcon,
+  UsersIcon,
 } from "@heroicons/react/24/solid"
-import { api } from "../lib/api"
-import { qk } from "../lib/query-keys"
-import { PageError } from "../components/page-surface"
-import { PageFrame } from "../components/page-frame"
-import type { AdminOnline } from "../lib/api"
+import { api } from "../../lib/api"
+import { qk } from "../../lib/query-keys"
+import { PageError } from "../page-surface"
+import { PageFrame } from "../page-frame"
 
 type Icon = React.ComponentType<{ className?: string }>
 
-// How often the admin dashboard refreshes the live online count. Tighter than the user-side
-// presence heartbeat (30s) so the number ticks visibly instead of jumping in 30s steps.
-const ONLINE_POLL_MS = 10_000
-
-export const Route = createFileRoute("/admin/stats")({
-  component: AdminStatsPage,
-})
-
-// Tailwind palette tokens for each section. Listed verbatim so the JIT picks them up — building
-// these strings dynamically would skip the safelist and the colours would silently disappear.
 const ACCENT = {
   sky: {
     text: "text-sky-600 dark:text-sky-400",
@@ -200,105 +187,14 @@ function Section({
   )
 }
 
-function OnlineNow({ online }: { online: AdminOnline | null }) {
-  const isLoading = online === null
-  const count = online?.count ?? null
-  const sample = online?.sample ?? []
-  const shownSample = sample.slice(0, 8)
-  const initials = (s: AdminOnline["sample"][number]) =>
-    (s.displayName ?? s.handle ?? "?").trim().slice(0, 1).toUpperCase()
-  return (
-    <div className="relative overflow-hidden rounded-lg border border-neutral bg-base-1 p-4">
-      <div className="pointer-events-none absolute -top-8 -right-8 size-24 rounded-full bg-emerald-500/10 opacity-60 blur-2xl" />
-      <div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3">
-          <span className="relative flex size-9 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 ring-1 ring-emerald-500/30 dark:text-emerald-400">
-            <div className="size-3 rounded-full bg-emerald-500" />
-            <span className="absolute inset-0 m-auto size-3 animate-ping rounded-full bg-emerald-500/40" />
-          </span>
-          <div>
-            <p className="text-[10px] font-medium tracking-[0.12em] text-tertiary uppercase">
-              Online now
-            </p>
-            <p
-              className={`text-2xl font-semibold tracking-tight tabular-nums ${
-                isLoading ? "text-tertiary" : ""
-              }`}
-              title={count === null ? undefined : fullFormatter.format(count)}
-            >
-              {formatStat(count, true)}
-            </p>
-            <p className="text-[11px] text-tertiary">
-              tabs open in the last 90 seconds
-            </p>
-          </div>
-        </div>
-        {shownSample.length > 0 && (
-          <div className="flex items-center gap-2">
-            <div className="flex -space-x-2">
-              {shownSample.map((u) => (
-                <span
-                  key={u.id}
-                  title={u.handle ? `@${u.handle}` : (u.displayName ?? u.id)}
-                  className="border-base-1 inline-flex size-7 items-center justify-center overflow-hidden rounded-full border-2 bg-base-2 text-[10px] font-semibold text-tertiary"
-                >
-                  {u.avatarUrl ? (
-                    <img
-                      src={u.avatarUrl}
-                      alt=""
-                      className="size-full object-cover"
-                    />
-                  ) : (
-                    initials(u)
-                  )}
-                </span>
-              ))}
-            </div>
-            {count !== null && count > shownSample.length && (
-              <span className="text-[11px] text-tertiary tabular-nums">
-                +{fullFormatter.format(count - shownSample.length)}
-              </span>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function AdminStatsPage() {
-  const [visible, setVisible] = useState(
-    () =>
-      typeof document !== "undefined" && document.visibilityState === "visible"
-  )
-
-  useEffect(() => {
-    const fn = () => setVisible(document.visibilityState === "visible")
-    fn()
-    document.addEventListener("visibilitychange", fn)
-    return () => document.removeEventListener("visibilitychange", fn)
-  }, [])
-
+export default function AdminStats() {
   const { data: stats, error: statsError } = useQuery({
     queryKey: qk.admin.stats(),
     queryFn: () => api.adminStats(),
     staleTime: 60_000,
   })
 
-  const { data: online } = useQuery({
-    queryKey: qk.admin.online(),
-    queryFn: () => api.adminOnline(),
-    enabled: visible,
-    refetchInterval: visible ? ONLINE_POLL_MS : false,
-    staleTime: 0,
-  })
-
-  const error =
-    statsError instanceof Error
-      ? statsError.message
-      : statsError
-        ? "failed"
-        : null
+  const error = statsError instanceof Error ? statsError.message : null
 
   if (error) {
     return (
@@ -310,18 +206,17 @@ function AdminStatsPage() {
 
   return (
     <PageFrame className="flex min-h-0 flex-1 flex-col overflow-auto overscroll-contain">
-      <div className="space-y-4 bg-gradient-to-b from-base-2/30 via-base-1 to-base-1 p-4">
-        <OnlineNow online={online ?? null} />
+      <div className="space-y-4 p-4">
+        <HeroCard
+          icon={UsersIcon}
+          label="Active users"
+          value={stats?.users.active}
+          accent="sky"
+          delta={stats?.users.newToday}
+          deltaLabel="new today"
+        />
 
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-5">
-          <HeroCard
-            icon={UsersIcon}
-            label="Active users"
-            value={stats?.users.active}
-            accent="sky"
-            delta={stats?.users.newToday}
-            deltaLabel="new today"
-          />
+        <div className="grid grid-cols-2 gap-2 md:grid-cols-4">
           <HeroCard
             icon={ChatBubbleLeftIcon}
             label="Posts"

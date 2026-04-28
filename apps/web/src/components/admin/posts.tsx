@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
@@ -43,17 +43,15 @@ import {
   HeartIcon,
 } from "@heroicons/react/24/solid"
 import { Avatar } from "@workspace/ui/components/avatar"
-import { api } from "../lib/api"
-import { qk } from "../lib/query-keys"
-import { useInfiniteScrollSentinel } from "../lib/use-infinite-scroll-sentinel"
-import { PageError, PageLoading } from "../components/page-surface"
-import { PageFrame } from "../components/page-frame"
-import { VerifiedBadge } from "../components/verified-badge"
-import type { AdminPostFilters } from "../lib/query-keys"
+import { api } from "../../lib/api"
+import { qk } from "../../lib/query-keys"
+import { useInfiniteScrollSentinel } from "../../lib/use-infinite-scroll-sentinel"
+import { PageError, PageLoading } from "../page-surface"
+import { PageFrame } from "../page-frame"
+import { VerifiedBadge } from "../verified-badge"
+import type { AdminPostFilters } from "../../lib/query-keys"
 import type { ColumnDef } from "@tanstack/react-table"
-import type { AdminPost, AdminPostSort, AdminPostType } from "../lib/api"
-
-export const Route = createFileRoute("/admin/posts")({ component: AdminPosts })
+import type { AdminPost, AdminPostSort, AdminPostType } from "../../lib/api"
 
 type TypeFilter = AdminPostType | "any"
 type VisibilityFilter = "public" | "followers" | "unlisted" | "any"
@@ -141,7 +139,7 @@ function StatHeader({
   )
 }
 
-function AdminPosts() {
+export default function AdminPosts() {
   const qc = useQueryClient()
   const [q, setQ] = useState("")
   const [debouncedQ, setDebouncedQ] = useState("")

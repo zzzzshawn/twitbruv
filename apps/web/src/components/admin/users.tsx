@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import {
   useInfiniteQuery,
   useQuery,
@@ -40,17 +40,15 @@ import {
 } from "@workspace/ui/components/table"
 import { ChevronDownIcon } from "@heroicons/react/24/solid"
 import { Avatar } from "@workspace/ui/components/avatar"
-import { api } from "../lib/api"
-import { qk } from "../lib/query-keys"
-import { useInfiniteScrollSentinel } from "../lib/use-infinite-scroll-sentinel"
-import { useMe } from "../lib/me"
-import { PageError, PageLoading } from "../components/page-surface"
-import { PageFrame } from "../components/page-frame"
-import { VerifiedBadge } from "../components/verified-badge"
+import { api } from "../../lib/api"
+import { qk } from "../../lib/query-keys"
+import { useInfiniteScrollSentinel } from "../../lib/use-infinite-scroll-sentinel"
+import { useMe } from "../../lib/me"
+import { PageError, PageLoading } from "../page-surface"
+import { PageFrame } from "../page-frame"
+import { VerifiedBadge } from "../verified-badge"
 import type { ColumnDef } from "@tanstack/react-table"
-import type { AdminUser } from "../lib/api"
-
-export const Route = createFileRoute("/admin/users")({ component: AdminUsers })
+import type { AdminUser } from "../../lib/api"
 
 type Role = "user" | "admin" | "owner"
 const ROLES: Array<Role> = ["user", "admin", "owner"]
@@ -71,7 +69,7 @@ const COLUMN_WIDTHS: Record<string, string> = {
   actions: "28%",
 }
 
-function AdminUsers() {
+export default function AdminUsers() {
   const { me } = useMe()
   const qc = useQueryClient()
   const [q, setQ] = useState("")

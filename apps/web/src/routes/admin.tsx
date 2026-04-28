@@ -1,25 +1,44 @@
-import {
-  Outlet,
-  createFileRoute,
-  useRouter,
-  useRouterState,
-} from "@tanstack/react-router"
-import { useEffect, useMemo } from "react"
+import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router"
+import { Suspense, lazy, useEffect, useMemo } from "react"
 import { SegmentedControl } from "@workspace/ui/components/segmented-control"
 import { authClient } from "../lib/auth"
 import { useMe } from "../lib/me"
 import { usePageHeader } from "../components/app-page-header"
 import { PageLoading } from "../components/page-surface"
 
-export const Route = createFileRoute("/admin")({ component: AdminLayout })
+const ADMIN_TABS = ["stats", "users", "posts", "reports"] as const
+type AdminTab = (typeof ADMIN_TABS)[number]
 
-type AdminTab = "stats" | "users" | "posts" | "reports"
+const TAB_LABELS: Record<AdminTab, string> = {
+  stats: "Stats",
+  users: "Users",
+  posts: "Posts",
+  reports: "Reports",
+}
+
+const AdminStats = lazy(() => import("../components/admin/stats"))
+const AdminUsers = lazy(() => import("../components/admin/users"))
+const AdminPosts = lazy(() => import("../components/admin/posts"))
+const AdminReports = lazy(() => import("../components/admin/reports"))
+
+export const Route = createFileRoute("/admin")({
+  component: AdminLayout,
+  validateSearch: (search: Record<string, unknown>): { tab?: AdminTab } => {
+    const raw = search.tab
+    if (typeof raw === "string" && ADMIN_TABS.includes(raw as AdminTab)) {
+      return { tab: raw as AdminTab }
+    }
+    return {}
+  },
+})
 
 function AdminLayout() {
   const router = useRouter()
+  const navigate = useNavigate()
   const { data: session, isPending } = authClient.useSession()
   const { me } = useMe()
-  const path = useRouterState({ select: (s) => s.location.pathname })
+  const { tab: searchTab } = Route.useSearch()
+  const tab: AdminTab = searchTab ?? "stats"
 
   useEffect(() => {
     if (isPending) return
@@ -47,41 +66,31 @@ function AdminLayout() {
     return <PageLoading className="p-6" label="Loading…" />
   }
 
-  const activeTab: AdminTab = path.startsWith("/admin/users")
-    ? "users"
-    : path.startsWith("/admin/posts")
-      ? "posts"
-      : path.startsWith("/admin/reports")
-        ? "reports"
-        : "stats"
-
   return (
-    <div className="mx-auto flex h-[calc(100svh-3rem)] w-full max-w-7xl flex-col overflow-hidden border-x border-b">
-      <header className="border-border bg-background/80 shrink-0 border-b px-4 py-3 backdrop-blur-sm">
+    <div className="mx-auto flex h-[calc(100svh-3rem)] w-full max-w-7xl flex-col overflow-hidden">
+      <header className="bg-background/80 shrink-0 px-4 py-3 backdrop-blur-sm">
         <SegmentedControl<AdminTab>
           layout="fit"
           variant="ghost"
-          value={activeTab}
-          options={[
-            { value: "stats", label: "Stats" },
-            { value: "users", label: "Users" },
-            { value: "posts", label: "Posts" },
-            { value: "reports", label: "Reports" },
-          ]}
+          value={tab}
+          options={ADMIN_TABS.map((t) => ({
+            value: t,
+            label: TAB_LABELS[t],
+          }))}
           onValueChange={(value) => {
-            const to =
-              value === "stats"
-                ? "/admin/stats"
-                : value === "users"
-                  ? "/admin/users"
-                  : value === "posts"
-                    ? "/admin/posts"
-                    : "/admin/reports"
-            void router.navigate({ to })
+            void navigate({
+              to: "/admin",
+              search: value === "stats" ? undefined : { tab: value },
+            })
           }}
         />
       </header>
-      <Outlet />
+      <Suspense fallback={<PageLoading className="p-6" label="Loading…" />}>
+        {tab === "stats" && <AdminStats />}
+        {tab === "users" && <AdminUsers />}
+        {tab === "posts" && <AdminPosts />}
+        {tab === "reports" && <AdminReports />}
+      </Suspense>
     </div>
   )
 }

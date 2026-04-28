@@ -1,4 +1,4 @@
-import { Link, createFileRoute } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import {
   useInfiniteQuery,
   useQuery,
@@ -30,26 +30,19 @@ import {
   TableRow,
 } from "@workspace/ui/components/table"
 import { Avatar } from "@workspace/ui/components/avatar"
-import { api } from "../lib/api"
-import { qk } from "../lib/query-keys"
-import { useInfiniteScrollSentinel } from "../lib/use-infinite-scroll-sentinel"
-import { PageEmpty, PageLoading } from "../components/page-surface"
-import { PageFrame } from "../components/page-frame"
-import {
-  UnderlineTabButton,
-  UnderlineTabRow,
-} from "../components/underline-tab-row"
+import { SegmentedControl } from "@workspace/ui/components/segmented-control"
+import { api } from "../../lib/api"
+import { qk } from "../../lib/query-keys"
+import { useInfiniteScrollSentinel } from "../../lib/use-infinite-scroll-sentinel"
+import { PageEmpty, PageLoading } from "../page-surface"
+import { PageFrame } from "../page-frame"
 import type { ColumnDef } from "@tanstack/react-table"
 import type {
   AdminReport,
   AdminReportDetail,
   AdminReportSubject,
   ReportStatus,
-} from "../lib/api"
-
-export const Route = createFileRoute("/admin/reports")({
-  component: AdminReports,
-})
+} from "../../lib/api"
 
 const STATUSES: Array<ReportStatus> = [
   "open",
@@ -57,9 +50,17 @@ const STATUSES: Array<ReportStatus> = [
   "actioned",
   "dismissed",
 ]
+
+const STATUS_LABELS: Record<ReportStatus, string> = {
+  open: "Open",
+  triaged: "Triaged",
+  actioned: "Actioned",
+  dismissed: "Dismissed",
+}
+
 type Resolution = "triaged" | "actioned" | "dismissed"
 
-function AdminReports() {
+export default function AdminReports() {
   const qc = useQueryClient()
   const [status, setStatus] = useState<ReportStatus>("open")
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -167,18 +168,18 @@ function AdminReports() {
 
   return (
     <PageFrame className="flex min-h-0 flex-1 flex-col">
-      <UnderlineTabRow className="px-0">
-        {STATUSES.map((s) => (
-          <UnderlineTabButton
-            key={s}
-            active={s === status}
-            onClick={() => setStatus(s)}
-            className="capitalize"
-          >
-            {s}
-          </UnderlineTabButton>
-        ))}
-      </UnderlineTabRow>
+      <div className="border-border shrink-0 border-b px-4 py-3">
+        <SegmentedControl<ReportStatus>
+          layout="fit"
+          variant="ghost"
+          value={status}
+          options={STATUSES.map((s) => ({
+            value: s,
+            label: STATUS_LABELS[s],
+          }))}
+          onValueChange={(value) => setStatus(value)}
+        />
+      </div>
       <div
         ref={setScrollRoot}
         className="flex-1 overflow-auto overscroll-contain"
