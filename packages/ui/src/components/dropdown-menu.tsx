@@ -1,7 +1,7 @@
-import type { ReactNode, ComponentProps } from "react"
 import { Menu as BaseMenu } from "@base-ui/react/menu"
 import { cn } from "@workspace/ui/lib/utils"
 import { Menu } from "./menu"
+import type { ComponentProps, ReactNode } from "react"
 
 // ---------------------------------------------------------------------------
 // DropdownMenu.Root

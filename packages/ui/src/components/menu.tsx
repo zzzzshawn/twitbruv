@@ -1,5 +1,5 @@
-import type { ReactNode, ComponentProps } from "react"
 import { cn } from "@workspace/ui/lib/utils"
+import type { ComponentProps, ReactNode } from "react"
 
 // ---------------------------------------------------------------------------
 // Menu.Panel — Popup container with scale+opacity animation

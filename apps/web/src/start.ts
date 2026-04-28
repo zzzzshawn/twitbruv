@@ -1,4 +1,4 @@
-import { createStart, createMiddleware } from "@tanstack/react-start"
+import { createMiddleware, createStart } from "@tanstack/react-start"
 import { getSessionCookie } from "better-auth/cookies"
 import { COOKIE_PREFIX } from "@workspace/auth/constants"
 

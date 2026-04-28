@@ -1,5 +1,5 @@
-import type { ComponentProps } from "react"
 import { cn } from "@workspace/ui/lib/utils"
+import type { ComponentProps } from "react"
 
 const textareaStyles = [
   "rounded-md border border-neutral bg-base-2 px-3 py-2 text-sm text-primary",

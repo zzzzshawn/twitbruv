@@ -34,7 +34,7 @@ export function RightRail() {
                     <Link
                       to="/hashtag/$tag"
                       params={{ tag: t.tag }}
-                      className="hover:bg-base-2/60 block rounded-md px-2 py-1 text-sm transition"
+                      className="block rounded-md px-2 py-1 text-sm transition hover:bg-base-2/60"
                     >
                       <div className="font-semibold">#{t.tag}</div>
                       <div className="text-xs text-tertiary">

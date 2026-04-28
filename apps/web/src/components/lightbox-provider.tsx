@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useState } from "react"
-import { Lightbox, type LightboxImage } from "@workspace/ui/components/lightbox"
+import { Lightbox } from "@workspace/ui/components/lightbox"
+import type { LightboxImage } from "@workspace/ui/components/lightbox"
 import type { ReactNode } from "react"
 
 // ---------------------------------------------------------------------------
@@ -7,13 +8,17 @@ import type { ReactNode } from "react"
 // ---------------------------------------------------------------------------
 
 interface LightboxState {
-  images: LightboxImage[]
+  images: Array<LightboxImage>
   index: number
   sidebar?: ReactNode
 }
 
 interface LightboxContextValue {
-  open: (images: LightboxImage[], index?: number, sidebar?: ReactNode) => void
+  open: (
+    images: Array<LightboxImage>,
+    index?: number,
+    sidebar?: ReactNode
+  ) => void
 }
 
 const LightboxContext = createContext<LightboxContextValue | null>(null)
@@ -26,7 +31,7 @@ export function LightboxProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<LightboxState | null>(null)
 
   const openLightbox = useCallback(
-    (images: LightboxImage[], index = 0, sidebar?: ReactNode) => {
+    (images: Array<LightboxImage>, index = 0, sidebar?: ReactNode) => {
       setState({ images, index, sidebar })
     },
     []

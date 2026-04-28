@@ -1,11 +1,12 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog"
 import {
-  XMarkIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline"
 import { Button } from "@workspace/ui/components/button"
+import type { ReactNode } from "react"
 
 export interface LightboxImage {
   url: string
@@ -13,7 +14,7 @@ export interface LightboxImage {
 }
 
 export interface LightboxProps {
-  images: LightboxImage[]
+  images: Array<LightboxImage>
   initialIndex?: number
   open: boolean
   onOpenChange: (open: boolean) => void

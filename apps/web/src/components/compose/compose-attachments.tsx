@@ -5,7 +5,7 @@ import { cn } from "@workspace/ui/lib/utils"
 import type { PendingAttachment } from "./types"
 
 interface ComposeAttachmentsProps {
-  attachments: PendingAttachment[]
+  attachments: Array<PendingAttachment>
   editingAttachmentId: string | null
   onSetEditingAttachmentId: (id: string | null) => void
   onUpdateAltText: (tempId: string, altText: string) => void

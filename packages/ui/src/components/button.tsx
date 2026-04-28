@@ -1,7 +1,7 @@
 import { Button as BaseButton } from "@base-ui/react/button"
-import type { ComponentProps, ReactNode } from "react"
 import { cn } from "@workspace/ui/lib/utils"
 import { Spinner } from "@workspace/ui/components/spinner"
+import type { ComponentProps, ReactNode } from "react"
 
 const variantConfig = {
   primary: {

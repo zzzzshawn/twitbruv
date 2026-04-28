@@ -208,11 +208,11 @@ function Home() {
                     (first.handle ? `@${first.handle}` : "Someone")
                   return (
                     <div className="pb-1 text-xs text-tertiary">
-                        {name}
-                        {more > 0
-                          ? ` and ${more} other${more === 1 ? "" : "s"}`
-                          : ""}{" "}
-                        liked or reposted
+                      {name}
+                      {more > 0
+                        ? ` and ${more} other${more === 1 ? "" : "s"}`
+                        : ""}{" "}
+                      liked or reposted
                     </div>
                   )
                 }

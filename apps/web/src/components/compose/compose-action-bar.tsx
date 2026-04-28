@@ -1,10 +1,10 @@
-import { PhotoIcon, ChartBarIcon } from "@heroicons/react/24/solid"
+import { ChartBarIcon, PhotoIcon } from "@heroicons/react/24/solid"
 import { cn } from "@workspace/ui/lib/utils"
 import { Button } from "@workspace/ui/components/button"
 import { DropdownMenu } from "@workspace/ui/components/dropdown-menu"
 import { POST_MAX_LEN } from "@workspace/validators"
 import { CharacterRing } from "./character-ring"
-import { REPLY_OPTIONS, MAX_ATTACHMENTS } from "./types"
+import { MAX_ATTACHMENTS, REPLY_OPTIONS } from "./types"
 
 interface ComposeActionBarProps {
   expanded: boolean

@@ -8,7 +8,7 @@ export function GithubPinnedRepoCard({ repo }: { repo: GithubPinnedRepo }) {
       href={repo.url}
       target="_blank"
       rel="noreferrer"
-      className="bg-subtle hover:bg-subtle/60 rounded-lg px-3.5 py-2.5 pb-3 transition-all duration-200 flex flex-col justify-between gap-0.5"
+      className="flex flex-col justify-between gap-0.5 rounded-lg bg-subtle px-3.5 py-2.5 pb-3 transition-all duration-200 hover:bg-subtle/60"
     >
       <div>
         <div className="flex items-center gap-1.5 text-[14.5px] font-semibold tracking-tight">

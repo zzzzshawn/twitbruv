@@ -142,8 +142,16 @@ function ThemedToaster() {
 }
 
 function MaintenanceGate({ children }: { children: React.ReactNode }) {
-  const { active, message } = useMaintenance()
-  if (active) return <MaintenanceScreen message={message} />
+  const {
+    active,
+    //  message
+  } = useMaintenance()
+  if (active)
+    return (
+      <MaintenanceScreen
+      // message={message}
+      />
+    )
   return <>{children}</>
 }
 

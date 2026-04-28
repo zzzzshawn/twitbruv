@@ -591,10 +591,7 @@ export default function AdminPosts() {
         </div>
       )}
       {posts.length > 0 && (
-        <div
-          ref={setScrollRoot}
-          className="flex-1"
-        >
+        <div ref={setScrollRoot} className="flex-1">
           <Table className="table-fixed">
             <colgroup>
               {table.getVisibleLeafColumns().map((col) => (

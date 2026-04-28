@@ -1,29 +1,24 @@
+import { useCallback, useEffect, useRef, useState } from "react"
 import {
-  useState,
-  useCallback,
-  useRef,
-  useEffect,
-  type ReactNode,
-} from "react"
+  ArrowPathRoundedSquareIcon as ArrowPathOutline,
+  BookmarkIcon as BookmarkOutline,
+  ChatBubbleBottomCenterTextIcon,
+  ChatBubbleLeftIcon as ChatBubbleLeftOutline,
+  EllipsisHorizontalIcon,
+  HeartIcon as HeartOutline,
+} from "@heroicons/react/24/outline"
+import {
+  ArrowPathRoundedSquareIcon as ArrowPathSolid,
+  BookmarkIcon as BookmarkSolid,
+  HeartIcon as HeartSolid,
+} from "@heroicons/react/24/solid"
 import { cn } from "@workspace/ui/lib/utils"
 import { Avatar } from "@workspace/ui/components/avatar"
 import { Button } from "@workspace/ui/components/button"
 import { DropdownMenu } from "@workspace/ui/components/dropdown-menu"
 import { Hover } from "@workspace/ui/components/hover"
 import { AnimatedNumber } from "@workspace/ui/components/animated-number"
-import {
-  ChatBubbleLeftIcon as ChatBubbleLeftOutline,
-  ArrowPathRoundedSquareIcon as ArrowPathOutline,
-  HeartIcon as HeartOutline,
-  BookmarkIcon as BookmarkOutline,
-  EllipsisHorizontalIcon,
-  ChatBubbleBottomCenterTextIcon,
-} from "@heroicons/react/24/outline"
-import {
-  ArrowPathRoundedSquareIcon as ArrowPathSolid,
-  HeartIcon as HeartSolid,
-  BookmarkIcon as BookmarkSolid,
-} from "@heroicons/react/24/solid"
+import type { ReactNode } from "react"
 
 export type PostMedia =
   | { type: "image"; url: string; alt?: string }
@@ -57,7 +52,7 @@ export interface PostCardProps {
   reposted?: boolean
   bookmarked?: boolean
   /** Media attachments (images, videos) */
-  media?: PostMedia[]
+  media?: Array<PostMedia>
   /** Show "X reposted" badge above the post */
   repostedBy?: string
   /** Quoted post embed */
@@ -384,19 +379,19 @@ function MediaGrid({
   media,
   onImageClick,
 }: {
-  media: PostMedia[]
+  media: Array<PostMedia>
   onImageClick?: (index: number) => void
 }) {
-  // If there's a single video, render a video player
-  if (media.length === 1 && media[0].type === "video") {
+  const first = media[0]
+  if (media.length === 1 && first?.type === "video") {
     return (
       <div
         className="mt-2 overflow-hidden rounded-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <video
-          src={media[0].url}
-          poster={media[0].thumbnailUrl || undefined}
+          src={first.url}
+          poster={first.thumbnailUrl || undefined}
           controls
           preload="metadata"
           className="max-h-96 w-full object-cover"
@@ -423,8 +418,8 @@ function MediaGrid({
       {images.slice(0, 4).map((img, i) => (
         <img
           key={i}
-          src={img.type === "image" ? img.url : ""}
-          alt={img.type === "image" ? (img.alt ?? "") : ""}
+          src={img.url}
+          alt={img.alt ?? ""}
           className={cn(
             "w-full cursor-pointer object-cover transition-opacity hover:opacity-90",
             count === 1 && "max-h-80",

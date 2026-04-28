@@ -1,6 +1,6 @@
 import { Field } from "@base-ui/react/field"
-import type { ComponentProps, ReactNode } from "react"
 import { cn } from "@workspace/ui/lib/utils"
+import type { ComponentProps, ReactNode } from "react"
 
 const inputStyles = [
   "rounded-md border border-neutral bg-base-2 px-3 py-1.5 text-sm text-primary",

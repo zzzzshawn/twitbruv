@@ -4,9 +4,9 @@ import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import {
   Select,
-  SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectTrigger,
 } from "@workspace/ui/components/select"
 import { Switch } from "@workspace/ui/components/switch"
 import {
@@ -14,8 +14,8 @@ import {
   POLL_MIN_OPTIONS,
   POLL_OPTION_MAX_LEN,
 } from "@workspace/validators"
-import type { PollState } from "./types"
 import { POLL_DURATION_CHOICES } from "./types"
+import type { PollState } from "./types"
 
 interface ComposePollProps {
   poll: PollState

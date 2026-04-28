@@ -1,6 +1,6 @@
 import {
-  ArrowsRightLeftIcon,
   ArrowPathRoundedSquareIcon,
+  ArrowsRightLeftIcon,
   CommandLineIcon,
   PencilSquareIcon,
 } from "@heroicons/react/24/outline"
@@ -224,8 +224,12 @@ function PullCard({
           </span>
           {(card.additions > 0 || card.deletions > 0) && (
             <span className="font-mono">
-              <span className="text-success">+{compactNumber(card.additions)}</span>{" "}
-              <span className="text-danger">−{compactNumber(card.deletions)}</span>
+              <span className="text-success">
+                +{compactNumber(card.additions)}
+              </span>{" "}
+              <span className="text-danger">
+                −{compactNumber(card.deletions)}
+              </span>
             </span>
           )}
           {card.changedFiles > 0 && <span>{card.changedFiles} files</span>}
@@ -271,8 +275,12 @@ function CommitCard({
           )}
           {(card.additions > 0 || card.deletions > 0) && (
             <span className="font-mono">
-              <span className="text-success">+{compactNumber(card.additions)}</span>{" "}
-              <span className="text-danger">−{compactNumber(card.deletions)}</span>
+              <span className="text-success">
+                +{compactNumber(card.additions)}
+              </span>{" "}
+              <span className="text-danger">
+                −{compactNumber(card.deletions)}
+              </span>
             </span>
           )}
           {card.changedFiles > 0 && <span>{card.changedFiles} files</span>}

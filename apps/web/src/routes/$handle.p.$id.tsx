@@ -6,18 +6,18 @@ import { Button } from "@workspace/ui/components/button"
 import { ApiError, api } from "../lib/api"
 import { APP_NAME } from "../lib/env"
 import { qk } from "../lib/query-keys"
-import type { RouterAppContext } from "../lib/router-context"
 import { buildSeoMeta, canonicalLink, clipDescription } from "../lib/seo"
 import { Compose } from "../components/compose"
 import { FeedPostCard } from "../components/feed-post-card"
 import { PageError } from "../components/page-surface"
 import { PageFrame } from "../components/page-frame"
+import type { RouterAppContext } from "../lib/router-context"
 import type { Post, Thread } from "../lib/api"
 
 export const Route = createFileRoute("/$handle/p/$id")({
   component: ThreadView,
   loader: async ({ params, context }) => {
-    const ctx = context as RouterAppContext
+    const ctx = context
     try {
       const postResult = await api.post(params.id)
       ctx.queryClient.setQueryData(qk.post(params.id), postResult)

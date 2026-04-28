@@ -2,11 +2,11 @@ import { Link } from "@tanstack/react-router"
 import { useInfiniteQuery } from "@tanstack/react-query"
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import { useWindowVirtualizer } from "@tanstack/react-virtual"
-import type { InfiniteData } from "@tanstack/react-query"
 import { UsersIcon } from "@heroicons/react/24/solid"
 import { useInfiniteScrollSentinel } from "../lib/use-infinite-scroll-sentinel"
 import { PageEmpty } from "./page-surface"
 import { VerifiedBadge } from "./verified-badge"
+import type { InfiniteData } from "@tanstack/react-query"
 import type { PublicUser, UserListPage } from "../lib/api"
 
 const useIsoLayoutEffect =
@@ -30,7 +30,7 @@ export function UserList({
   emptyIcon,
   emptyActions,
 }: {
-  queryKey: readonly unknown[]
+  queryKey: ReadonlyArray<unknown>
   load: (cursor?: string) => Promise<UserListPage>
   emptyMessage?: string
   emptyTitle?: string
@@ -48,7 +48,7 @@ export function UserList({
     UserListPage,
     Error,
     InfiniteData<UserListPage, string | undefined>,
-    readonly unknown[],
+    ReadonlyArray<unknown>,
     string | undefined
   >({
     queryKey,

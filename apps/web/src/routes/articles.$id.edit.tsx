@@ -9,8 +9,8 @@ import { usePageHeader } from "../components/app-page-header"
 import { Editor } from "../components/editor/editor"
 import { PageFrame } from "../components/page-frame"
 import { CoverPicker } from "../components/cover-picker"
-import type { AppPageHeaderSpec } from "../components/app-page-header"
 import { qk } from "../lib/query-keys"
+import type { AppPageHeaderSpec } from "../components/app-page-header"
 import type { EditorPayload } from "../components/editor/editor"
 
 export const Route = createFileRoute("/articles/$id/edit")({

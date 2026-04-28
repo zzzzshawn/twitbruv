@@ -299,9 +299,7 @@ export default function AdminUsers() {
                   <DropdownMenu.Group>
                     {u.banned ? (
                       <DropdownMenu.Item
-                        onClick={() =>
-                          act(u.id, () => api.adminUnban(u.id))
-                        }
+                        onClick={() => act(u.id, () => api.adminUnban(u.id))}
                       >
                         Unban
                       </DropdownMenu.Item>
@@ -341,9 +339,7 @@ export default function AdminUsers() {
                       <DropdownMenu.Separator />
                       <DropdownMenu.Group>
                         <DropdownMenu.Item
-                          onClick={() =>
-                            setDialog({ kind: "handle", user: u })
-                          }
+                          onClick={() => setDialog({ kind: "handle", user: u })}
                         >
                           Change handle…
                         </DropdownMenu.Item>
@@ -417,10 +413,7 @@ export default function AdminUsers() {
         <PageLoading className="py-8" label="Loading…" />
       )}
       {users.length > 0 && (
-        <div
-          ref={setScrollRoot}
-          className="flex-1"
-        >
+        <div ref={setScrollRoot} className="flex-1">
           <Table className="table-fixed">
             <colgroup>
               {table.getVisibleLeafColumns().map((col) => (

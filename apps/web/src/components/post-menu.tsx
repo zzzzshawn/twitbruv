@@ -4,8 +4,8 @@ import {
   EyeIcon,
   EyeSlashIcon,
   FlagIcon,
-  PencilSquareIcon,
   MapPinIcon,
+  PencilSquareIcon,
   TrashIcon,
 } from "@heroicons/react/24/solid"
 import { Button } from "@workspace/ui/components/button"

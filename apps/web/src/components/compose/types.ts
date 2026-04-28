@@ -1,7 +1,7 @@
 import {
+  AtSymbolIcon,
   GlobeAltIcon,
   UsersIcon,
-  AtSymbolIcon,
 } from "@heroicons/react/24/solid"
 import type { UploadedMedia } from "../../lib/media"
 import type { Post } from "../../lib/api"
@@ -46,7 +46,7 @@ export interface PollOptionState {
 }
 
 export interface PollState {
-  options: PollOptionState[]
+  options: Array<PollOptionState>
   durationMinutes: number
   allowMultiple: boolean
 }

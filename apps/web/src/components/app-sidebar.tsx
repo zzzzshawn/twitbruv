@@ -1,34 +1,35 @@
 import { Link, useNavigate } from "@tanstack/react-router"
 import {
-  HomeIcon,
-  MagnifyingGlassIcon,
   BellIcon,
-  EnvelopeIcon,
-  UserIcon,
-  ChartBarIcon,
   BookmarkIcon,
-  ListBulletIcon,
+  ChartBarIcon,
   ClockIcon,
+  EnvelopeIcon,
+  HomeIcon,
+  ListBulletIcon,
+  MagnifyingGlassIcon,
   ShieldCheckIcon,
+  UserIcon,
 } from "@heroicons/react/24/outline"
 import {
-  HomeIcon as HomeIconSolid,
-  MagnifyingGlassIcon as MagnifyingGlassIconSolid,
   BellIcon as BellIconSolid,
-  EnvelopeIcon as EnvelopeIconSolid,
-  UserIcon as UserIconSolid,
-  ChartBarIcon as ChartBarIconSolid,
   BookmarkIcon as BookmarkIconSolid,
-  ListBulletIcon as ListBulletIconSolid,
+  ChartBarIcon as ChartBarIconSolid,
   ClockIcon as ClockIconSolid,
+  EnvelopeIcon as EnvelopeIconSolid,
+  HomeIcon as HomeIconSolid,
+  ListBulletIcon as ListBulletIconSolid,
+  MagnifyingGlassIcon as MagnifyingGlassIconSolid,
   ShieldCheckIcon as ShieldCheckIconSolid,
+  UserIcon as UserIconSolid,
 } from "@heroicons/react/24/solid"
-import { Sidebar, type SidebarNavItem } from "@workspace/ui/components/sidebar"
+import { Sidebar } from "@workspace/ui/components/sidebar"
 import { useTheme } from "../lib/theme"
 import { useMe } from "../lib/me"
 import { authClient } from "../lib/auth"
+import type { SidebarNavItem } from "@workspace/ui/components/sidebar"
 
-const navItems: SidebarNavItem[] = [
+const navItems: Array<SidebarNavItem> = [
   {
     to: "/",
     label: "Home",
@@ -115,7 +116,7 @@ export function AppSidebar({ onCompose }: { onCompose: () => void }) {
     )
   }
 
-  const items: SidebarNavItem[] = [
+  const items: Array<SidebarNavItem> = [
     ...navItems,
     { ...profileItem, to: `/${me.handle}` },
     ...(me.role === "admin" || me.role === "owner" ? [adminItem] : []),

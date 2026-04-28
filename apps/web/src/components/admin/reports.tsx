@@ -180,10 +180,7 @@ export default function AdminReports() {
           onValueChange={(value) => setStatus(value)}
         />
       </div>
-      <div
-        ref={setScrollRoot}
-        className="flex-1"
-      >
+      <div ref={setScrollRoot} className="flex-1">
         {isPending && reports.length === 0 && (
           <PageLoading className="py-8" label="Loading…" />
         )}

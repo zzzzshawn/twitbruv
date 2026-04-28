@@ -44,9 +44,12 @@ export function ClaimHandle({
   return (
     <Card>
       <Card.Body>
-        <h2 className="text-sm font-semibold text-primary">Claim your handle</h2>
+        <h2 className="text-sm font-semibold text-primary">
+          Claim your handle
+        </h2>
         <p className="mt-1 text-xs text-tertiary">
-          Your handle is permanent for v1. Choose something you'll be happy with.
+          Your handle is permanent for v1. Choose something you'll be happy
+          with.
         </p>
         <form onSubmit={onSubmit} className="mt-3 space-y-2">
           <div className="space-y-1">

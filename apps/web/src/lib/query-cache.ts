@@ -1,3 +1,5 @@
+import { qk } from "./query-keys"
+import type { FeedTabKey } from "./query-keys"
 import type {
   InfiniteData,
   QueryClient,
@@ -11,7 +13,6 @@ import type {
   Thread,
   ThreadReply,
 } from "./api"
-import { qk, type FeedTabKey } from "./query-keys"
 
 export type SearchResultsPage = {
   users: Array<{ id: string } & Record<string, unknown>>
@@ -86,7 +87,7 @@ function patchThreadData(
   mapFn: (p: Post) => Post
 ): Thread {
   const mapReply = (r: ThreadReply): ThreadReply =>
-    r.id === postId ? (mapFn(r as Post) as ThreadReply) : r
+    r.id === postId ? (mapFn(r) as ThreadReply) : r
 
   return {
     ancestors: old.ancestors.map((a) => (a.id === postId ? mapFn(a) : a)),
@@ -129,7 +130,6 @@ export function updatePostEverywhere(
     if (!data) return data
     if (
       typeof data === "object" &&
-      data !== null &&
       "pages" in data &&
       Array.isArray((data as InfiniteData<FeedPage>).pages)
     ) {
@@ -138,7 +138,6 @@ export function updatePostEverywhere(
     }
     if (
       typeof data === "object" &&
-      data !== null &&
       "posts" in data &&
       "users" in data &&
       Array.isArray((data as SearchResultsPage).posts)
@@ -153,7 +152,6 @@ export function updatePostEverywhere(
       !data ||
       typeof data !== "object" ||
       !("post" in data) ||
-      !(data as { post: Post }).post ||
       (data as { post: Post }).post.id !== postId
     ) {
       return data
@@ -181,7 +179,6 @@ export function removePostEverywhere(qc: QueryClient, postId: string) {
     if (!data) return data
     if (
       typeof data === "object" &&
-      data !== null &&
       "pages" in data &&
       Array.isArray((data as InfiniteData<FeedPage>).pages)
     ) {
@@ -190,7 +187,6 @@ export function removePostEverywhere(qc: QueryClient, postId: string) {
     }
     if (
       typeof data === "object" &&
-      data !== null &&
       "posts" in data &&
       "users" in data &&
       Array.isArray((data as SearchResultsPage).posts)
@@ -234,7 +230,11 @@ export function prependPostToFeeds(
 ) {
   const tabsToUse =
     tabs ??
-    (["following", "network", "all"] as const satisfies readonly FeedTabKey[])
+    ([
+      "following",
+      "network",
+      "all",
+    ] as const satisfies ReadonlyArray<FeedTabKey>)
   for (const tab of tabsToUse) {
     qc.setQueryData<InfiniteData<FeedPage>>(qk.feed(tab), (current) => {
       if (!current || current.pages.length === 0) return current

@@ -1,11 +1,12 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { api, type Post } from "../api"
+import { api } from "../api"
 import {
   invalidateFeedCaches,
   removePostEverywhere,
   updatePostEverywhere,
 } from "../query-cache"
 import { qk } from "../query-keys"
+import type { Post } from "../api"
 
 export function useTogglePostLike(innerPost: Post) {
   const qc = useQueryClient()

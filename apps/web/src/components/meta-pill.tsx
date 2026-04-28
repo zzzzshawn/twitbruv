@@ -37,7 +37,7 @@ export function MetaPill({
         className={cn(
           baseClass,
           "text-primary no-underline transition-colors hover:underline",
-          className,
+          className
         )}
       >
         {inner}

@@ -13,7 +13,11 @@ const CONTRIBUTION_COLOR_BANDS: Array<{
   { min: 6, max: 15, color: "var(--background-color-github-contrib-2)" },
   { min: 16, max: 30, color: "var(--background-color-github-contrib-3)" },
   { min: 31, max: 50, color: "var(--background-color-github-contrib-4)" },
-  { min: 51, max: Number.POSITIVE_INFINITY, color: "var(--background-color-github-contrib-5)" },
+  {
+    min: 51,
+    max: Number.POSITIVE_INFINITY,
+    color: "var(--background-color-github-contrib-5)",
+  },
 ]
 
 const TOOLTIP_DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
@@ -21,7 +25,9 @@ const TOOLTIP_DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
   day: "numeric",
   year: "numeric",
 })
-const MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat(undefined, { month: "short" })
+const MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat(undefined, {
+  month: "short",
+})
 const DAY_LABELS: Array<{ di: number; label: string }> = [
   { di: 1, label: "Mon" },
   { di: 3, label: "Wed" },
@@ -64,7 +70,7 @@ function utcMonthFullyInRange(
   year: number,
   month: number,
   min: string,
-  max: string,
+  max: string
 ): boolean {
   const pad = (n: number) => String(n).padStart(2, "0")
   const first = `${year}-${pad(month + 1)}-01`
@@ -83,7 +89,10 @@ function contributionColorForCount(count: number): string {
   for (const band of CONTRIBUTION_COLOR_BANDS) {
     if (count >= band.min && count <= band.max) return band.color
   }
-  return CONTRIBUTION_COLOR_BANDS[CONTRIBUTION_COLOR_BANDS.length - 1]?.color ?? "var(--background-color-github-contrib-5)"
+  return (
+    CONTRIBUTION_COLOR_BANDS[CONTRIBUTION_COLOR_BANDS.length - 1]?.color ??
+    "var(--background-color-github-contrib-5)"
+  )
 }
 
 function contributionTooltipLabel(count: number, date: string): string {
@@ -96,7 +105,9 @@ function contributionTooltipDate(date: string): string {
   return TOOLTIP_DATE_FORMATTER.format(new Date(`${date}T12:00:00Z`))
 }
 
-function contributionTooltipDateParts(date: string): Array<Intl.DateTimeFormatPart> {
+function contributionTooltipDateParts(
+  date: string
+): Array<Intl.DateTimeFormatPart> {
   return TOOLTIP_DATE_FORMATTER.formatToParts(new Date(`${date}T12:00:00Z`))
 }
 
@@ -156,9 +167,8 @@ export function GithubContributionsHeatmap({
   stale?: boolean
   className?: string
 }) {
-  const [hoveredContribution, setHoveredContribution] = useState<HoveredContribution | null>(
-    null,
-  )
+  const [hoveredContribution, setHoveredContribution] =
+    useState<HoveredContribution | null>(null)
   const cell = 12
   const gap = 3
   const cols = data.weeks.length
@@ -229,7 +239,8 @@ export function GithubContributionsHeatmap({
 
   const contributionsByWeekAndDay = useMemo(() => {
     return data.weeks.map((week) => {
-      const daysByIndex: Array<{ date: string; count: number } | null> = Array(7).fill(null)
+      const daysByIndex: Array<{ date: string; count: number } | null> =
+        Array(7).fill(null)
       for (const day of week.days) {
         const dayIndex = new Date(`${day.date}T12:00:00Z`).getUTCDay()
         daysByIndex[dayIndex] = { date: day.date, count: day.count }
@@ -250,9 +261,9 @@ export function GithubContributionsHeatmap({
             fill: contributionColorForCount(day.count),
             ariaLabel: contributionTooltipLabel(day.count, day.date),
           }
-        }),
+        })
       ),
-    [cell, data.weeks, gap],
+    [cell, data.weeks, gap]
   )
 
   const flushPendingHover = useCallback(() => {
@@ -279,7 +290,7 @@ export function GithubContributionsHeatmap({
       if (animationFrameRef.current !== null) return
       animationFrameRef.current = requestAnimationFrame(flushPendingHover)
     },
-    [flushPendingHover],
+    [flushPendingHover]
   )
 
   useEffect(() => {
@@ -331,7 +342,15 @@ export function GithubContributionsHeatmap({
         date: hoveredDay.date,
       })
     },
-    [cell, contributionsByWeekAndDay, gap, height, hoveredContribution, queueHoverUpdate, width],
+    [
+      cell,
+      contributionsByWeekAndDay,
+      gap,
+      height,
+      hoveredContribution,
+      queueHoverUpdate,
+      width,
+    ]
   )
 
   const handleHeatmapMouseEnter = useCallback(
@@ -356,7 +375,7 @@ export function GithubContributionsHeatmap({
         date: hoveredDay.date,
       })
     },
-    [cell, contributionsByWeekAndDay, gap, height, queueHoverUpdate, width],
+    [cell, contributionsByWeekAndDay, gap, height, queueHoverUpdate, width]
   )
 
   const handleHeatmapMouseLeave = useCallback(() => {
@@ -394,7 +413,10 @@ export function GithubContributionsHeatmap({
                 ))}
               </div>
               <div className="flex items-start" style={{ gap: labelGraphGap }}>
-                <div className="relative shrink-0" style={{ width: gutterW, height }}>
+                <div
+                  className="relative shrink-0"
+                  style={{ width: gutterW, height }}
+                >
                   {DAY_LABELS.map(({ di, label }) => (
                     <span
                       key={di}
@@ -438,8 +460,8 @@ export function GithubContributionsHeatmap({
             />
           )}
         </div>
-        <div className="flex items-center gap-2 justify-between">
-          <div className="text-muted-foreground mt-2 flex items-center gap-1.5 text-[10px] pl-1.5">
+        <div className="flex items-center justify-between gap-2">
+          <div className="text-muted-foreground mt-2 flex items-center gap-1.5 pl-1.5 text-[10px]">
             <span>Less</span>
             <span className="inline-flex items-center gap-0.5">
               {LEGEND_COLORS.map((color, index) => (
@@ -470,7 +492,7 @@ export function GithubContributionsHeatmap({
       <AnimatePresence>
         {hoveredContribution && (
           <motion.div
-            className="bg-subtle backdrop-blur-sm border border-neutral text-primary pointer-events-none fixed z-50 rounded-md px-2 py-1 text-[11px] whitespace-nowrap"
+            className="pointer-events-none fixed z-50 rounded-md border border-neutral bg-subtle px-2 py-1 text-[11px] whitespace-nowrap text-primary backdrop-blur-sm"
             initial={{ opacity: 0, filter: "blur(8px)", scale: 0.8 }}
             animate={{
               left: hoveredContribution.x + 12,
@@ -480,7 +502,12 @@ export function GithubContributionsHeatmap({
               scale: 1,
             }}
             exit={{ opacity: 0, filter: "blur(8px)", scale: 0.8 }}
-            transition={{ type: "spring", stiffness: 450, damping: 40, mass: 0.3 }}
+            transition={{
+              type: "spring",
+              stiffness: 450,
+              damping: 40,
+              mass: 0.3,
+            }}
             style={{
               boxShadow: "var(--shadow-gh-tooltip)",
             }}
@@ -497,35 +524,53 @@ export function GithubContributionsHeatmap({
                 on
               </motion.span>
               <motion.span layout className="inline-flex">
-                {contributionTooltipDateParts(hoveredContribution.date).map((part, index) => {
-                  if (part.type === "day" || part.type === "year") {
-                    const numericPart = Number(part.value)
-                    if (!Number.isNaN(numericPart)) {
+                {contributionTooltipDateParts(hoveredContribution.date).map(
+                  (part, index) => {
+                    if (part.type === "day" || part.type === "year") {
+                      const numericPart = Number(part.value)
+                      if (!Number.isNaN(numericPart)) {
+                        return (
+                          <motion.span
+                            key={`${part.type}-${index}`}
+                            layout
+                            className="inline-flex"
+                          >
+                            <NumberFlow
+                              value={numericPart}
+                              format={
+                                part.type === "year"
+                                  ? { useGrouping: false }
+                                  : undefined
+                              }
+                            />
+                          </motion.span>
+                        )
+                      }
+                    }
+                    if (part.type === "literal" && part.value.includes(",")) {
+                      const literalWithoutComma = part.value.replaceAll(",", "")
+                      if (!literalWithoutComma) return null
                       return (
-                        <motion.span key={`${part.type}-${index}`} layout className="inline-flex">
-                          <NumberFlow
-                            value={numericPart}
-                            format={part.type === "year" ? { useGrouping: false } : undefined}
-                          />
+                        <motion.span
+                          key={`${part.type}-${index}`}
+                          layout
+                          className="whitespace-pre"
+                        >
+                          {literalWithoutComma}
                         </motion.span>
                       )
                     }
-                  }
-                  if (part.type === "literal" && part.value.includes(",")) {
-                    const literalWithoutComma = part.value.replaceAll(",", "")
-                    if (!literalWithoutComma) return null
                     return (
-                      <motion.span key={`${part.type}-${index}`} layout className="whitespace-pre">
-                        {literalWithoutComma}
+                      <motion.span
+                        key={`${part.type}-${index}`}
+                        layout
+                        className="whitespace-pre"
+                      >
+                        {part.value}
                       </motion.span>
                     )
                   }
-                  return (
-                    <motion.span key={`${part.type}-${index}`} layout className="whitespace-pre">
-                      {part.value}
-                    </motion.span>
-                  )
-                })}
+                )}
               </motion.span>
             </div>
           </motion.div>

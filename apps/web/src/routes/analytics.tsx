@@ -119,12 +119,7 @@ function Analytics() {
     enabled: !!session,
   })
 
-  const error =
-    overviewErr instanceof Error
-      ? overviewErr.message
-      : overviewErr
-        ? "failed to load"
-        : null
+  const error = overviewErr instanceof Error ? overviewErr.message : null
 
   const onDays = useCallback((v: string | null) => {
     if (v == null) return
@@ -157,9 +152,7 @@ function Analytics() {
   return (
     <PageFrame>
       {error && <PageError message={error} />}
-      {overviewPending && !overview && !error && (
-        <PageLoading label="Loading…" />
-      )}
+      {overviewPending && !error && <PageLoading label="Loading…" />}
 
       {overview ? <AnalyticsLoaded data={overview} days={days} /> : null}
     </PageFrame>

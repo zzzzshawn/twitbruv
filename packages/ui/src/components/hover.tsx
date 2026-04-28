@@ -1,6 +1,4 @@
 import {
-  type CSSProperties,
-  type ReactNode,
   createContext,
   useCallback,
   useContext,
@@ -10,6 +8,7 @@ import {
   useState,
 } from "react"
 import { cn } from "@workspace/ui/lib/utils"
+import type { ReactNode } from "react"
 
 // ---------------------------------------------------------------------------
 // Group context
@@ -152,11 +151,11 @@ export function HoverGroup({
           )}
           style={
             displayRect
-              ? ({
+              ? {
                   width: displayRect.width,
                   height: displayRect.height,
                   translate: `${displayRect.left}px ${displayRect.top}px`,
-                } as CSSProperties)
+                }
               : undefined
           }
         >

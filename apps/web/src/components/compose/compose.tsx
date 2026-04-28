@@ -4,22 +4,22 @@ import { cn } from "@workspace/ui/lib/utils"
 import { Avatar } from "@workspace/ui/components/avatar"
 import { POST_MAX_LEN } from "@workspace/validators"
 import { api } from "../../lib/api"
-import { uploadImage, setAltText } from "../../lib/media"
+import { setAltText, uploadImage } from "../../lib/media"
 import { getPastedImageFiles } from "../../lib/clipboard-images"
-import { loadDraft, saveDraft, clearDraft, draftKey } from "../../lib/drafts"
+import { clearDraft, draftKey, loadDraft, saveDraft } from "../../lib/drafts"
 import { useMe } from "../../lib/me"
-import type { PollInput } from "../../lib/api"
 import { ComposePoll } from "./compose-poll"
 import { ComposeAttachments } from "./compose-attachments"
 import { ComposeDropZone } from "./compose-drop-zone"
 import { ComposeActionBar } from "./compose-action-bar"
 import {
+  MAX_ATTACHMENTS,
   createId,
   createPollOption,
   resizeTextarea,
-  MAX_ATTACHMENTS,
 } from "./types"
-import type { PendingAttachment, PollState, ComposeProps } from "./types"
+import type { PollInput } from "../../lib/api"
+import type { ComposeProps, PendingAttachment, PollState } from "./types"
 
 export function Compose({
   onCreated,
@@ -44,7 +44,7 @@ export function Compose({
   const [expanded, setExpanded] = useState(
     () => !collapsible || loadDraft(dKey).length > 0
   )
-  const [attachments, setAttachments] = useState<PendingAttachment[]>([])
+  const [attachments, setAttachments] = useState<Array<PendingAttachment>>([])
   const [poll, setPoll] = useState<PollState | null>(null)
   const [loading, setLoading] = useState(false)
   const [replyRestriction, setReplyRestriction] = useState<
@@ -352,7 +352,7 @@ export function Compose({
       if (attachments.length >= MAX_ATTACHMENTS) return
       e.preventDefault()
       setIsDragging(false)
-      if (e.dataTransfer?.files?.length) addFiles(e.dataTransfer.files)
+      if (e.dataTransfer?.files.length) addFiles(e.dataTransfer.files)
     }
     window.addEventListener("dragenter", onDragEnter)
     window.addEventListener("dragover", onDragOver)
@@ -371,7 +371,7 @@ export function Compose({
     (e: React.DragEvent) => {
       if (collapsible) return // inline uses window-level
       if (attachments.length >= MAX_ATTACHMENTS) return
-      if (!e.dataTransfer?.types.includes("Files")) return
+      if (!e.dataTransfer.types.includes("Files")) return
       e.preventDefault()
       setIsDragging(true)
     },
@@ -404,7 +404,7 @@ export function Compose({
       if (attachments.length >= MAX_ATTACHMENTS) return
       e.preventDefault()
       setIsDragging(false)
-      if (e.dataTransfer?.files?.length) addFiles(e.dataTransfer.files)
+      if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files)
     },
     [collapsible, attachments.length, addFiles]
   )

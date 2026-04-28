@@ -61,7 +61,7 @@ export const Route = createFileRoute("/$handle/")({
     const name = user.displayName || `@${user.handle}`
     const description = clipDescription(
       user.bio ||
-      `@${user.handle} on ${APP_NAME} — ${user.counts.followers} followers, ${user.counts.posts} posts.`
+        `@${user.handle} on ${APP_NAME} — ${user.counts.followers} followers, ${user.counts.posts} posts.`
     )
     return {
       meta: buildSeoMeta({
@@ -145,14 +145,14 @@ function Profile() {
         images={user.bannerUrl ? [{ src: user.bannerUrl }] : []}
         title={`${displayName}'s banner`}
         disabled={!user.bannerUrl}
-        className="block w-full rounded-b-2xl "
+        className="block w-full rounded-b-2xl"
       >
         <div className="bg-muted h-52 w-full rounded-b-2xl shadow-banner">
           {user.bannerUrl && (
             <img
               src={user.bannerUrl}
               alt=""
-              className="h-full w-full object-cover rounded-b-2xl "
+              className="h-full w-full rounded-b-2xl object-cover"
             />
           )}
         </div>
@@ -165,7 +165,7 @@ function Profile() {
               title={`${displayName}'s avatar`}
               disabled={!user.avatarUrl}
             >
-              <div className="p-1 bg-base-1 rounded-full ">
+              <div className="rounded-full bg-base-1 p-1">
                 <Avatar
                   initial={initial}
                   src={user.avatarUrl}
@@ -195,9 +195,7 @@ function Profile() {
               {displayName}
               {user.isVerified && <VerifiedBadge size={22} role={user.role} />}
             </h1>
-            <p className="text-secondary text-sm">
-              @{user.handle}
-            </p>
+            <p className="text-sm text-secondary">@{user.handle}</p>
           </div>
           {user.bio && (
             <p className="mt-3 text-[15px] leading-relaxed whitespace-pre-wrap">
@@ -249,7 +247,7 @@ function Profile() {
               }).format(new Date(user.createdAt))}
             </MetaPill>
           </div>
-          <div className="mt-3 px-2.5 flex flex-wrap items-center gap-3">
+          <div className="mt-3 flex flex-wrap items-center gap-3 px-2.5">
             {user.handle && (
               <>
                 <Link

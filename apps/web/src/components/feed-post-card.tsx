@@ -1,9 +1,5 @@
 import { useNavigate } from "@tanstack/react-router"
-import {
-  PostCard,
-  type PostMedia as UIPostMedia,
-  type PostQuoteOf,
-} from "@workspace/ui/components/post-card"
+import { PostCard } from "@workspace/ui/components/post-card"
 import {
   useTogglePostBookmark,
   useTogglePostLike,
@@ -15,6 +11,10 @@ import { LightboxSidebar } from "./lightbox-sidebar"
 import { MacfolioCardFromText } from "./macfolio-card"
 import { GithubCardBlock } from "./github-card"
 import { ArticleCardBlock } from "./post-card"
+import type {
+  PostQuoteOf,
+  PostMedia as UIPostMedia,
+} from "@workspace/ui/components/post-card"
 import type { Post, PostMedia } from "../lib/api"
 
 function relativeTime(iso: string): string {
@@ -40,12 +40,11 @@ function pickVariant(media: PostMedia) {
   )
 }
 
-function mapMedia(media: PostMedia[]): UIPostMedia[] {
+function mapMedia(media: Array<PostMedia>): Array<UIPostMedia> {
   return media
     .filter((m) => m.processingState === "ready" && m.variants.length > 0)
     .map((m) => {
       const variant = pickVariant(m)
-      if (!variant) return null
       if (m.kind === "video" || m.kind === "gif") {
         const thumb = m.variants.find((v) => v.kind === "thumb") ?? variant
         return {
@@ -60,7 +59,6 @@ function mapMedia(media: PostMedia[]): UIPostMedia[] {
         alt: m.altText ?? undefined,
       }
     })
-    .filter((m): m is UIPostMedia => m !== null)
 }
 
 interface FeedPostCardProps {
@@ -143,7 +141,7 @@ export function FeedPostCard({
           )
           .map((m) => {
             const variant = pickVariant(m)
-            return { url: variant?.url ?? "", alt: m.altText ?? undefined }
+            return { url: variant.url, alt: m.altText ?? undefined }
           })
           .filter((img) => img.url)
         if (images.length > 0) {
@@ -164,9 +162,7 @@ export function FeedPostCard({
       belowText={
         <>
           <MacfolioCardFromText text={post.text} />
-          {post.articleCard && (
-            <ArticleCardBlock card={post.articleCard} />
-          )}
+          {post.articleCard && <ArticleCardBlock card={post.articleCard} />}
           {post.githubCards?.map((card, i) => (
             <GithubCardBlock
               key={`${card.kind}-${card.url}-${i}`}

@@ -1,12 +1,6 @@
-import {
-  type ReactNode,
-  type CSSProperties,
-  useState,
-  useRef,
-  useCallback,
-  useLayoutEffect,
-} from "react"
+import { useCallback, useLayoutEffect, useRef, useState } from "react"
 import { cn } from "@workspace/ui/lib/utils"
+import type { CSSProperties, ReactNode } from "react"
 
 // ---------------------------------------------------------------------------
 // Types
@@ -20,7 +14,7 @@ export interface SegmentedControlOption<T extends string = string> {
 
 export interface SegmentedControlProps<T extends string = string> {
   /** Options to display as segments */
-  options: SegmentedControlOption<T>[]
+  options: Array<SegmentedControlOption<T>>
   /** Controlled value */
   value?: T
   /** Uncontrolled default value */
@@ -71,7 +65,7 @@ export function SegmentedControl<T extends string = string>({
 
   // Refs for fit-mode DOM measurement
   const containerRef = useRef<HTMLDivElement>(null)
-  const buttonRefs = useRef<(HTMLButtonElement | null)[]>([])
+  const buttonRefs = useRef<Array<HTMLButtonElement | null>>([])
   const [indicator, setIndicator] = useState<{
     left: number
     width: number

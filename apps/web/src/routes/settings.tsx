@@ -590,7 +590,7 @@ function PrivacySection() {
       )}
       {tab === "blocks" && !blocksQuery.isError && (
         <PrivacyList
-          users={blocksQuery.isPending ? null : (blocksQuery.data ?? [])}
+          users={blocksQuery.isPending ? null : blocksQuery.data}
           emptyText="You haven't blocked anyone."
           renderTrailing={(u) => (
             <Button
@@ -616,7 +616,7 @@ function PrivacySection() {
       )}
       {tab === "mutes" && !mutesQuery.isError && (
         <PrivacyList
-          users={mutesQuery.isPending ? null : (mutesQuery.data ?? [])}
+          users={mutesQuery.isPending ? null : mutesQuery.data}
           emptyText="You haven't muted anyone."
           renderTrailing={(u) => (
             <Button

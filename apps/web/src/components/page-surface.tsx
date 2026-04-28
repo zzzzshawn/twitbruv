@@ -31,7 +31,7 @@ export function PageHeader({
   return (
     <header
       className={cn(
-        "border-neutral bg-base-1/80 flex flex-col gap-1 border-b px-4 py-3 backdrop-blur-sm",
+        "flex flex-col gap-1 border-b border-neutral bg-base-1/80 px-4 py-3 backdrop-blur-sm",
         sticky && "sticky top-0 z-10",
         "sm:flex-row sm:items-center sm:justify-between sm:gap-3",
         className
@@ -95,7 +95,7 @@ export function PageLoadingList({ rows = 6 }: { rows?: number }) {
       {Array.from({ length: rows }).map((_, i) => (
         <li
           key={i}
-          className="border-neutral flex items-start gap-3 border-b px-4 py-3"
+          className="flex items-start gap-3 border-b border-neutral px-4 py-3"
         >
           <Skeleton className="size-10 shrink-0 rounded-full" />
           <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -177,7 +177,7 @@ export function NotFoundPanel({
 }) {
   return (
     <div className="mx-auto max-w-lg px-4 py-16">
-      <Empty className="border-neutral border">
+      <Empty className="border border-neutral">
         <EmptyHeader>
           <EmptyTitle>{title}</EmptyTitle>
           <EmptyDescription>{message}</EmptyDescription>

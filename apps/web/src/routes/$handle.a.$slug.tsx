@@ -3,17 +3,18 @@ import { useQuery } from "@tanstack/react-query"
 import { Button } from "@workspace/ui/components/button"
 import { ApiError, api } from "../lib/api"
 import { qk } from "../lib/query-keys"
-import type { RouterAppContext } from "../lib/router-context"
 import { Editor } from "../components/editor/editor"
 import { PageFrame } from "../components/page-frame"
 import { VerifiedBadge } from "../components/verified-badge"
 import { authClient } from "../lib/auth"
 import { APP_NAME } from "../lib/env"
 import { buildSeoMeta, canonicalLink, clipDescription } from "../lib/seo"
+import type { RouterAppContext } from "../lib/router-context"
+
 export const Route = createFileRoute("/$handle/a/$slug")({
   component: ArticleView,
   loader: async ({ params, context }) => {
-    const ctx = context as RouterAppContext
+    const ctx = context
     try {
       const { article } = await api.userArticleBySlug(
         params.handle,

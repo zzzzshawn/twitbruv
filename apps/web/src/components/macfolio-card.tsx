@@ -55,7 +55,7 @@ export function MacfolioPill({
       data-post-card-ignore-open
       onClick={(e) => e.stopPropagation()}
       className={cn(
-        "inline-flex items-baseline gap-1.5 rounded-md border border-neutral bg-base-2 px-1.5 py-0.5 align-middle font-semibold tracking-tight text-primary shadow-[var(--inset-shadow-primary)] no-underline transition hover:bg-subtle hover:scale-[1.03]",
+        "inline-flex items-baseline gap-1.5 rounded-md border border-neutral bg-base-2 px-1.5 py-0.5 align-middle font-semibold tracking-tight text-primary no-underline shadow-[var(--inset-shadow-primary)] transition hover:scale-[1.03] hover:bg-subtle",
         className
       )}
     >
@@ -153,7 +153,7 @@ export function MacfolioCard({
           {MACFOLIO_DESCRIPTION}
         </p>
 
-        <div className="group-hover:text-primary flex items-center gap-1.5 pt-1.5 text-[11.5px] font-medium text-tertiary transition">
+        <div className="flex items-center gap-1.5 pt-1.5 text-[11.5px] font-medium text-tertiary transition group-hover:text-primary">
           <span>Open {host}</span>
           <span
             aria-hidden

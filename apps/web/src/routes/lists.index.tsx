@@ -5,7 +5,6 @@ import {
   ListBulletIcon,
   LockClosedIcon,
   MapPinIcon,
-  PlusIcon,
   UsersIcon,
 } from "@heroicons/react/24/solid"
 import { Button } from "@workspace/ui/components/button"
