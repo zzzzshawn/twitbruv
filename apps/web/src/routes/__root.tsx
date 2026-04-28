@@ -131,10 +131,6 @@ function ThemedToaster() {
   return <Toaster theme={resolvedTheme} richColors closeButton />
 }
 
-// Whole-app lockout. When build-time VITE_PUBLIC_MAINTENANCE_MODE is set, or the api wrapper
-// has seen a 503 maintenance response, swap the entire app for the maintenance screen. Sits
-// inside ThemeProvider so the screen still respects the user's theme but outside the query
-// + me providers so we don't keep retrying API calls behind the lockout.
 function MaintenanceGate({ children }: { children: React.ReactNode }) {
   const { active, message } = useMaintenance()
   if (active) return <MaintenanceScreen message={message} />

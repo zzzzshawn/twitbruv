@@ -24,9 +24,8 @@ import {
   useOnModalPostCreated,
 } from "../components/compose-provider"
 import { Feed } from "../components/feed"
-import { PageEmpty } from "../components/page-surface"
+import { PageEmpty, PageLoading } from "../components/page-surface"
 import { PageFrame } from "../components/page-frame"
-import { PageLoading } from "../components/page-surface"
 import type { Post } from "../lib/api"
 
 const FEED_TABS = ["following", "network", "all"] as const
