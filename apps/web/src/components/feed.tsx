@@ -159,7 +159,7 @@ export function Feed({
     const banner = renderActivityBanner?.(post)
     return (
       <>
-        {banner && <div className="px-4 pt-2">{banner}</div>}
+        {banner && <div className="pl-[68px] pt-2 pr-4">{banner}</div>}
         <FeedPostCard post={post} />
       </>
     )

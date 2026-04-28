@@ -307,7 +307,7 @@ function SearchInner({ initialQuery }: { initialQuery: string }) {
                     <Avatar
                       src={u.avatarUrl}
                       initial={(u.displayName || u.handle).slice(0, 2)}
-                      className="size-10"
+                      size="lg"
                     />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-1 text-sm font-medium">

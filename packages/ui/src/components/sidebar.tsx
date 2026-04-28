@@ -110,7 +110,7 @@ export function Sidebar({
       </div>
 
       {/* Nav links */}
-      <nav className="mt-2 flex min-w-[160px] flex-1 flex-col gap-1">
+      <nav className="mt-2 flex flex-1 flex-col items-center gap-1 xl:w-full xl:items-stretch">
         {navItems.map((item) => (
           <div key={item.to}>
             {renderLink({
@@ -118,7 +118,7 @@ export function Sidebar({
               end: item.end,
               className: (isActive) =>
                 cn(
-                  "group flex h-11 items-center gap-4 rounded-full px-3 transition-colors hover:bg-subtle",
+                  "group flex size-11 items-center justify-center rounded-full transition-colors hover:bg-subtle xl:w-full xl:justify-start xl:gap-4 xl:px-3",
                   isActive && "font-semibold"
                 ),
               children: (isActive) => (
@@ -138,7 +138,7 @@ export function Sidebar({
         ))}
 
         {/* Compose button */}
-        <div className="mt-4">
+        <div className="mt-4 flex flex-col items-center xl:w-full xl:items-stretch">
           <Button
             variant="primary"
             size="md"
@@ -150,7 +150,7 @@ export function Sidebar({
           <Button
             variant="primary"
             size="md"
-            className="flex h-11 w-11 xl:hidden"
+            className="flex size-11 xl:hidden"
             onClick={onCompose}
           >
             <PencilSquareIcon className="size-5" />

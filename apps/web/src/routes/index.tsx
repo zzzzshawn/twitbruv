@@ -207,14 +207,12 @@ function Home() {
                     first.displayName ||
                     (first.handle ? `@${first.handle}` : "Someone")
                   return (
-                    <div className="ml-10 flex items-center gap-1.5 text-xs text-tertiary">
-                      <span>
+                    <div className="pb-1 text-xs text-tertiary">
                         {name}
                         {more > 0
                           ? ` and ${more} other${more === 1 ? "" : "s"}`
                           : ""}{" "}
                         liked or reposted
-                      </span>
                     </div>
                   )
                 }

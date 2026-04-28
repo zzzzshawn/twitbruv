@@ -138,7 +138,7 @@ function ChessGamePage() {
           <div className="mx-auto flex w-full min-w-[300px] flex-1 flex-col">
             {/* Top Player Info */}
             <div className="flex items-center gap-2 rounded-t-lg border border-b-0 border-neutral bg-base-2/20 p-2">
-              <Avatar initial={topPlayer[0].toUpperCase()} className="size-8" />
+              <Avatar initial={topPlayer[0].toUpperCase()} size="md" />
               <span className="text-sm font-semibold">{topPlayer}</span>
             </div>
 
@@ -157,10 +157,7 @@ function ChessGamePage() {
 
             {/* Bottom Player Info */}
             <div className="flex items-center gap-2 rounded-b-lg border border-t-0 border-neutral bg-base-2/20 p-2">
-              <Avatar
-                initial={bottomPlayer[0].toUpperCase()}
-                className="size-8"
-              />
+              <Avatar initial={bottomPlayer[0].toUpperCase()} size="md" />
               <span className="text-sm font-semibold">{bottomPlayer}</span>
             </div>
           </div>
