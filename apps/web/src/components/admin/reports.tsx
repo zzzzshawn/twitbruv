@@ -168,7 +168,7 @@ export default function AdminReports() {
 
   return (
     <PageFrame className="flex min-h-0 flex-1 flex-col">
-      <div className="border-border shrink-0 border-b px-4 py-3">
+      <div className="shrink-0 px-4 py-3">
         <SegmentedControl<ReportStatus>
           layout="fit"
           variant="ghost"

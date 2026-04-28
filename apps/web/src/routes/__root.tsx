@@ -10,13 +10,14 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools"
 import { Databuddy } from "@databuddy/sdk/react"
 import { DatabuddyDevtools } from "@databuddy/devtools/react"
 import { Toaster } from "sonner"
+import { QuestionMarkCircleIcon } from "@heroicons/react/24/solid"
 import appCss from "@workspace/ui/globals.css?url"
 import { Button } from "@workspace/ui/components/button"
 import { Agentation } from "agentation"
 import { AppShell } from "../components/app-shell"
 import { EmailVerifiedGate } from "../components/email-verified-gate"
 import { MaintenanceScreen } from "../components/maintenance-screen"
-import { NotFoundPanel } from "../components/page-surface"
+import { PageEmpty } from "../components/page-surface"
 import { PageFrame } from "../components/page-frame"
 import { ThemeProvider, themeBootstrapScript, useTheme } from "../lib/theme"
 import { APP_NAME, DATABUDDY_CLIENT_ID } from "../lib/env"
@@ -63,23 +64,32 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
   notFoundComponent: () => (
     <AppShell>
       <PageFrame>
-        <NotFoundPanel
+        <PageEmpty
+          className="w-full"
+          icon={<QuestionMarkCircleIcon />}
           title="Page not found"
-          message="That URL does not exist or was removed."
-        >
-          <div className="flex flex-wrap justify-center gap-2">
-            <Button nativeButton={false} render={<Link to="/" />}>
-              Home
-            </Button>
-            <Button
-              variant="outline"
-              nativeButton={false}
-              render={<Link to="/search" />}
-            >
-              Search
-            </Button>
-          </div>
-        </NotFoundPanel>
+          description="That URL does not exist or was removed."
+          actions={
+            <>
+              <Button
+                size="sm"
+                variant="primary"
+                nativeButton={false}
+                render={<Link to="/" />}
+              >
+                Home
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                nativeButton={false}
+                render={<Link to="/search" />}
+              >
+                Search
+              </Button>
+            </>
+          }
+        />
       </PageFrame>
     </AppShell>
   ),
