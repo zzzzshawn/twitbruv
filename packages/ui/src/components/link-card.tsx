@@ -2,7 +2,7 @@ import { useState } from "react"
 import { cn } from "../lib/utils"
 
 export const linkCardShellClasses =
-  "group mt-3 block max-w-[560px] overflow-hidden rounded-lg border border-neutral bg-white transition-all hover:bg-white hover:shadow-sm"
+  "group mt-3 block max-w-[560px] overflow-hidden rounded-lg border border-neutral bg-base-1 transition-all hover:shadow-sm"
 
 export function LinkCardShell({
   href,
