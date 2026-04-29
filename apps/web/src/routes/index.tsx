@@ -1,4 +1,5 @@
 import { Link, createFileRoute, redirect } from "@tanstack/react-router"
+import { useQueryClient, type InfiniteData } from "@tanstack/react-query"
 import { useCallback, useEffect, useState } from "react"
 import {
   IdentificationIcon,
@@ -12,7 +13,7 @@ import { cn } from "@workspace/ui/lib/utils"
 import { authClient } from "../lib/auth"
 import { checkSessionCookie } from "../lib/auth-fns"
 import { api } from "../lib/api"
-import { qk } from "../lib/query-keys"
+import { qk, type FeedTabKey } from "../lib/query-keys"
 import { useMe } from "../lib/me"
 import { Compose } from "../components/compose"
 import {
@@ -25,7 +26,7 @@ import { PageEmpty } from "../components/page-surface"
 import { PageFrame } from "../components/page-frame"
 import { useSettings } from "../components/settings/settings-provider"
 import { isSettingsTab } from "../components/settings/types"
-import type { Post } from "../lib/api"
+import type { FeedPage, Post } from "../lib/api"
 
 const FEED_TABS = ["following", "network", "all"] as const
 type FeedTab = (typeof FEED_TABS)[number]
@@ -75,7 +76,6 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const { isPending } = authClient.useSession()
-  const [feedReady, setFeedReady] = useState(false)
   const { me } = useMe()
   const { open: openCompose } = useCompose()
   const {
@@ -87,6 +87,11 @@ function Home() {
   const navigate = Route.useNavigate()
   const { open: openSettings } = useSettings()
   const tab: FeedTab = searchTab ?? "following"
+  const queryClient = useQueryClient()
+  /** If React Query already has this tab's feed (return navigation / prefetch), skip the route-level loader. */
+  const [feedReady, setFeedReady] = useState(() =>
+    Boolean(queryClient.getQueryData(qk.feed(tab)))
+  )
   const [newPost, setNewPost] = useState<Post | null>(null)
 
   useOnModalPostCreated(
@@ -126,6 +131,38 @@ function Home() {
   )
 
   const needsHandle = me && !me.handle
+
+  useEffect(() => {
+    if (queryClient.getQueryData(qk.feed(tab))) {
+      setFeedReady(true)
+    }
+  }, [queryClient, tab])
+
+  useEffect(() => {
+    if (needsHandle) return
+    for (const t of FEED_TABS) {
+      if (t === tab) continue
+      const load =
+        t === "following"
+          ? loadFeed
+          : t === "network"
+            ? loadNetwork
+            : loadPublic
+      void queryClient.prefetchInfiniteQuery<
+        FeedPage,
+        Error,
+        InfiniteData<FeedPage, string | undefined>,
+        readonly ["feed", FeedTabKey],
+        string | undefined
+      >({
+        queryKey: qk.feed(t),
+        queryFn: ({ pageParam }) => load(pageParam),
+        initialPageParam: undefined,
+        getNextPageParam: (last: FeedPage) => last.nextCursor ?? undefined,
+      })
+    }
+  }, [needsHandle, queryClient, tab, loadFeed, loadNetwork, loadPublic])
+
   const showLoader = useLoaderVisible(isPending || (!needsHandle && !feedReady))
 
   const emptyState =
