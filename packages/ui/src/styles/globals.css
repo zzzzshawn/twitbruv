@@ -24,6 +24,8 @@ html {
 }
 
 body {
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 	background-color: var(--background-color-base-1);
 	color: var(--text-color-primary);
 }

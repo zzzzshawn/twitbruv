@@ -1,6 +1,6 @@
 ---
 title: Link Card
-description: Rich link previews shown when URLs are shared in posts. Renders OG image, title, description, and site favicon.
+description: Rich link previews shown when URLs are shared in posts. Supports generic OG cards, GitHub repos, YouTube videos, and X/Twitter posts.
 order: 7
 props:
   - name: url
@@ -20,18 +20,34 @@ props:
     description: Site name or hostname.
 ---
 
-Link cards appear automatically when a post contains a URL. The system fetches OG metadata (title, description, image) and renders a rich preview card.
+Link cards appear automatically when a post contains a URL. The system detects the URL provider and renders a rich preview card tailored to the content type.
 
-The OG image is displayed at the standard `1200×630` aspect ratio to prevent cropping.
+## Generic Link
 
-## With Image
+The default card for any URL. Fetches OG metadata and renders an image, title, description, and site name.
 
 <ComponentPreview src="link-card/with-image" />
 
-## Without Image
-
-When no OG image is available, the card renders a compact text-only layout with the site favicon.
+When no OG image is available, the card renders a compact text-only layout.
 
 <ComponentPreview src="link-card/no-image" />
+
+## GitHub Repository
+
+GitHub URLs render a specialized card with the repo header, description, topics, primary language, stars, and forks.
+
+<ComponentPreview src="link-card/github-repo" />
+
+## YouTube Video
+
+YouTube links show a video thumbnail with a play button overlay, duration badge, channel name, and view/like/comment counts.
+
+<ComponentPreview src="link-card/youtube-video" />
+
+## X (Twitter) Post
+
+X/Twitter status links render the full post content with the author's avatar, name, verified badge, timestamp, and engagement stats.
+
+<ComponentPreview src="link-card/x-status" />
 
 <PropsTable />
