@@ -18,13 +18,29 @@ import {
   persistYoutubeCardOutcome,
   refKeyFor as refKeyForYoutube,
 } from '@workspace/youtube-unfurl'
-import { persistFailureOnly } from '@workspace/url-unfurl-core'
+import type { XRef } from '@workspace/x-unfurl'
+import {
+  canonicalizeXUrl,
+  fetchXStatusCard,
+  parseXUrl,
+  persistXStatusCardOutcome,
+  refKeyFor as refKeyForX,
+} from '@workspace/x-unfurl'
+import {
+  canonicalGenericUrl,
+  fetchGenericCard,
+  persistFailureOnly,
+  persistGenericCardOutcome,
+  refKeyForGeneric,
+} from '@workspace/url-unfurl-core'
 import { URL_PATTERN, trimTrailingPunct } from '@workspace/url-unfurl-core/text'
 import type PgBoss from 'pg-boss'
 
 type CombinedUnfurl =
   | { provider: 'github'; url: string; refKey: string; ref: GithubRef }
   | { provider: 'youtube'; url: string; refKey: string; ref: YouTubeRef }
+  | { provider: 'x'; url: string; refKey: string; ref: XRef }
+  | { provider: 'generic'; url: string; refKey: string; canonicalUrl: string }
 
 function unfurlKindGithub(ref: GithubRef): string {
   switch (ref.kind) {
@@ -50,29 +66,46 @@ function unfurlKindYoutube(ref: YouTubeRef): string {
   }
 }
 
-function extractPostUnfurls(text: string): Array<CombinedUnfurl> {
-  const seen = new Set<string>()
-  const out: Array<CombinedUnfurl> = []
+function displayHostFromCanonical(canonical: string): string {
+  try {
+    return new URL(canonical).hostname.replace(/^www\./i, '')
+  } catch {
+    return 'Link'
+  }
+}
+
+function extractFirstCardableUrl(text: string): CombinedUnfurl | null {
   for (const match of text.matchAll(URL_PATTERN)) {
     const rawUrl = match[0]
     const trimmed = trimTrailingPunct(rawUrl)
     const gh = parseGithubUrl(rawUrl)
     if (gh) {
-      const key = refKeyForGithub(gh)
-      if (seen.has(key)) continue
-      seen.add(key)
-      out.push({ provider: 'github', url: trimmed, refKey: key, ref: gh })
-      continue
+      return { provider: 'github', url: trimmed, refKey: refKeyForGithub(gh), ref: gh }
     }
     const yt = parseYouTubeUrl(rawUrl)
     if (yt) {
-      const key = refKeyForYoutube(yt)
-      if (seen.has(key)) continue
-      seen.add(key)
-      out.push({ provider: 'youtube', url: trimmed, refKey: key, ref: yt })
+      return { provider: 'youtube', url: trimmed, refKey: refKeyForYoutube(yt), ref: yt }
+    }
+    const xr = parseXUrl(rawUrl)
+    if (xr) {
+      return { provider: 'x', url: trimmed, refKey: refKeyForX(xr), ref: xr }
+    }
+    const canon = canonicalGenericUrl(trimmed)
+    if (canon) {
+      return {
+        provider: 'generic',
+        url: trimmed,
+        refKey: refKeyForGeneric(canon),
+        canonicalUrl: canon,
+      }
     }
   }
-  return out
+  return null
+}
+
+function extractPostUnfurls(text: string): Array<CombinedUnfurl> {
+  const first = extractFirstCardableUrl(text)
+  return first ? [first] : []
 }
 
 function hashUrl(url: string): string {
@@ -80,18 +113,38 @@ function hashUrl(url: string): string {
 }
 
 function canonicalUrlFor(r: CombinedUnfurl): string {
-  return r.provider === 'github' ? canonicalizeGithubUrl(r.ref) : canonicalizeYouTubeUrl(r.ref)
+  if (r.provider === 'github') return canonicalizeGithubUrl(r.ref)
+  if (r.provider === 'youtube') return canonicalizeYouTubeUrl(r.ref)
+  if (r.provider === 'x') return canonicalizeXUrl(r.ref)
+  return r.canonicalUrl
 }
 
 function kindFor(r: CombinedUnfurl): string {
-  return r.provider === 'github' ? unfurlKindGithub(r.ref) : unfurlKindYoutube(r.ref)
+  if (r.provider === 'github') return unfurlKindGithub(r.ref)
+  if (r.provider === 'youtube') return unfurlKindYoutube(r.ref)
+  if (r.provider === 'x') return 'x_status'
+  return 'generic'
+}
+
+function siteLabel(r: CombinedUnfurl): string {
+  if (r.provider === 'github') return 'GitHub'
+  if (r.provider === 'youtube') return 'YouTube'
+  if (r.provider === 'x') return 'X'
+  return displayHostFromCanonical(r.canonicalUrl)
+}
+
+function providerLabel(r: CombinedUnfurl): string {
+  if (r.provider === 'github') return 'GitHub'
+  if (r.provider === 'youtube') return 'YouTube'
+  if (r.provider === 'x') return 'X'
+  return 'Web'
 }
 
 export interface UnfurlJob {
   unfurlId: string
   url: string
   refKey: string
-  provider: 'github' | 'youtube'
+  provider: 'github' | 'youtube' | 'x' | 'generic'
 }
 
 interface AttachResult {
@@ -124,8 +177,8 @@ export async function attachPostUnfurls(opts: {
         refKey: r.refKey,
         kind: kindFor(r),
         state: 'pending' as const,
-        siteName: r.provider === 'github' ? 'GitHub' : 'YouTube',
-        providerName: r.provider === 'github' ? 'GitHub' : 'YouTube',
+        siteName: siteLabel(r),
+        providerName: providerLabel(r),
         fetchedAt: now,
         expiresAt: placeholderExpiry,
       })),
@@ -173,10 +226,7 @@ export async function attachPostUnfurls(opts: {
     .filter((v): v is NonNullable<typeof v> => v !== null)
 
   if (pivotValues.length > 0) {
-    await opts.tx
-      .insert(schema.postUrlUnfurls)
-      .values(pivotValues)
-      .onConflictDoNothing()
+    await opts.tx.insert(schema.postUrlUnfurls).values(pivotValues).onConflictDoNothing()
   }
 
   const toEnqueue: Array<UnfurlJob> = []
@@ -199,7 +249,14 @@ export async function dispatchUnfurlJobs(boss: PgBoss, jobs: Array<UnfurlJob>): 
   if (jobs.length === 0) return
   await Promise.all(
     jobs.map((j) => {
-      const queue = j.provider === 'youtube' ? 'youtube.unfurl' : 'github.unfurl'
+      const queue =
+        j.provider === 'youtube'
+          ? 'youtube.unfurl'
+          : j.provider === 'generic'
+            ? 'generic.unfurl'
+            : j.provider === 'x'
+              ? 'x.unfurl'
+              : 'github.unfurl'
       return boss.send(queue, j).catch((err) => {
         console.warn('[unfurl] enqueue failed', {
           err: (err as Error).message,
@@ -217,7 +274,7 @@ export async function runInlineUnfurls(
   db: Database,
   boss: PgBoss,
   jobs: Array<UnfurlJob>,
-  opts?: { youtubeApiKey?: string },
+  opts?: { youtubeApiKey?: string; fxtwitterApiBaseUrl?: string },
 ): Promise<void> {
   if (jobs.length === 0) return
   await Promise.all(
@@ -227,6 +284,20 @@ export async function runInlineUnfurls(
         timeoutId = setTimeout(() => resolve('timeout'), INLINE_FETCH_TIMEOUT_MS)
       })
       try {
+        if (j.provider === 'generic') {
+          const result = await Promise.race([fetchGenericCard(j.url), timeout])
+          if (result === 'timeout') {
+            await boss.send('generic.unfurl', j).catch((err) => {
+              console.warn('[generic-unfurl] fallback enqueue failed', {
+                err: (err as Error).message,
+                refKey: j.refKey,
+              })
+            })
+            return
+          }
+          await persistGenericCardOutcome(db, j.unfurlId, result)
+          return
+        }
         if (j.provider === 'youtube') {
           const yref = parseYouTubeUrl(j.url)
           if (!yref) {
@@ -244,6 +315,28 @@ export async function runInlineUnfurls(
             return
           }
           await persistYoutubeCardOutcome(db, j.unfurlId, result)
+          return
+        }
+        if (j.provider === 'x') {
+          const xref = parseXUrl(j.url)
+          if (!xref) {
+            await persistFailureOnly(db, j.unfurlId, 'unknown', 'parse_failed').catch(() => {})
+            return
+          }
+          const result = await Promise.race([
+            fetchXStatusCard(xref, { baseUrl: opts?.fxtwitterApiBaseUrl }),
+            timeout,
+          ])
+          if (result === 'timeout') {
+            await boss.send('x.unfurl', j).catch((err) => {
+              console.warn('[x-unfurl] fallback enqueue failed', {
+                err: (err as Error).message,
+                refKey: j.refKey,
+              })
+            })
+            return
+          }
+          await persistXStatusCardOutcome(db, j.unfurlId, result)
           return
         }
         const ref = parseGithubUrl(j.url)

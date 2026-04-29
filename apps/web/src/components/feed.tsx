@@ -4,7 +4,6 @@ import { useVirtualizer, useWindowVirtualizer } from "@tanstack/react-virtual"
 import { Skeleton } from "@workspace/ui/components/skeleton"
 import { PageEmpty, PageError } from "./page-surface"
 import { FeedPostCard } from "./feed-post-card"
-import { extractMacfolioUrl } from "./macfolio-card"
 import type { InfiniteData } from "@tanstack/react-query"
 import type { FeedPage, Post } from "../lib/api"
 
@@ -42,7 +41,7 @@ const useIsoLayoutEffect =
 
 const ESTIMATED_POST_HEIGHT = 280
 const ESTIMATED_MEDIA_BUMP = 320
-const ESTIMATED_MACFOLIO_BUMP = 460
+const ESTIMATED_LINK_CARD_BUMP = 260
 const ESTIMATED_QUOTE_BUMP = 110
 const ESTIMATED_ARTICLE_BUMP = 90
 const ESTIMATED_POLL_BUMP = 140
@@ -52,12 +51,11 @@ function estimatePostHeight(post: Post | undefined): number {
   const target = post.repostOf ?? post
   let height = ESTIMATED_POST_HEIGHT
   if (target.media && target.media.length > 0) height += ESTIMATED_MEDIA_BUMP
-  if (target.text && extractMacfolioUrl(target.text)) {
-    height += ESTIMATED_MACFOLIO_BUMP
+  const hasRichLinkCard =
+    target.cards?.some((c) => c.provider !== "article") ?? false
+  if (hasRichLinkCard) {
+    height += ESTIMATED_LINK_CARD_BUMP
   }
-  const unfurls =
-    target.cards?.filter((c) => c.provider !== "article").length ?? 0
-  if (unfurls > 0) height += unfurls * 220
   if (target.cards?.some((c) => c.provider === "article"))
     height += ESTIMATED_ARTICLE_BUMP
   if (target.poll) height += ESTIMATED_POLL_BUMP

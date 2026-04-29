@@ -1,10 +1,5 @@
-import {
-  Link,
-  createFileRoute,
-  redirect,
-  useNavigate,
-} from "@tanstack/react-router"
-import { useCallback, useState } from "react"
+import { Link, createFileRoute, redirect } from "@tanstack/react-router"
+import { useCallback, useEffect, useState } from "react"
 import {
   IdentificationIcon,
   PencilSquareIcon,
@@ -28,6 +23,8 @@ import { Feed } from "../components/feed"
 import { Loader, useLoaderVisible } from "../components/loader"
 import { PageEmpty } from "../components/page-surface"
 import { PageFrame } from "../components/page-frame"
+import { useSettings } from "../components/settings/settings-provider"
+import { isSettingsTab } from "../components/settings/types"
 import type { Post } from "../lib/api"
 
 const FEED_TABS = ["following", "network", "all"] as const
@@ -39,13 +36,35 @@ const TAB_LABELS: Record<FeedTab, string> = {
   all: "All",
 }
 
+type HomeSearch = {
+  tab?: FeedTab
+  settings_tab?: string
+  connected?: string
+  connect_error?: string
+}
+
 export const Route = createFileRoute("/")({
-  validateSearch: (search: Record<string, unknown>): { tab?: FeedTab } => {
+  validateSearch: (search: Record<string, unknown>): HomeSearch => {
     const raw = search.tab
-    if (typeof raw === "string" && FEED_TABS.includes(raw as FeedTab)) {
-      return { tab: raw as FeedTab }
-    }
-    return {}
+    const feedTab =
+      typeof raw === "string" && FEED_TABS.includes(raw as FeedTab)
+        ? (raw as FeedTab)
+        : undefined
+    const settingsRaw = search.settings_tab
+    const settings_tab =
+      typeof settingsRaw === "string" ? settingsRaw : undefined
+    const connected =
+      typeof search.connected === "string" ? search.connected : undefined
+    const connect_error =
+      typeof search.connect_error === "string"
+        ? search.connect_error
+        : undefined
+    const out: HomeSearch = {}
+    if (feedTab) out.tab = feedTab
+    if (settings_tab) out.settings_tab = settings_tab
+    if (connected) out.connected = connected
+    if (connect_error) out.connect_error = connect_error
+    return out
   },
   beforeLoad: async () => {
     const { hasSessionCookie } = await checkSessionCookie()
@@ -58,9 +77,15 @@ function Home() {
   const { isPending } = authClient.useSession()
   const [feedReady, setFeedReady] = useState(false)
   const { me } = useMe()
-  const navigate = useNavigate()
   const { open: openCompose } = useCompose()
-  const { tab: searchTab } = Route.useSearch()
+  const {
+    tab: searchTab,
+    settings_tab,
+    connected,
+    connect_error,
+  } = Route.useSearch()
+  const navigate = Route.useNavigate()
+  const { open: openSettings } = useSettings()
   const tab: FeedTab = searchTab ?? "following"
   const [newPost, setNewPost] = useState<Post | null>(null)
 
@@ -69,6 +94,26 @@ function Home() {
       setNewPost(post)
     }, [])
   )
+
+  useEffect(() => {
+    if (!settings_tab || !isSettingsTab(settings_tab)) return
+    openSettings({
+      tab: settings_tab,
+      focusProfile: settings_tab === "profile",
+      githubOAuth:
+        settings_tab === "connections"
+          ? {
+              connected,
+              connectError: connect_error,
+            }
+          : undefined,
+    })
+    navigate({
+      to: "/",
+      search: { tab: tab === "following" ? undefined : tab },
+      replace: true,
+    })
+  }, [settings_tab, connect_error, connected, navigate, openSettings, tab])
 
   const loadFeed = useCallback((cursor?: string) => api.feed(cursor), [])
   const loadPublic = useCallback(
@@ -167,8 +212,7 @@ function Home() {
             <Button
               size="sm"
               variant="primary"
-              nativeButton={false}
-              render={<Link to="/settings" />}
+              onClick={() => openSettings({ tab: "profile" })}
             >
               Claim your handle
             </Button>

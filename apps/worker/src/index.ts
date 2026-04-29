@@ -10,6 +10,8 @@ import { handleMediaJob } from './jobs/media-process.ts'
 import { publishDueScheduledPosts } from './jobs/publish-scheduled.ts'
 import { handleGithubUnfurlJob } from './jobs/github-unfurl.ts'
 import { handleYoutubeUnfurlJob } from './jobs/youtube-unfurl.ts'
+import { handleGenericUnfurlJob } from './jobs/generic-unfurl.ts'
+import { handleXUnfurlJob } from './jobs/x-unfurl.ts'
 
 const env = loadEnv()
 
@@ -58,6 +60,8 @@ await boss.createQueue('email.send')
 await boss.createQueue('media.process')
 await boss.createQueue('github.unfurl')
 await boss.createQueue('youtube.unfurl')
+await boss.createQueue('generic.unfurl')
+await boss.createQueue('x.unfurl')
 
 await boss.work('email.send', { batchSize: 5 }, async (jobs) => {
   await Promise.all(jobs.map((job) => handleEmailJob(mailer, job.data)))
@@ -116,6 +120,38 @@ await boss.work('youtube.unfurl', { batchSize: 4 }, async (jobs) => {
   }
 })
 
+await boss.work('generic.unfurl', { batchSize: 4 }, async (jobs) => {
+  for (const job of jobs) {
+    try {
+      const result = await handleGenericUnfurlJob(db, job.data)
+      if (!result.ok) {
+        log.warn({ payload: job.data, reason: result.reason }, 'generic_unfurl_failed')
+      }
+    } catch (err) {
+      log.error(
+        { err: err instanceof Error ? err.stack ?? err.message : err, payload: job.data },
+        'generic_unfurl_handler_error',
+      )
+    }
+  }
+})
+
+await boss.work('x.unfurl', { batchSize: 4 }, async (jobs) => {
+  for (const job of jobs) {
+    try {
+      const result = await handleXUnfurlJob(db, job.data, env.FXTWITTER_API_BASE_URL)
+      if (!result.ok) {
+        log.warn({ payload: job.data, reason: result.reason }, 'x_unfurl_failed')
+      }
+    } catch (err) {
+      log.error(
+        { err: err instanceof Error ? err.stack ?? err.message : err, payload: job.data },
+        'x_unfurl_handler_error',
+      )
+    }
+  }
+})
+
 // Polls every 30s for scheduled posts whose publish time has arrived. Cheap query, indexed.
 // Runs in-process rather than via pg-boss because it doesn't need durability or fan-out — it
 // just walks the table.
@@ -135,7 +171,10 @@ const scheduledTimer = setInterval(async () => {
 }, SCHEDULED_INTERVAL_MS)
 
 log.info(
-  { queues: ['email.send', 'media.process', 'github.unfurl', 'youtube.unfurl'], scheduledIntervalMs: SCHEDULED_INTERVAL_MS },
+  {
+    queues: ['email.send', 'media.process', 'github.unfurl', 'youtube.unfurl', 'generic.unfurl', 'x.unfurl'],
+    scheduledIntervalMs: SCHEDULED_INTERVAL_MS,
+  },
   'worker_ready',
 )
 

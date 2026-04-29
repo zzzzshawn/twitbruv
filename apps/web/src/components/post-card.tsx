@@ -25,8 +25,9 @@ import { recordImpression } from "../lib/analytics"
 import { ApiError, api } from "../lib/api"
 import { LikeIconBurst, useLikeAnimation } from "./like-button-heart"
 import { RichText } from "./rich-text"
-import { MacfolioCardFromText } from "./macfolio-card"
 import { GithubCardBlock } from "./github-card"
+import { LinkCardBlock } from "./link-card"
+import { XStatusCardBlock } from "./x-status-card"
 import { YoutubeCardBlock } from "./youtube-card"
 import { ImageLightbox } from "./image-lightbox"
 import { Compose } from "./compose"
@@ -628,7 +629,6 @@ export function PostCard({
               </p>
             </>
           )}
-          {!editing && <MacfolioCardFromText text={post.text} />}
           {!editing &&
             (() => {
               const ac = postCardArticle(post.cards)
@@ -636,20 +636,19 @@ export function PostCard({
             })()}
           {post.cards
             ?.filter((c) => c.provider !== "article")
-            .map((card, i) =>
-              card.provider === "github" ? (
-                <GithubCardBlock
-                  key={`${card.kind}-${card.url}-${i}`}
-                  card={card}
-                />
-              ) : (
-                <YoutubeCardBlock
-                  key={`${card.kind}-${card.url}-${i}`}
-                  card={card}
-                  post={post}
-                />
-              )
-            )}
+            .map((card, i) => {
+              const key = `${card.kind}-${card.url}-${i}`
+              if (card.provider === "github") {
+                return <GithubCardBlock key={key} card={card} />
+              }
+              if (card.provider === "youtube") {
+                return <YoutubeCardBlock key={key} card={card} post={post} />
+              }
+              if (card.provider === "x") {
+                return <XStatusCardBlock key={key} card={card} />
+              }
+              return <LinkCardBlock key={key} card={card} />
+            })}
           {post.media && post.media.length > 0 && (
             <MediaGrid media={post.media} />
           )}

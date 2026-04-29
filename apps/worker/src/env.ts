@@ -24,6 +24,7 @@ const envSchema = z.object({
   REDIS_URL: z.string().default("redis://localhost:6379"),
   GITHUB_UNFURL_TOKEN: z.string().optional(),
   YOUTUBE_API_KEY: z.string().optional(),
+  FXTWITTER_API_BASE_URL: z.string().optional(),
 })
 
 export type Env = z.infer<typeof envSchema>

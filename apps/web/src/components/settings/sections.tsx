@@ -1,149 +1,45 @@
-import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
+import { Link } from "@tanstack/react-router"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useState } from "react"
+import { updateProfileSchema } from "@workspace/validators"
+import { Avatar } from "@workspace/ui/components/avatar"
 import { Button } from "@workspace/ui/components/button"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Switch } from "@workspace/ui/components/switch"
-import { updateProfileSchema } from "@workspace/validators"
 import { Textarea } from "@workspace/ui/components/textarea"
-import { Avatar } from "@workspace/ui/components/avatar"
-import { SegmentedControl } from "@workspace/ui/components/segmented-control"
-import { ApiError, api } from "../lib/api"
-import { authClient } from "../lib/auth"
-import { qk } from "../lib/query-keys"
-import { API_URL } from "../lib/env"
-import { useMe } from "../lib/me"
-import { ClaimHandle } from "../components/claim-handle"
-import { AvatarUpload } from "../components/avatar-upload"
-import { BannerUpload } from "../components/banner-upload"
-import { usePageHeader } from "../components/app-page-header"
-import { PageLoading } from "../components/page-surface"
-import { PageFrame } from "../components/page-frame"
-import { VerifiedBadge } from "../components/verified-badge"
+import { useMe } from "../../lib/me"
+import { qk } from "../../lib/query-keys"
+import { API_URL } from "../../lib/env"
+import { authClient } from "../../lib/auth"
+import { ApiError, api } from "../../lib/api"
+import { ClaimHandle } from "../claim-handle"
+import { AvatarUpload } from "../avatar-upload"
+import { BannerUpload } from "../banner-upload"
+import { VerifiedBadge } from "../verified-badge"
+import { PageLoading } from "../page-surface"
+import {
+  SettingsSection,
+  SettingsSectionTitle,
+} from "./settings-section-primitives"
 
-type SettingsTab =
-  | "profile"
-  | "account"
-  | "sessions"
-  | "privacy"
-  | "connections"
-  | "danger"
-  | "dev"
-
-const SETTINGS_TABS: ReadonlyArray<SettingsTab> = [
-  "profile",
-  "account",
-  "sessions",
-  "privacy",
-  "connections",
-  "danger",
-  ...(import.meta.env.DEV ? (["dev"] as const) : []),
-]
-
-const SETTINGS_TAB_LABELS: Record<SettingsTab, string> = {
-  profile: "Profile",
-  account: "Account",
-  sessions: "Sessions",
-  privacy: "Privacy",
-  connections: "Connections",
-  danger: "Danger zone",
-  dev: "Dev Tools",
+interface SessionRow {
+  id: string
+  token?: string
+  createdAt?: string | Date
+  ipAddress?: string | null
+  userAgent?: string | null
 }
 
-type SettingsSearch = { tab?: SettingsTab }
-
-export const Route = createFileRoute("/settings")({
-  component: Settings,
-  validateSearch: (search: Record<string, unknown>): SettingsSearch => {
-    const raw = search.tab
-    return {
-      tab:
-        typeof raw === "string" &&
-        (SETTINGS_TABS as ReadonlyArray<string>).includes(raw)
-          ? (raw as SettingsTab)
-          : undefined,
-    }
-  },
-})
-
-function Settings() {
-  const router = useRouter()
-  const navigate = Route.useNavigate()
-  const { data: session, isPending } = authClient.useSession()
-  const { me, setMe } = useMe()
-  const { tab: tabSearch } = Route.useSearch()
-  const tab: SettingsTab = tabSearch ?? "profile"
-  const setTab = (next: SettingsTab) =>
-    navigate({
-      to: "/settings",
-      search: { tab: next === "profile" ? undefined : next },
-      replace: true,
-      resetScroll: false,
-    })
-
-  useEffect(() => {
-    if (isPending) return
-    if (!session) router.navigate({ to: "/login" })
-  }, [isPending, session, router])
-
-  const appHeader = useMemo(
-    () => (!me ? null : { title: "Settings" as const }),
-    [me]
-  )
-  usePageHeader(appHeader)
-
-  if (isPending || !me) {
-    return (
-      <PageFrame>
-        <div className="px-4 py-8">
-          <PageLoading />
-        </div>
-      </PageFrame>
-    )
-  }
-
-  return (
-    <PageFrame>
-      <div className="px-4 py-8">
-        {!me.handle && (
-          <div className="mt-6">
-            <ClaimHandle onClaimed={(h) => setMe({ ...me, handle: h })} />
-          </div>
-        )}
-
-        <div className="mt-6 min-w-0 overflow-x-auto">
-          <SegmentedControl<SettingsTab>
-            layout="fit"
-            variant="ghost"
-            value={tab}
-            options={SETTINGS_TABS.map((t) => ({
-              value: t,
-              label: SETTINGS_TAB_LABELS[t],
-            }))}
-            onValueChange={(value) => setTab(value)}
-          />
-        </div>
-
-        <div className="mt-6">
-          {tab === "profile" && <ProfileSection />}
-          {tab === "account" && <AccountSection email={me.email} />}
-          {tab === "sessions" && (
-            <SessionsSection currentSessionId={session?.session.id ?? null} />
-          )}
-          {tab === "privacy" && <PrivacySection />}
-          {tab === "connections" && <ConnectionsSection />}
-          {tab === "danger" && (
-            <DangerZone onDeleted={() => router.navigate({ to: "/" })} />
-          )}
-          {tab === "dev" && <DevToolsSection />}
-        </div>
-      </div>
-    </PageFrame>
-  )
+function truncate(s: string, n: number): string {
+  return s.length <= n ? s : `${s.slice(0, n - 1)}…`
 }
 
-function ProfileSection() {
+export function ProfileSection({
+  focusProfileFields,
+}: {
+  focusProfileFields?: boolean
+}) {
   const { me, setMe } = useMe()
   const [displayName, setDisplayName] = useState("")
   const [bio, setBio] = useState("")
@@ -159,21 +55,15 @@ function ProfileSection() {
     setWebsiteUrl(me.websiteUrl ?? "")
   }, [me])
 
-  // After the page renders with the user's data, honor the URL hash
-  // (e.g. /settings#profile from the "Edit profile" button) by scrolling
-  // the matching section into view and focusing the first input in it.
   useEffect(() => {
-    if (!me || typeof window === "undefined") return
-    const id = window.location.hash.slice(1)
-    if (!id) return
-    const el = document.getElementById(id)
+    if (!me || !focusProfileFields) return
+    const el = document.getElementById("settings-profile-details")
     if (!el) return
-    el.scrollIntoView({ behavior: "smooth", block: "start" })
     const firstInput = el.querySelector<HTMLInputElement | HTMLTextAreaElement>(
       "input, textarea"
     )
-    firstInput?.focus({ preventScroll: true })
-  }, [me])
+    queueMicrotask(() => firstInput?.focus({ preventScroll: true }))
+  }, [me, focusProfileFields])
 
   if (!me) return null
 
@@ -206,7 +96,6 @@ function ProfileSection() {
     bannerUrl?: string | null
   }) {
     try {
-      // api.updateMe accepts empty string to clear; null gets normalized to empty.
       const { user } = await api.updateMe({
         ...(patch.avatarUrl !== undefined
           ? { avatarUrl: patch.avatarUrl ?? "" }
@@ -223,8 +112,11 @@ function ProfileSection() {
 
   return (
     <div className="flex flex-col gap-8">
-      <section className="flex flex-col gap-6">
-        <h2 className="text-sm font-semibold">Profile media</h2>
+      {!me.handle && (
+        <ClaimHandle onClaimed={(h) => setMe({ ...me, handle: h })} />
+      )}
+      <SettingsSection>
+        <SettingsSectionTitle>Profile media</SettingsSectionTitle>
         <BannerUpload
           currentUrl={me.bannerUrl}
           onChange={(url) => updateMedia({ bannerUrl: url })}
@@ -234,14 +126,14 @@ function ProfileSection() {
           displayName={me.displayName ?? me.handle}
           onChange={(url) => updateMedia({ avatarUrl: url })}
         />
-      </section>
+      </SettingsSection>
 
       <form
+        id="settings-profile-details"
         onSubmit={onSave}
-        id="profile"
         className="border-border flex scroll-mt-4 flex-col gap-3 border-t pt-6"
       >
-        <h2 className="text-sm font-semibold">Profile details</h2>
+        <SettingsSectionTitle>Profile details</SettingsSectionTitle>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="displayName">Display name</Label>
           <Input
@@ -286,7 +178,7 @@ function ProfileSection() {
   )
 }
 
-function AccountSection({ email }: { email: string }) {
+export function AccountSection({ email }: { email: string }) {
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [pwBusy, setPwBusy] = useState(false)
@@ -340,8 +232,8 @@ function AccountSection({ email }: { email: string }) {
   }
 
   return (
-    <section className="flex flex-col gap-6">
-      <h2 className="text-sm font-semibold">Account</h2>
+    <SettingsSection>
+      <SettingsSectionTitle>Account</SettingsSectionTitle>
 
       <form onSubmit={changeEmail} className="flex flex-col gap-2">
         <Label htmlFor="newEmail">Email</Label>
@@ -394,19 +286,11 @@ function AccountSection({ email }: { email: string }) {
           Update password
         </Button>
       </form>
-    </section>
+    </SettingsSection>
   )
 }
 
-interface SessionRow {
-  id: string
-  token?: string
-  createdAt?: string | Date
-  ipAddress?: string | null
-  userAgent?: string | null
-}
-
-function SessionsSection({
+export function SessionsSection({
   currentSessionId,
 }: {
   currentSessionId: string | null
@@ -453,9 +337,11 @@ function SessionsSection({
   }
 
   return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold">Active sessions</h2>
+    <SettingsSection className="gap-3">
+      <div className="flex items-center justify-between gap-3">
+        <SettingsSectionTitle className="mb-0">
+          Active sessions
+        </SettingsSectionTitle>
         <Button
           size="sm"
           variant="outline"
@@ -512,128 +398,7 @@ function SessionsSection({
           })}
         </ul>
       )}
-    </section>
-  )
-}
-
-function PrivacySection() {
-  const qc = useQueryClient()
-  const [tab, setTab] = useState<"blocks" | "mutes">("blocks")
-  const [busyId, setBusyId] = useState<string | null>(null)
-
-  const blocksQuery = useQuery({
-    queryKey: qk.blocks(),
-    queryFn: async () => (await api.blocks()).users,
-    enabled: tab === "blocks",
-  })
-
-  const mutesQuery = useQuery({
-    queryKey: qk.mutes(),
-    queryFn: async () => (await api.mutes()).users,
-    enabled: tab === "mutes",
-  })
-
-  async function unblock(handle: string, id: string) {
-    setBusyId(id)
-    try {
-      await api.unblock(handle)
-      await qc.invalidateQueries({ queryKey: qk.blocks() })
-    } finally {
-      setBusyId(null)
-    }
-  }
-
-  async function unmute(handle: string, id: string) {
-    setBusyId(id)
-    try {
-      await api.unmute(handle)
-      await qc.invalidateQueries({ queryKey: qk.mutes() })
-    } finally {
-      setBusyId(null)
-    }
-  }
-
-  const blocksCount = blocksQuery.data?.length ?? 0
-  const mutesCount = mutesQuery.data?.length ?? 0
-
-  return (
-    <section className="space-y-3">
-      <h2 className="text-sm font-semibold">Privacy</h2>
-      <div className="flex gap-1">
-        <Button
-          size="sm"
-          variant={tab === "blocks" ? "outline" : "transparent"}
-          onClick={() => setTab("blocks")}
-        >
-          Blocked
-          {blocksQuery.data !== undefined && blocksCount > 0 && (
-            <span className="ml-1.5 text-xs opacity-80">{blocksCount}</span>
-          )}
-        </Button>
-        <Button
-          size="sm"
-          variant={tab === "mutes" ? "outline" : "transparent"}
-          onClick={() => setTab("mutes")}
-        >
-          Muted
-          {mutesQuery.data !== undefined && mutesCount > 0 && (
-            <span className="ml-1.5 text-xs opacity-80">{mutesCount}</span>
-          )}
-        </Button>
-      </div>
-      {tab === "blocks" && blocksQuery.isError && (
-        <p className="text-destructive text-xs">
-          {blocksQuery.error instanceof ApiError
-            ? blocksQuery.error.message
-            : "couldn't load blocks"}
-        </p>
-      )}
-      {tab === "blocks" && !blocksQuery.isError && (
-        <PrivacyList
-          users={blocksQuery.isPending ? null : blocksQuery.data}
-          emptyText="You haven't blocked anyone."
-          renderTrailing={(u) => (
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={busyId === u.id || !u.handle}
-              onClick={() => u.handle && unblock(u.handle, u.id)}
-            >
-              Unblock
-            </Button>
-          )}
-          renderMeta={(u) =>
-            `Blocked ${new Date(u.blockedAt).toLocaleDateString()}`
-          }
-        />
-      )}
-      {tab === "mutes" && mutesQuery.isError && (
-        <p className="text-destructive text-xs">
-          {mutesQuery.error instanceof ApiError
-            ? mutesQuery.error.message
-            : "couldn't load mutes"}
-        </p>
-      )}
-      {tab === "mutes" && !mutesQuery.isError && (
-        <PrivacyList
-          users={mutesQuery.isPending ? null : mutesQuery.data}
-          emptyText="You haven't muted anyone."
-          renderTrailing={(u) => (
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={busyId === u.id || !u.handle}
-              onClick={() => u.handle && unmute(u.handle, u.id)}
-            >
-              Unmute
-            </Button>
-          )}
-          renderMeta={(u) =>
-            `${labelForScope(u.scope)} · ${new Date(u.mutedAt).toLocaleDateString()}`
-          }
-        />
-      )}
-    </section>
+    </SettingsSection>
   )
 }
 
@@ -716,7 +481,128 @@ function PrivacyList<
   )
 }
 
-function DangerZone({ onDeleted }: { onDeleted: () => void }) {
+export function PrivacySection() {
+  const qc = useQueryClient()
+  const [tab, setTab] = useState<"blocks" | "mutes">("blocks")
+  const [busyId, setBusyId] = useState<string | null>(null)
+
+  const blocksQuery = useQuery({
+    queryKey: qk.blocks(),
+    queryFn: async () => (await api.blocks()).users,
+    enabled: tab === "blocks",
+  })
+
+  const mutesQuery = useQuery({
+    queryKey: qk.mutes(),
+    queryFn: async () => (await api.mutes()).users,
+    enabled: tab === "mutes",
+  })
+
+  async function unblock(handle: string, id: string) {
+    setBusyId(id)
+    try {
+      await api.unblock(handle)
+      await qc.invalidateQueries({ queryKey: qk.blocks() })
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  async function unmute(handle: string, id: string) {
+    setBusyId(id)
+    try {
+      await api.unmute(handle)
+      await qc.invalidateQueries({ queryKey: qk.mutes() })
+    } finally {
+      setBusyId(null)
+    }
+  }
+
+  const blocksCount = blocksQuery.data?.length ?? 0
+  const mutesCount = mutesQuery.data?.length ?? 0
+
+  return (
+    <SettingsSection className="gap-3">
+      <SettingsSectionTitle>Privacy</SettingsSectionTitle>
+      <div className="flex flex-wrap gap-1">
+        <Button
+          size="sm"
+          variant={tab === "blocks" ? "outline" : "transparent"}
+          onClick={() => setTab("blocks")}
+        >
+          Blocked
+          {blocksQuery.data !== undefined && blocksCount > 0 && (
+            <span className="ml-1.5 text-xs opacity-80">{blocksCount}</span>
+          )}
+        </Button>
+        <Button
+          size="sm"
+          variant={tab === "mutes" ? "outline" : "transparent"}
+          onClick={() => setTab("mutes")}
+        >
+          Muted
+          {mutesQuery.data !== undefined && mutesCount > 0 && (
+            <span className="ml-1.5 text-xs opacity-80">{mutesCount}</span>
+          )}
+        </Button>
+      </div>
+      {tab === "blocks" && blocksQuery.isError && (
+        <p className="text-destructive text-xs">
+          {blocksQuery.error instanceof ApiError
+            ? blocksQuery.error.message
+            : "couldn't load blocks"}
+        </p>
+      )}
+      {tab === "blocks" && !blocksQuery.isError && (
+        <PrivacyList
+          users={blocksQuery.isPending ? null : blocksQuery.data}
+          emptyText="You haven't blocked anyone."
+          renderTrailing={(u) => (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={busyId === u.id || !u.handle}
+              onClick={() => u.handle && unblock(u.handle, u.id)}
+            >
+              Unblock
+            </Button>
+          )}
+          renderMeta={(u) =>
+            `Blocked ${new Date(u.blockedAt).toLocaleDateString()}`
+          }
+        />
+      )}
+      {tab === "mutes" && mutesQuery.isError && (
+        <p className="text-destructive text-xs">
+          {mutesQuery.error instanceof ApiError
+            ? mutesQuery.error.message
+            : "couldn't load mutes"}
+        </p>
+      )}
+      {tab === "mutes" && !mutesQuery.isError && (
+        <PrivacyList
+          users={mutesQuery.isPending ? null : mutesQuery.data}
+          emptyText="You haven't muted anyone."
+          renderTrailing={(u) => (
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={busyId === u.id || !u.handle}
+              onClick={() => u.handle && unmute(u.handle, u.id)}
+            >
+              Unmute
+            </Button>
+          )}
+          renderMeta={(u) =>
+            `${labelForScope(u.scope)} · ${new Date(u.mutedAt).toLocaleDateString()}`
+          }
+        />
+      )}
+    </SettingsSection>
+  )
+}
+
+export function DangerZone({ onDeleted }: { onDeleted: () => void }) {
   const { me } = useMe()
   const [confirm, setConfirm] = useState("")
   const [busy, setBusy] = useState(false)
@@ -742,8 +628,10 @@ function DangerZone({ onDeleted }: { onDeleted: () => void }) {
   }
 
   return (
-    <section className="space-y-3">
-      <h2 className="text-destructive text-sm font-semibold">Danger zone</h2>
+    <SettingsSection className="gap-3">
+      <SettingsSectionTitle className="text-destructive">
+        Danger zone
+      </SettingsSectionTitle>
       <p className="text-muted-foreground text-xs">
         Deleting your account is permanent. Posts, articles, and DMs you
         authored will be removed. Type{" "}
@@ -764,23 +652,22 @@ function DangerZone({ onDeleted }: { onDeleted: () => void }) {
       >
         Delete my account
       </Button>
-    </section>
+    </SettingsSection>
   )
 }
 
-function ConnectionsSection() {
+export function ConnectionsSection({
+  oauthConnected,
+  oauthConnectError,
+}: {
+  oauthConnected?: string | null
+  oauthConnectError?: string | null
+}) {
   const qc = useQueryClient()
   const [busy, setBusy] = useState<"refresh" | "disconnect" | "toggle" | null>(
     null
   )
   const [status, setStatus] = useState<string | null>(null)
-
-  const search =
-    typeof window !== "undefined"
-      ? new URLSearchParams(window.location.search)
-      : null
-  const connected = search?.get("connected")
-  const connectError = search?.get("connect_error")
 
   const { data: state, isPending } = useQuery({
     queryKey: qk.connectors.githubMe(),
@@ -839,21 +726,21 @@ function ConnectionsSection() {
   }
 
   return (
-    <section className="space-y-4">
-      <h2 className="text-sm font-semibold">Connections</h2>
+    <SettingsSection className="gap-4">
+      <SettingsSectionTitle>Connections</SettingsSectionTitle>
       <p className="text-muted-foreground text-xs">
         Link external accounts to enrich your profile. We never post on your
         behalf.
       </p>
 
-      {connected === "github" && (
+      {oauthConnected === "github" && (
         <div className="border-border bg-muted/40 rounded-md border px-3 py-2 text-xs">
           GitHub connected.
         </div>
       )}
-      {connectError && (
+      {oauthConnectError != null && oauthConnectError !== "" && (
         <div className="border-destructive/40 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-xs">
-          GitHub connection failed: {connectError}
+          GitHub connection failed: {oauthConnectError}
         </div>
       )}
 
@@ -864,7 +751,7 @@ function ConnectionsSection() {
             {isPending && <PageLoading className="py-8" label="Loading…" />}
             {state && state.configured === false && (
               <p className="text-muted-foreground text-xs">
-                The server isn't configured for GitHub connections yet.
+                The server isn&apos;t configured for GitHub connections yet.
               </p>
             )}
             {state?.connected === false && state.configured && (
@@ -945,15 +832,11 @@ function ConnectionsSection() {
           <p className="text-muted-foreground mt-2 text-xs">{status}</p>
         )}
       </div>
-    </section>
+    </SettingsSection>
   )
 }
 
-function truncate(s: string, n: number): string {
-  return s.length <= n ? s : `${s.slice(0, n - 1)}…`
-}
-
-function DevToolsSection() {
+export function DevToolsSection() {
   const [status, setStatus] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -984,7 +867,7 @@ function DevToolsSection() {
   }
 
   return (
-    <section className="space-y-6">
+    <SettingsSection className="gap-6">
       <div>
         <h3 className="text-sm font-medium text-primary">Seed Data</h3>
         <p className="mt-1 text-xs text-tertiary">
@@ -1002,6 +885,6 @@ function DevToolsSection() {
         </Button>
         {status && <p className="mt-2 text-xs text-secondary">{status}</p>}
       </div>
-    </section>
+    </SettingsSection>
   )
 }

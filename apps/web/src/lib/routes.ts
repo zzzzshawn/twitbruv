@@ -13,7 +13,6 @@ export function getRouteInfo(pathname: string): RouteInfo {
   if (pathname === "/bookmarks") return { title: "Bookmarks" }
   if (pathname.startsWith("/articles/new"))
     return { title: "New Article", back: true }
-  if (pathname === "/settings") return { title: "Settings", back: true }
   if (pathname === "/analytics") return { title: "Analytics", back: true }
   if (pathname.startsWith("/admin")) return { title: "Admin", back: true }
   if (pathname.startsWith("/hashtag/")) return { title: "Hashtag", back: true }

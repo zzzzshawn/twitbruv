@@ -28,7 +28,6 @@ import { ImageLightbox } from "../components/image-lightbox"
 import { PageEmpty, PageError } from "../components/page-surface"
 import { PageFrame } from "../components/page-frame"
 import { RichText } from "../components/rich-text"
-import { MacfolioCardFromText } from "../components/macfolio-card"
 import { VerifiedBadge } from "../components/verified-badge"
 import { subscribeToDmStream } from "../lib/dm-stream"
 import {
@@ -1086,7 +1085,6 @@ function Bubble({
                   <RichText text={message.text} />
                 </p>
               )}
-              {message.text && <MacfolioCardFromText text={message.text} />}
               {!message.media && !message.text && (
                 <em className="opacity-70">[unsupported]</em>
               )}

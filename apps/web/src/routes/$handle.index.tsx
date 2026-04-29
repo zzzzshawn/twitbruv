@@ -10,7 +10,6 @@ import { Feed } from "../components/feed"
 import { ProfileActions } from "../components/profile-actions"
 import { ImageLightbox } from "../components/image-lightbox"
 import { RichText } from "../components/rich-text"
-import { MacfolioCardFromText } from "../components/macfolio-card"
 import { GithubBlock } from "../components/github-block"
 import { MetaPill } from "../components/meta-pill"
 import { VerifiedBadge } from "../components/verified-badge"
@@ -23,6 +22,7 @@ import { useMe } from "../lib/me"
 import { qk } from "../lib/query-keys"
 import { APP_NAME, WEB_URL } from "../lib/env"
 import { buildSeoMeta, canonicalLink, clipDescription } from "../lib/seo"
+import { useSettings } from "../components/settings/settings-provider"
 import type { UserList } from "../lib/api"
 
 export const Route = createFileRoute("/$handle/")({
@@ -98,6 +98,7 @@ export const Route = createFileRoute("/$handle/")({
 function Profile() {
   const { handle } = Route.useParams()
   const { me } = useMe()
+  const { open: openSettings } = useSettings()
   const qc = useQueryClient()
 
   const {
@@ -178,8 +179,9 @@ function Profile() {
               <Button
                 size="sm"
                 variant="primary"
-                nativeButton={false}
-                render={<Link to="/settings" hash="profile" />}
+                onClick={() =>
+                  openSettings({ tab: "profile", focusProfile: true })
+                }
               >
                 Edit profile
               </Button>
@@ -202,7 +204,6 @@ function Profile() {
               <RichText text={user.bio} />
             </p>
           )}
-          {user.bio && <MacfolioCardFromText text={user.bio} />}
           <div className="text-muted-foreground mt-3 flex flex-wrap items-center gap-x-2 gap-y-2 text-[13px]">
             {user.location && (
               <MetaPill

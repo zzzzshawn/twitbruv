@@ -23,6 +23,7 @@
     "@workspace/rate-limit": "workspace:*",
     "@workspace/types": "workspace:*",
     "@workspace/validators": "workspace:*",
+    "@workspace/x-unfurl": "workspace:*",
     "better-auth": "^1.4.6",
     "chess.js": "^1.4.0",
     "hono": "^4.7.11",

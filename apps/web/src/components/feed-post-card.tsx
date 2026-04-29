@@ -9,8 +9,9 @@ import { api } from "../lib/api"
 import { useLightbox } from "./lightbox-provider"
 import { useCompose } from "./compose-provider"
 import { LightboxSidebar } from "./lightbox-sidebar"
-import { MacfolioCardFromText } from "./macfolio-card"
 import { GithubCardBlock } from "./github-card"
+import { LinkCardBlock } from "./link-card"
+import { XStatusCardBlock } from "./x-status-card"
 import { YoutubeCardBlock } from "./youtube-card"
 import { ArticleCardBlock } from "./post-card"
 import type {
@@ -24,9 +25,7 @@ function unfurlCardKey(card: UnfurlCard, i: number): string {
   const base =
     card.provider === "article"
       ? `article-${card.id}`
-      : card.provider === "github"
-        ? `${card.kind}-${card.url}`
-        : `${card.kind}-${card.url}`
+      : `${card.kind}-${card.url}`
   return `${base}-${i}`
 }
 
@@ -37,7 +36,13 @@ function UnfurlBelow({ card, post }: { card: UnfurlCard; post: Post }) {
   if (card.provider === "github") {
     return <GithubCardBlock card={card} />
   }
-  return <YoutubeCardBlock card={card} post={post} />
+  if (card.provider === "youtube") {
+    return <YoutubeCardBlock card={card} post={post} />
+  }
+  if (card.provider === "x") {
+    return <XStatusCardBlock card={card} />
+  }
+  return <LinkCardBlock card={card} />
 }
 
 function relativeTime(iso: string): string {
@@ -184,7 +189,6 @@ export function FeedPostCard({
       threadLine={threadLine}
       belowText={
         <>
-          <MacfolioCardFromText text={post.text} />
           {post.cards?.map((card, i) => (
             <UnfurlBelow
               key={unfurlCardKey(card, i)}

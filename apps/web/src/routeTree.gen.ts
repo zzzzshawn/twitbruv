@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as WelcomeRouteImport } from './routes/welcome'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
-import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as OgRouteImport } from './routes/og'
 import { Route as NotificationsRouteImport } from './routes/notifications'
@@ -57,11 +56,6 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SettingsRoute = SettingsRouteImport.update({
-  id: '/settings',
-  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SearchRoute = SearchRouteImport.update({
@@ -228,7 +222,6 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof NotificationsRoute
   '/og': typeof OgRouteWithChildren
   '/search': typeof SearchRoute
-  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/welcome': typeof WelcomeRoute
@@ -262,7 +255,6 @@ export interface FileRoutesByTo {
   '/notifications': typeof NotificationsRoute
   '/og': typeof OgRouteWithChildren
   '/search': typeof SearchRoute
-  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/welcome': typeof WelcomeRoute
@@ -299,7 +291,6 @@ export interface FileRoutesById {
   '/notifications': typeof NotificationsRoute
   '/og': typeof OgRouteWithChildren
   '/search': typeof SearchRoute
-  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/welcome': typeof WelcomeRoute
@@ -337,7 +328,6 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/og'
     | '/search'
-    | '/settings'
     | '/signup'
     | '/sitemap.xml'
     | '/welcome'
@@ -371,7 +361,6 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/og'
     | '/search'
-    | '/settings'
     | '/signup'
     | '/sitemap.xml'
     | '/welcome'
@@ -407,7 +396,6 @@ export interface FileRouteTypes {
     | '/notifications'
     | '/og'
     | '/search'
-    | '/settings'
     | '/signup'
     | '/sitemap.xml'
     | '/welcome'
@@ -444,7 +432,6 @@ export interface RootRouteChildren {
   NotificationsRoute: typeof NotificationsRoute
   OgRoute: typeof OgRouteWithChildren
   SearchRoute: typeof SearchRoute
-  SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   WelcomeRoute: typeof WelcomeRoute
@@ -478,13 +465,6 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/settings': {
-      id: '/settings'
-      path: '/settings'
-      fullPath: '/settings'
-      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/search': {
@@ -760,7 +740,6 @@ const rootRouteChildren: RootRouteChildren = {
   NotificationsRoute: NotificationsRoute,
   OgRoute: OgRouteWithChildren,
   SearchRoute: SearchRoute,
-  SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   WelcomeRoute: WelcomeRoute,

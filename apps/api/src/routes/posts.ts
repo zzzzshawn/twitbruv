@@ -265,6 +265,7 @@ postsRoute.post('/', requireHandle(), async (c) => {
     invalidateUnreadCounts(cache, result.notified),
     runInlineUnfurls(db, c.get('ctx').boss, result.unfurlJobs, {
       youtubeApiKey: c.get('ctx').env.YOUTUBE_API_KEY,
+      fxtwitterApiBaseUrl: c.get('ctx').env.FXTWITTER_API_BASE_URL,
     }),
   ])
 
@@ -747,6 +748,7 @@ postsRoute.patch('/:id', requireHandle(), async (c) => {
   if (!result.unchanged) {
     await runInlineUnfurls(db, c.get('ctx').boss, result.unfurlJobs, {
       youtubeApiKey: c.get('ctx').env.YOUTUBE_API_KEY,
+      fxtwitterApiBaseUrl: c.get('ctx').env.FXTWITTER_API_BASE_URL,
     })
   }
 

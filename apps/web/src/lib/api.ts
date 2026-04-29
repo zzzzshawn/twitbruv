@@ -2,6 +2,8 @@ import { getTrackingIds } from "@databuddy/sdk"
 import { API_URL, MAINTENANCE_MODE } from "./env"
 import { setRuntimeMaintenance } from "./maintenance"
 import type { GithubCard } from "@workspace/github-unfurl/card"
+import type { GenericUnfurlCard as GenericUnfurlPayload } from "@workspace/url-unfurl-core"
+import type { XStatusCard as XStatusPayload } from "@workspace/x-unfurl/card"
 import type { YouTubeCard } from "@workspace/youtube-unfurl/card"
 
 export type { GithubCard } from "@workspace/github-unfurl/card"
@@ -640,10 +642,16 @@ export type GithubUnfurlCard = GithubCard & { provider: "github" }
 
 export type YoutubeUnfurlCard = YouTubeCard & { provider: "youtube" }
 
+export type GenericUnfurlCard = GenericUnfurlPayload & { provider: "generic" }
+
+export type XUnfurlCard = XStatusPayload & { provider: "x" }
+
 export type UnfurlCard =
   | ArticleUnfurlCard
   | GithubUnfurlCard
   | YoutubeUnfurlCard
+  | GenericUnfurlCard
+  | XUnfurlCard
 
 export interface Post {
   id: string

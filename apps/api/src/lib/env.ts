@@ -68,6 +68,7 @@ const envSchema = z.object({
   GITHUB_UNFURL_TOKEN: z.string().optional(),
 
   YOUTUBE_API_KEY: z.string().optional(),
+  FXTWITTER_API_BASE_URL: z.string().optional(),
 
   // Symmetric key for at-rest encryption of connector OAuth tokens (oauth_connections table).
   // Must be 32 raw bytes encoded as base64 — anything shorter is rejected at boot. Rotation

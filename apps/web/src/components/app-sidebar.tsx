@@ -27,6 +27,7 @@ import { Sidebar } from "@workspace/ui/components/sidebar"
 import { useTheme } from "../lib/theme"
 import { useMe } from "../lib/me"
 import { authClient } from "../lib/auth"
+import { useSettings } from "./settings/settings-provider"
 import type { SidebarNavItem } from "@workspace/ui/components/sidebar"
 
 const navItems: Array<SidebarNavItem> = [
@@ -99,6 +100,7 @@ export function AppSidebar({ onCompose }: { onCompose: () => void }) {
   const { me } = useMe()
   const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
+  const { open: openSettings } = useSettings()
 
   // While loading or not authed, render the sidebar shell (just the logo) so the layout doesn't shift
   if (!me) {
@@ -140,7 +142,7 @@ export function AppSidebar({ onCompose }: { onCompose: () => void }) {
       theme={theme}
       onThemeChange={setTheme}
       onCompose={onCompose}
-      onSettings={() => navigate({ to: "/settings" })}
+      onSettings={() => openSettings()}
       onSignOut={() => {
         authClient.signOut()
         navigate({ to: "/login" })

@@ -43,7 +43,7 @@ function SignUp() {
       })
       if (err) throw new Error(err.message ?? "Sign up failed")
       await api.claimHandle(handle).catch(() => {})
-      router.navigate({ to: "/settings" })
+      router.navigate({ to: "/", search: { settings_tab: "profile" } })
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Sign up failed")
     } finally {

@@ -30,6 +30,7 @@
         "@workspace/types": "workspace:*",
         "@workspace/url-unfurl-core": "workspace:*",
         "@workspace/validators": "workspace:*",
+        "@workspace/x-unfurl": "workspace:*",
         "@workspace/youtube-unfurl": "workspace:*",
         "better-auth": "^1.4.6",
         "chess.js": "^1.4.0",
@@ -74,7 +75,9 @@
         "@workspace/auth": "workspace:*",
         "@workspace/github-unfurl": "workspace:*",
         "@workspace/ui": "workspace:*",
+        "@workspace/url-unfurl-core": "workspace:*",
         "@workspace/validators": "workspace:*",
+        "@workspace/x-unfurl": "workspace:*",
         "@workspace/youtube-unfurl": "workspace:*",
         "agentation": "^3.0.2",
         "better-auth": "^1.4.6",
@@ -115,6 +118,8 @@
         "@workspace/email": "workspace:*",
         "@workspace/github-unfurl": "workspace:*",
         "@workspace/media": "workspace:*",
+        "@workspace/url-unfurl-core": "workspace:*",
+        "@workspace/x-unfurl": "workspace:*",
         "@workspace/youtube-unfurl": "workspace:*",
         "pg-boss": "^10.3.2",
         "pino": "^9.6.0",
@@ -292,6 +297,19 @@
         "zod": "^3.25.76",
       },
       "devDependencies": {
+        "@workspace/config-tsconfig": "workspace:*",
+        "typescript": "^5.9.3",
+      },
+    },
+    "packages/x-unfurl": {
+      "name": "@workspace/x-unfurl",
+      "version": "0.0.0",
+      "dependencies": {
+        "@workspace/db": "workspace:*",
+        "@workspace/url-unfurl-core": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/node": "^25.1.0",
         "@workspace/config-tsconfig": "workspace:*",
         "typescript": "^5.9.3",
       },
@@ -1333,6 +1351,8 @@
 
     "@workspace/validators": ["@workspace/validators@workspace:packages/validators"],
 
+    "@workspace/x-unfurl": ["@workspace/x-unfurl@workspace:packages/x-unfurl"],
+
     "@workspace/youtube-unfurl": ["@workspace/youtube-unfurl@workspace:packages/youtube-unfurl"],
 
     "acorn": ["acorn@8.16.0", "", { "bin": { "acorn": "bin/acorn" } }, "sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw=="],
@@ -1997,7 +2017,7 @@
 
     "nf3": ["nf3@0.3.16", "", {}, "sha512-Gs0xRPpUm2nDkqbi40NJ9g7qDIcjcJzgExiydnq6LAyqhI2jfno8wG3NKTL+IiJsx799UHOb1CnSd4Wg4SG4Pw=="],
 
-    "nitro": ["nitro@3.0.260415-beta", "", { "dependencies": { "consola": "^3.4.2", "crossws": "^0.4.5", "db0": "^0.3.4", "env-runner": "^0.1.7", "h3": "^2.0.1-rc.20", "hookable": "^6.1.1", "nf3": "^0.3.16", "ocache": "^0.1.4", "ofetch": "^2.0.0-alpha.3", "ohash": "^2.0.11", "rolldown": "^1.0.0-rc.15", "srvx": "^0.11.15", "unenv": "^2.0.0-rc.24", "unstorage": "^2.0.0-alpha.7" }, "peerDependencies": { "@vercel/queue": "^0.1.4", "dotenv": "*", "giget": "*", "jiti": "^2.6.1", "rollup": "^4.60.1", "vite": "^7 || ^8", "xml2js": "^0.6.2", "zephyr-agent": "^0.2.0" }, "optionalPeers": ["@vercel/queue", "dotenv", "giget", "jiti", "rollup", "vite", "xml2js", "zephyr-agent"], "bin": { "nitro": "dist/cli/index.mjs" } }, "sha512-J0ntJERWtIdvweZdmkCiF8eOFvP9fIAJR2gpeIDrHbAlYavK41WQfADo/YoZ/LF7RMTZBiPaH/pt2s/nPru9Iw=="],
+    "nitro": ["nitro@3.0.260429-beta", "", { "dependencies": { "consola": "^3.4.2", "crossws": "^0.4.5", "db0": "^0.3.4", "env-runner": "^0.1.7", "h3": "^2.0.1-rc.20", "hookable": "^6.1.1", "nf3": "^0.3.16", "ocache": "^0.1.4", "ofetch": "^2.0.0-alpha.3", "ohash": "^2.0.11", "rolldown": "^1.0.0-rc.17", "srvx": "^0.11.15", "unenv": "^2.0.0-rc.24", "unstorage": "^2.0.0-alpha.7" }, "peerDependencies": { "@vercel/queue": "^0.1.6", "dotenv": "*", "giget": "*", "jiti": "^2.6.1", "rollup": "^4.60.2", "vite": "^7 || ^8", "xml2js": "^0.6.2", "zephyr-agent": "^0.2.0" }, "optionalPeers": ["@vercel/queue", "dotenv", "giget", "jiti", "rollup", "vite", "xml2js", "zephyr-agent"], "bin": { "nitro": "dist/cli/index.mjs" } }, "sha512-KweLVCUN5X9v9g+4yxAyRcz3FcOlnjmt9FyrAIWDxJETJmNT7I0JV0clgsONjo2nI0U5gwedXYA3RaNtF5XWzg=="],
 
     "no-case": ["no-case@3.0.4", "", { "dependencies": { "lower-case": "^2.0.2", "tslib": "^2.0.3" } }, "sha512-fgAN3jGAh+RoxUGZHTSOLJIqUc2wmoBwGR4tbpNAKmmovFoWq0OdRkb0VkldReO2a2iBT/OEulG9XSUc10r3zg=="],
 
