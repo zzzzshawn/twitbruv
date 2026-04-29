@@ -1,0 +1,40 @@
+---
+title: Link Card
+description: Rich link previews shown when URLs are shared in posts. Renders OG image, title, description, and site favicon.
+order: 7
+props:
+  - name: url
+    type: string
+    description: The URL being previewed.
+  - name: title
+    type: string
+    description: Page title from OG metadata.
+  - name: description
+    type: string
+    description: Page description from OG metadata.
+  - name: imageUrl
+    type: string
+    description: OG image URL. Rendered at 1200x630 aspect ratio.
+  - name: faviconUrl
+    type: string
+    description: Site favicon URL. Falls back to Google Favicon service.
+  - name: siteName
+    type: string
+    description: Site name or hostname.
+---
+
+Link cards appear automatically when a post contains a URL. The system fetches OG metadata (title, description, image) and renders a rich preview card.
+
+The OG image is displayed at the standard `1200×630` aspect ratio to prevent cropping.
+
+## With Image
+
+<ComponentPreview src="link-card/with-image" />
+
+## Without Image
+
+When no OG image is available, the card renders a compact text-only layout with the site favicon.
+
+<ComponentPreview src="link-card/no-image" />
+
+<PropsTable />

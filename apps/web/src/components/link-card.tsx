@@ -80,7 +80,7 @@ export function LinkCardBlock({
   return (
     <UnfurlCardChrome href={card.url} className={cn("group p-0", className)}>
       {hasHero ? (
-        <div className="relative aspect-video overflow-hidden bg-base-2">
+        <div className="relative aspect-[1200/630] overflow-hidden bg-base-2">
           <img
             src={card.imageUrl!}
             alt=""
