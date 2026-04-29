@@ -58,7 +58,8 @@ function estimatePostHeight(post: Post | undefined): number {
   const unfurls =
     target.cards?.filter((c) => c.provider !== "article").length ?? 0
   if (unfurls > 0) height += unfurls * 220
-  if (target.cards?.some((c) => c.provider === "article")) height += ESTIMATED_ARTICLE_BUMP
+  if (target.cards?.some((c) => c.provider === "article"))
+    height += ESTIMATED_ARTICLE_BUMP
   if (target.poll) height += ESTIMATED_POLL_BUMP
   if (target.quoteOf) height += ESTIMATED_QUOTE_BUMP
   return height
@@ -73,6 +74,8 @@ export function Feed({
   hideReplies = false,
   onlyReplies = false,
   renderActivityBanner,
+  quietPending = false,
+  onReady,
 }: {
   queryKey: FeedQueryKey
   load: (cursor?: string) => Promise<FeedLoaderPage | FeedPage>
@@ -86,6 +89,12 @@ export function Feed({
   /** Optional banner rendered above each post card (e.g. "Lucas liked this"
    *  on the network feed). Returning null skips the banner for that row. */
   renderActivityBanner?: (post: Post) => React.ReactNode
+  /** When true, render `null` instead of the skeleton placeholders during the
+   *  initial pending state. Lets a parent show its own loading affordance. */
+  quietPending?: boolean
+  /** Fired the first time the query settles with data (or no data). The parent
+   *  can use this to know when it's safe to drop its own loading state. */
+  onReady?: () => void
 }) {
   const queryClient = useQueryClient()
   const queryKeyHash = JSON.stringify(queryKey)
@@ -137,7 +146,14 @@ export function Feed({
     return all
   }, [data, hideReplies, onlyReplies])
 
-  if (isPending)
+  const onReadyRef = useRef(onReady)
+  onReadyRef.current = onReady
+  useEffect(() => {
+    if (!isPending) onReadyRef.current?.()
+  }, [isPending])
+
+  if (isPending) {
+    if (quietPending) return null
     return (
       <div>
         {Array.from({ length: 4 }).map((_, i) => (
@@ -152,6 +168,7 @@ export function Feed({
         ))}
       </div>
     )
+  }
   if (error) return <PageError message={error.message} className="px-4 py-6" />
   if (posts.length === 0) {
     if (emptyState) return <>{emptyState}</>

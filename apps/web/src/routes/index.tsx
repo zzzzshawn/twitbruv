@@ -13,6 +13,7 @@ import {
 } from "@heroicons/react/24/solid"
 import { Button } from "@workspace/ui/components/button"
 import { SegmentedControl } from "@workspace/ui/components/segmented-control"
+import { cn } from "@workspace/ui/lib/utils"
 import { authClient } from "../lib/auth"
 import { checkSessionCookie } from "../lib/auth-fns"
 import { api } from "../lib/api"
@@ -24,7 +25,8 @@ import {
   useOnModalPostCreated,
 } from "../components/compose-provider"
 import { Feed } from "../components/feed"
-import { PageEmpty, PageLoading } from "../components/page-surface"
+import { Loader, useLoaderVisible } from "../components/loader"
+import { PageEmpty } from "../components/page-surface"
 import { PageFrame } from "../components/page-frame"
 import type { Post } from "../lib/api"
 
@@ -54,6 +56,7 @@ export const Route = createFileRoute("/")({
 
 function Home() {
   const { isPending } = authClient.useSession()
+  const [feedReady, setFeedReady] = useState(false)
   const { me } = useMe()
   const navigate = useNavigate()
   const { open: openCompose } = useCompose()
@@ -78,6 +81,7 @@ function Home() {
   )
 
   const needsHandle = me && !me.handle
+  const showLoader = useLoaderVisible(isPending || (!needsHandle && !feedReady))
 
   const emptyState =
     tab === "following" ? (
@@ -174,51 +178,67 @@ function Home() {
       ) : (
         <Compose onCreated={(p) => setNewPost(p)} collapsible />
       )}
-      {isPending ? (
-        <PageLoading />
-      ) : needsHandle ? null : (
-        <Feed
-          queryKey={qk.feed(tab)}
-          load={
-            tab === "following"
-              ? loadFeed
-              : tab === "network"
-                ? loadNetwork
-                : loadPublic
-          }
-          emptyState={emptyState}
-          prependItem={newPost}
-          renderActivityBanner={
-            tab === "network"
-              ? (p) => {
-                  const np = p as Post & {
-                    networkActors?: Array<{
-                      id: string
-                      handle: string | null
-                      displayName: string | null
-                    }>
-                    networkActorTotal?: number
+      {showLoader && (
+        <div className="flex items-center justify-center py-16">
+          <Loader
+            autoplay
+            className="h-16 text-primary/40"
+            label="Hang on..."
+          />
+        </div>
+      )}
+      {!needsHandle && (
+        <div
+          className={cn(
+            "transition-opacity duration-200",
+            showLoader && "pointer-events-none opacity-0"
+          )}
+        >
+          <Feed
+            queryKey={qk.feed(tab)}
+            load={
+              tab === "following"
+                ? loadFeed
+                : tab === "network"
+                  ? loadNetwork
+                  : loadPublic
+            }
+            emptyState={emptyState}
+            prependItem={newPost}
+            quietPending={!feedReady}
+            onReady={() => setFeedReady(true)}
+            renderActivityBanner={
+              tab === "network"
+                ? (p) => {
+                    const np = p as Post & {
+                      networkActors?: Array<{
+                        id: string
+                        handle: string | null
+                        displayName: string | null
+                      }>
+                      networkActorTotal?: number
+                    }
+                    if (!np.networkActors || np.networkActors.length === 0)
+                      return null
+                    const first = np.networkActors[0]
+                    const more = (np.networkActorTotal ?? 1) - 1
+                    const name =
+                      first.displayName ||
+                      (first.handle ? `@${first.handle}` : "Someone")
+                    return (
+                      <div className="pb-1 text-xs text-tertiary">
+                        {name}
+                        {more > 0
+                          ? ` and ${more} other${more === 1 ? "" : "s"}`
+                          : ""}{" "}
+                        liked or reposted
+                      </div>
+                    )
                   }
-                  if (!np.networkActors || np.networkActors.length === 0)
-                    return null
-                  const first = np.networkActors[0]
-                  const more = (np.networkActorTotal ?? 1) - 1
-                  const name =
-                    first.displayName ||
-                    (first.handle ? `@${first.handle}` : "Someone")
-                  return (
-                    <div className="pb-1 text-xs text-tertiary">
-                      {name}
-                      {more > 0
-                        ? ` and ${more} other${more === 1 ? "" : "s"}`
-                        : ""}{" "}
-                      liked or reposted
-                    </div>
-                  )
-                }
-              : undefined
-          }
-        />
+                : undefined
+            }
+          />
+        </div>
       )}
     </PageFrame>
   )
