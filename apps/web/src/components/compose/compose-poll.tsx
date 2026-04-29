@@ -7,6 +7,7 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
+  SelectValue,
 } from "@workspace/ui/components/select"
 import { Switch } from "@workspace/ui/components/switch"
 import {
@@ -16,6 +17,12 @@ import {
 } from "@workspace/validators"
 import { POLL_DURATION_CHOICES } from "./types"
 import type { PollState } from "./types"
+
+/** Base UI Select uses `items` so SelectValue shows labels; otherwise it stringifies the raw value (e.g. "4320"). */
+const POLL_DURATION_SELECT_ITEMS = POLL_DURATION_CHOICES.map((c) => ({
+  value: String(c.minutes),
+  label: c.label,
+}))
 
 interface ComposePollProps {
   poll: PollState
@@ -88,8 +95,11 @@ export function ComposePoll({
           <Select
             value={String(poll.durationMinutes)}
             onValueChange={(v) => onSetDuration(Number(v))}
+            items={POLL_DURATION_SELECT_ITEMS}
           >
-            <SelectTrigger size="sm" className="h-8 flex-1" />
+            <SelectTrigger size="sm" className="h-8 flex-1">
+              <SelectValue placeholder="Duration" />
+            </SelectTrigger>
             <SelectContent>
               {POLL_DURATION_CHOICES.map((c) => (
                 <SelectItem key={c.minutes} value={String(c.minutes)}>
