@@ -103,9 +103,10 @@ function Notifications() {
     if (!session) return
     api
       .notificationsMarkRead({ all: true })
-      .then(() =>
+      .then(() => {
+        queryClient.setQueryData(qk.notifications.unread(), { count: 0 })
         queryClient.invalidateQueries({ queryKey: qk.notifications.unread() })
-      )
+      })
       .catch(() => {})
   }, [session, queryClient])
 
@@ -116,6 +117,7 @@ function Notifications() {
 
   const markAllRead = useCallback(async () => {
     await api.notificationsMarkRead({ all: true })
+    queryClient.setQueryData(qk.notifications.unread(), { count: 0 })
     const now = new Date().toISOString()
     queryClient.setQueryData<
       InfiniteData<NotificationsPage, string | undefined>

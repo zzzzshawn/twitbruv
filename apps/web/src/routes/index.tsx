@@ -1,5 +1,5 @@
 import { Link, createFileRoute, redirect } from "@tanstack/react-router"
-import { useQueryClient, type InfiniteData } from "@tanstack/react-query"
+import { useQueryClient } from "@tanstack/react-query"
 import { useCallback, useEffect, useState } from "react"
 import {
   IdentificationIcon,
@@ -13,7 +13,7 @@ import { cn } from "@workspace/ui/lib/utils"
 import { authClient } from "../lib/auth"
 import { checkSessionCookie } from "../lib/auth-fns"
 import { api } from "../lib/api"
-import { qk, type FeedTabKey } from "../lib/query-keys"
+import { qk } from "../lib/query-keys"
 import { useMe } from "../lib/me"
 import { Compose } from "../components/compose"
 import {
@@ -26,6 +26,8 @@ import { PageEmpty } from "../components/page-surface"
 import { PageFrame } from "../components/page-frame"
 import { useSettings } from "../components/settings/settings-provider"
 import { isSettingsTab } from "../components/settings/types"
+import type { FeedTabKey } from "../lib/query-keys"
+import type { InfiniteData } from "@tanstack/react-query"
 import type { FeedPage, Post } from "../lib/api"
 
 const FEED_TABS = ["following", "network", "all"] as const

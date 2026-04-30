@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { Link, useNavigate } from "@tanstack/react-router"
 import {
   BellIcon,
@@ -27,6 +28,10 @@ import { Sidebar } from "@workspace/ui/components/sidebar"
 import { useTheme } from "../lib/theme"
 import { useMe } from "../lib/me"
 import { authClient } from "../lib/auth"
+import {
+  useUnreadDms,
+  useUnreadNotifications,
+} from "../hooks/use-app-nav-badges"
 import { useSettings } from "./settings/settings-provider"
 import type { SidebarNavItem } from "@workspace/ui/components/sidebar"
 
@@ -101,6 +106,26 @@ export function AppSidebar({ onCompose }: { onCompose: () => void }) {
   const { theme, setTheme } = useTheme()
   const navigate = useNavigate()
   const { open: openSettings } = useSettings()
+  const unreadNotifications = useUnreadNotifications(!!me)
+  const unreadDms = useUnreadDms(!!me)
+
+  const items = useMemo(() => {
+    if (!me) return []
+    const merged = navItems.map((item) => {
+      if (item.to === "/notifications") {
+        return { ...item, badge: unreadNotifications }
+      }
+      if (item.to === "/inbox") {
+        return { ...item, badge: unreadDms }
+      }
+      return item
+    })
+    return [
+      ...merged,
+      { ...profileItem, to: `/${me.handle}` },
+      ...(me.role === "admin" || me.role === "owner" ? [adminItem] : []),
+    ]
+  }, [me, unreadDms, unreadNotifications])
 
   // While loading or not authed, render the sidebar shell (just the logo) so the layout doesn't shift
   if (!me) {
@@ -117,12 +142,6 @@ export function AppSidebar({ onCompose }: { onCompose: () => void }) {
       </aside>
     )
   }
-
-  const items: Array<SidebarNavItem> = [
-    ...navItems,
-    { ...profileItem, to: `/${me.handle}` },
-    ...(me.role === "admin" || me.role === "owner" ? [adminItem] : []),
-  ]
 
   return (
     <Sidebar

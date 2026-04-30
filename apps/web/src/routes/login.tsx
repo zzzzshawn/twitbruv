@@ -1,11 +1,10 @@
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
 import { useState } from "react"
-import { Alert, AlertDescription } from "@workspace/ui/components/alert"
+import { toast } from "sonner"
 import { Button } from "@workspace/ui/components/button"
 import { Card } from "@workspace/ui/components/card"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
-// import { Separator } from "@workspace/ui/components/separator"
 import { authClient } from "../lib/auth"
 
 export const Route = createFileRoute("/login")({ component: Login })
@@ -14,78 +13,49 @@ function Login() {
   const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setError(null)
     setLoading(true)
     try {
       const { error: err } = await authClient.signIn.email({ email, password })
       if (err) throw new Error(err.message ?? "Sign in failed")
       router.navigate({ to: "/" })
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Sign in failed")
+      toast.error(caught instanceof Error ? caught.message : "Sign in failed")
     } finally {
       setLoading(false)
     }
   }
 
-  // async function onMagicLink() {
-  //   setError(null)
-  //   if (!email.trim()) {
-  //     setError("Enter your email first.")
-  //     return
-  //   }
-  //   setLoading(true)
-  //   try {
-  //     const { error: err } = await authClient.signIn.magicLink({ email })
-  //     if (err) throw new Error(err.message ?? "Magic link failed")
-  //     setError("Check your email for a sign-in link.")
-  //   } catch (e) {
-  //     setError(e instanceof Error ? e.message : "Magic link failed")
-  //   } finally {
-  //     setLoading(false)
-  //   }
-  // }
-
-  // async function onProvider(provider: "github" | "gitlab" | "google") {
-  //   await authClient.signIn.social({ provider, callbackURL: "/" })
-  // }
-
-  const errorLower = error?.toLowerCase() ?? ""
-  const isInfoFeedback =
-    errorLower.includes("check your email") &&
-    !errorLower.includes("enter your email")
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-12">
-      <Card>
-        <Card.Header>
-          <span className="text-sm font-medium text-primary">Sign in</span>
-          <span className="text-xs text-tertiary">
+    <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-md items-center px-4 py-10">
+      <Card className="w-full">
+        <Card.Header className="flex flex-col gap-2 px-5 pt-5 pb-4">
+          <h1 className="text-xl font-semibold tracking-tight text-primary">
+            Welcome back
+          </h1>
+          <p className="text-sm leading-6 text-tertiary">
             Use your email and password.
-          </span>
+          </p>
         </Card.Header>
-        <Card.Content className="flex flex-col gap-4">
-          {error && (
-            <Alert variant={isInfoFeedback ? "default" : "destructive"}>
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          <form onSubmit={onSubmit} className="flex flex-col gap-3">
-            <div className="flex flex-col gap-1.5">
+        <Card.Content className="flex flex-col gap-5 px-5 pb-5">
+          <form onSubmit={onSubmit} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
                 autoComplete="email"
+                className="h-10"
                 required
               />
             </div>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
@@ -93,41 +63,21 @@ function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
+                className="h-10"
                 required
               />
             </div>
             <Button
               type="submit"
-              className="w-full"
+              className="mt-1 h-10 w-full"
+              variant="primary"
               disabled={loading}
               size="md"
             >
               {loading ? "Signing in…" : "Sign in"}
             </Button>
           </form>
-          {/* Magic-link sign-in and social providers temporarily hidden:
-
-            <Button variant="transparent" className="w-full" size="sm" onClick={onMagicLink} type="button" disabled={loading}>
-              Email me a sign-in link
-            </Button>
-            <div className="flex items-center gap-2">
-              <Separator className="flex-1" />
-              <span className="text-xs text-muted-foreground">or</span>
-              <Separator className="flex-1" />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Button variant="outline" className="w-full" type="button" onClick={() => onProvider("github")}>
-                Continue with GitHub
-              </Button>
-              <Button variant="outline" className="w-full" type="button" onClick={() => onProvider("gitlab")}>
-                Continue with GitLab
-              </Button>
-              <Button variant="outline" className="w-full" type="button" onClick={() => onProvider("google")}>
-                Continue with Google
-              </Button>
-            </div>
-          */}
-          <p className="text-muted-foreground text-center text-xs">
+          <p className="text-muted-foreground text-center text-sm">
             No account?{" "}
             <Link
               to="/signup"

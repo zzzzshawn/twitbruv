@@ -35,7 +35,7 @@ export function useUnreadDms(enabled: boolean) {
     queryFn: () => api.dmUnreadCount(),
     enabled,
     refetchInterval: enabled ? 120_000 : false,
-    select: (d) => d.count,
+    select: (d) => d.count + d.requestCount,
   })
   return data ?? 0
 }

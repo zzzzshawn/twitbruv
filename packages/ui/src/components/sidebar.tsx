@@ -27,6 +27,11 @@ export interface SidebarNavItem {
   iconActive: ComponentType<{ className?: string }>
   /** Only match exact path (e.g. "/" should not match "/search") */
   end?: boolean
+  badge?: number
+}
+
+function formatNavUnreadBadge(count: number): string {
+  return count > 99 ? "99+" : String(count)
 }
 
 export interface SidebarUser {
@@ -121,18 +126,55 @@ export function Sidebar({
                   "group flex size-11 items-center justify-center rounded-full transition-colors hover:bg-subtle xl:w-full xl:justify-start xl:gap-4 xl:px-3",
                   isActive && "font-semibold"
                 ),
-              children: (isActive) => (
-                <>
-                  {isActive ? (
-                    <item.iconActive className="size-6 text-primary" />
-                  ) : (
-                    <item.icon className="size-6 text-primary" />
-                  )}
-                  <span className="hidden text-[15px] text-primary transition-all xl:block">
-                    {item.label}
-                  </span>
-                </>
-              ),
+              children: (isActive) => {
+                const IconActive = item.iconActive
+                const Icon = item.icon
+                const badge =
+                  typeof item.badge === "number" && item.badge > 0
+                    ? item.badge
+                    : null
+                const badgeLabel =
+                  badge != null ? formatNavUnreadBadge(badge) : null
+                return (
+                  <>
+                    <span className="relative shrink-0">
+                      {isActive ? (
+                        <IconActive className="size-6 text-primary" />
+                      ) : (
+                        <Icon className="size-6 text-primary" />
+                      )}
+                      {badgeLabel != null && badge != null && (
+                        <>
+                          <span className="sr-only">{`${badge} unread`}</span>
+                          <span
+                            aria-hidden
+                            className={cn(
+                              "absolute -top-0.5 -right-1 flex h-[14px] min-w-[14px] items-center justify-center rounded-full bg-danger px-[3px] text-[9px] leading-none font-semibold text-danger-on xl:hidden"
+                            )}
+                          >
+                            {badgeLabel}
+                          </span>
+                        </>
+                      )}
+                    </span>
+                    <span className="hidden min-w-0 flex-1 items-center justify-between gap-2 xl:flex">
+                      <span className="truncate text-[15px] text-primary transition-all">
+                        {item.label}
+                      </span>
+                      {badgeLabel != null && badge != null && (
+                        <span
+                          aria-hidden
+                          className={cn(
+                            "inline-flex min-h-[18px] min-w-[18px] shrink-0 items-center justify-center rounded-full bg-danger px-1 text-[10px] leading-none font-semibold text-danger-on"
+                          )}
+                        >
+                          {badgeLabel}
+                        </span>
+                      )}
+                    </span>
+                  </>
+                )
+              },
             })}
           </div>
         ))}
