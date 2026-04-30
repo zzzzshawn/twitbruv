@@ -14,11 +14,11 @@
   },
   "dependencies": {
     "@workspace/db": "workspace:*",
-    "better-auth": "^1.4.6"
+    "better-auth": "^1.6.9"
   },
   "devDependencies": {
-    "@types/node": "^25.1.0",
+    "@types/node": "^25.6.0",
     "@workspace/config-tsconfig": "workspace:*",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3"
   }
 }

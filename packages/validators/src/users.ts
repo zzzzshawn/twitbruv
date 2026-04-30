@@ -30,3 +30,8 @@ export const updateProfileSchema = z.object({
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>
 
 export const claimHandleSchema = z.object({ handle: handleSchema })
+
+export const adminSetUserHandleSchema = z.object({
+  handle: handleSchema,
+  reason: z.string().trim().min(1).max(500).optional(),
+})

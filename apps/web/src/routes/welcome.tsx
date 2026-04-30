@@ -30,7 +30,7 @@ function Welcome() {
           </Button>
           <Button
             size="md"
-            variant="outline"
+            variant="primary"
             nativeButton={false}
             render={<Link to="/login" />}
           >
@@ -43,40 +43,48 @@ function Welcome() {
               <span className="text-sm font-medium text-primary">
                 Posts and articles
               </span>
+            </Card.Header>
+            <Card.Content className="p-4 pt-0">
               <span className="text-xs text-tertiary">
                 Short updates and long-form writing in one place.
               </span>
-            </Card.Header>
+            </Card.Content>
           </Card>
           <Card>
             <Card.Header>
               <span className="text-sm font-medium text-primary">
                 Developer context
               </span>
+            </Card.Header>
+            <Card.Content className="p-4 pt-0">
               <span className="text-xs text-tertiary">
                 Connect GitHub, GitLab, and tools you already use.
               </span>
-            </Card.Header>
+            </Card.Content>
           </Card>
           <Card>
             <Card.Header>
               <span className="text-sm font-medium text-primary">
                 Simple analytics
               </span>
+            </Card.Header>
+            <Card.Content className="p-4 pt-0">
               <span className="text-xs text-tertiary">
                 A creator dashboard without upsells or model-driven ranking.
               </span>
-            </Card.Header>
+            </Card.Content>
           </Card>
           <Card>
             <Card.Header>
               <span className="text-sm font-medium text-primary">
                 Your data
               </span>
+            </Card.Header>
+            <Card.Content className="p-4 pt-0">
               <span className="text-xs text-tertiary">
                 Export and self-host with AGPL-3.0.
               </span>
-            </Card.Header>
+            </Card.Content>
           </Card>
         </div>
       </div>

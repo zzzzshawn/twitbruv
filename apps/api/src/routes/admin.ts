@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { and, asc, desc, eq, gt, gte, ilike, isNotNull, isNull, lt, or, sql } from '@workspace/db'
 import { schema } from '@workspace/db'
 import { assetUrl } from '@workspace/media/s3'
-import { handleSchema } from '@workspace/validators'
+import { adminSetUserHandleSchema } from '@workspace/validators'
 import { requireAdmin, requireOwner, type HonoEnv, type Role } from '../middleware/session.ts'
 import { parseCursor } from '../lib/cursor.ts'
 import { isReservedHandle } from '../lib/handles.ts'
@@ -713,11 +713,6 @@ adminRoute.post('/users/:id/unverify', async (c) => {
   return c.json({ ok: true })
 })
 
-const setHandleSchema = z.object({
-  handle: handleSchema,
-  reason: z.string().trim().min(1).max(500).optional(),
-})
-
 // Owner-only: forcibly reassign a user's handle. Useful for reclaiming squatted handles or
 // resolving impersonation reports. The handle is freed atomically — if the new handle is
 // taken or reserved we 4xx without touching the row.
@@ -725,7 +720,8 @@ adminRoute.post('/users/:id/handle', requireOwner(), async (c) => {
   const session = c.get('session')!
   const { db } = c.get('ctx')
   const id = c.req.param('id')
-  const { handle, reason } = setHandleSchema.parse(await c.req.json())
+  const { handle, reason } =
+    adminSetUserHandleSchema.parse(await c.req.json())
   const normalized = handle.toLowerCase()
 
   if (isReservedHandle(normalized)) return c.json({ error: 'reserved_handle' }, 400)

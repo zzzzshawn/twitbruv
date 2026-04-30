@@ -13,7 +13,7 @@ const SQUARES = [
   { id: "s3", x: 64, y: 64 },
   { id: "s1", x: 0, y: 0 },
   { id: "s2", x: 128, y: 0 },
-]
+] as const
 
 const CONNECTORS = [
   { id: "c-s5-s6", type: "asc", x: 128, y: 192 },
@@ -23,9 +23,13 @@ const CONNECTORS = [
   { id: "c-s3-s2", type: "asc", x: 128, y: 64 },
 ] as const
 
+type SpinnerPartId =
+  | (typeof SQUARES)[number]["id"]
+  | (typeof CONNECTORS)[number]["id"]
+
 type Phase = { start: number; end: number; originX: number; originY: number }
 
-const ANIMATION_PHASES: Record<string, Phase> = {
+const ANIMATION_PHASES = {
   s5: { start: 0, end: 24, originX: 160, originY: 160 },
   "c-s5-s6": { start: 10, end: 30, originX: 141.5, originY: 178.5 },
   s6: { start: 18, end: 42, originX: 128, originY: 192 },
@@ -37,7 +41,7 @@ const ANIMATION_PHASES: Record<string, Phase> = {
   s1: { start: 72, end: 96, originX: 64, originY: 64 },
   "c-s3-s2": { start: 68, end: 88, originX: 114.5, originY: 77.5 },
   s2: { start: 76, end: 100, originX: 128, originY: 64 },
-}
+} satisfies Record<SpinnerPartId, Phase>
 
 // ---------------------------------------------------------------------------
 // SVG sub-shapes
@@ -183,7 +187,7 @@ export function Spinner({
     return () => cancelAnimationFrame(req)
   }, [autoplay])
 
-  const getStyle = (id: string): CSSProperties => {
+  const getStyle = (id: SpinnerPartId): CSSProperties => {
     const phase = ANIMATION_PHASES[id]
     const { start, end, originX, originY } = phase
     const rawP = (progress - start) / (end - start)
