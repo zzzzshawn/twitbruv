@@ -56,6 +56,11 @@
 	--shadow-banner: 0 4px 5.5px -4px oklch(0 0 0 / 0.22),
 		0 0.5px 0 oklch(0 0 0 / 0.06);
 	--inset-shadow-primary: inset 0 1px 0 oklch(1 0 0 / 0.4);
+	/* Input / textarea: hairline + top inset shade + bottom inset highlight */
+	--shadow-field: 0 0 0 0.5px #eaeaea,
+		0 -0.5px 0 rgb(0 0 0 / 0.118) inset, 0 1px 0 #ffffff inset;
+	/* Horizontal hairline: 1px highlight under the line (inverted in dark) */
+	--shadow-divider: 0 1px 0 #ffffff;
 	--shadow-gh-tooltip: 0 0.5px 0 oklch(1 0 0 / 100%) inset,
 		0 -0.5px 0 oklch(1 0 0 / 100%) inset,
 		0 0 25px oklch(1 0 0 / 100%) inset;
@@ -166,6 +171,10 @@
 	--shadow-banner: 0 4px 5.5px -4px oklch(0 0 0 / 0.32),
 		0 0.5px 0 oklch(0 0 0 / 0.26);
 	--inset-shadow-primary: inset 0 1px 0 oklch(1 0 0 / 0.12);
+	/* Inverted rim + inset highlights for dark field surfaces */
+	--shadow-field: 0 0 0 0.5px oklch(1 0 0 / 0.1),
+		0 0.5px 0 oklch(1 0 0 / 0.05) inset, 0 -1px 0 oklch(0 0 0 / 0.35) inset;
+	--shadow-divider: 0 1px 0 oklch(0.3092 0 0);
 	--shadow-gh-tooltip: 0 0.5px 0 oklch(0.9551 0 0 / 50%) inset,
 		0 -0.5px 0 oklch(0.9551 0 0 / 50%) inset,
 		0 0 15px oklch(1 0 0 / 50%) inset;

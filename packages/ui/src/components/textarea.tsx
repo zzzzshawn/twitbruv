@@ -2,7 +2,7 @@ import { cn } from "@workspace/ui/lib/utils"
 import type { ComponentProps } from "react"
 
 const textareaStyles = [
-  "rounded-md border border-neutral bg-base-2 px-3 py-2 text-sm text-primary",
+  "rounded-md bg-base-2 px-3 py-2 text-sm text-primary shadow-[var(--shadow-field)]",
   "outline-none resize-y min-h-20",
   "placeholder:text-tertiary",
   "ring-neutral ring-0 transition-[box-shadow,color,border-color] duration-150 ease-out",

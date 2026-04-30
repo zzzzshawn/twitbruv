@@ -2,13 +2,23 @@ import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useEffect, useMemo, useState } from "react"
 import { Button } from "@workspace/ui/components/button"
+import { Divider } from "@workspace/ui/components/divider"
 import { Input } from "@workspace/ui/components/input"
 import { Label } from "@workspace/ui/components/label"
 import { Switch } from "@workspace/ui/components/switch"
 import { updateProfileSchema } from "@workspace/validators"
 import { Textarea } from "@workspace/ui/components/textarea"
 import { Avatar } from "@workspace/ui/components/avatar"
+import { Badge } from "@workspace/ui/components/badge"
 import { SegmentedControl } from "@workspace/ui/components/segmented-control"
+import {
+  ArrowPathIcon,
+  ComputerDesktopIcon,
+  DevicePhoneMobileIcon,
+  DeviceTabletIcon,
+  LinkSlashIcon,
+  QuestionMarkCircleIcon,
+} from "@heroicons/react/24/solid"
 import { ApiError, api } from "../lib/api"
 import { authClient } from "../lib/auth"
 import { qk } from "../lib/query-keys"
@@ -21,6 +31,7 @@ import { usePageHeader } from "../components/app-page-header"
 import { PageLoading } from "../components/page-surface"
 import { PageFrame } from "../components/page-frame"
 import { VerifiedBadge } from "../components/verified-badge"
+import { GitHubMark } from "../components/github-block/github-icons"
 
 type SettingsTab =
   | "profile"
@@ -28,7 +39,6 @@ type SettingsTab =
   | "sessions"
   | "privacy"
   | "connections"
-  | "danger"
   | "dev"
 
 const SETTINGS_TABS: ReadonlyArray<SettingsTab> = [
@@ -37,7 +47,6 @@ const SETTINGS_TABS: ReadonlyArray<SettingsTab> = [
   "sessions",
   "privacy",
   "connections",
-  "danger",
   ...(import.meta.env.DEV ? (["dev"] as const) : []),
 ]
 
@@ -47,7 +56,6 @@ const SETTINGS_TAB_LABELS: Record<SettingsTab, string> = {
   sessions: "Sessions",
   privacy: "Privacy",
   connections: "Connections",
-  danger: "Danger zone",
   dev: "Dev Tools",
 }
 
@@ -57,10 +65,13 @@ export const Route = createFileRoute("/settings")({
   component: Settings,
   validateSearch: (search: Record<string, unknown>): SettingsSearch => {
     const raw = search.tab
+    if (raw === "danger") {
+      return { tab: "account" }
+    }
     return {
       tab:
         typeof raw === "string" &&
-        (SETTINGS_TABS as ReadonlyArray<string>).includes(raw)
+          (SETTINGS_TABS as ReadonlyArray<string>).includes(raw)
           ? (raw as SettingsTab)
           : undefined,
     }
@@ -96,48 +107,50 @@ function Settings() {
   if (isPending || !me) {
     return (
       <PageFrame>
-        <div className="px-4 py-8">
-          <PageLoading />
-        </div>
+        <PageLoading />
       </PageFrame>
     )
   }
 
   return (
     <PageFrame>
-      <div className="px-4 py-8">
-        {!me.handle && (
-          <div className="mt-6">
-            <ClaimHandle onClaimed={(h) => setMe({ ...me, handle: h })} />
+      {!me.handle && (
+        <div className="px-4 pt-4">
+          <ClaimHandle onClaimed={(h) => setMe({ ...me, handle: h })} />
+        </div>
+      )}
+
+      <header className="sticky top-0 z-40 flex min-h-12 w-full min-w-0 items-center bg-base-1/80 px-4 backdrop-blur-md">
+        <div className="min-w-0 flex-1">
+          <div className="w-max shrink-0 py-0.5">
+            <SegmentedControl<SettingsTab>
+              layout="fit"
+              variant="ghost"
+              value={tab}
+              options={SETTINGS_TABS.map((t) => ({
+                value: t,
+                label: SETTINGS_TAB_LABELS[t],
+              }))}
+              onValueChange={(value) => setTab(value)}
+            />
           </div>
-        )}
+        </div>
+      </header>
 
-        <div className="mt-6 min-w-0 overflow-x-auto">
-          <SegmentedControl<SettingsTab>
-            layout="fit"
-            variant="ghost"
-            value={tab}
-            options={SETTINGS_TABS.map((t) => ({
-              value: t,
-              label: SETTINGS_TAB_LABELS[t],
-            }))}
-            onValueChange={(value) => setTab(value)}
+      <div className="px-4 pb-10 pt-4">
+        {tab === "profile" && <ProfileSection />}
+        {tab === "account" && (
+          <AccountSection
+            email={me.email}
+            onDeleted={() => router.navigate({ to: "/" })}
           />
-        </div>
-
-        <div className="mt-6">
-          {tab === "profile" && <ProfileSection />}
-          {tab === "account" && <AccountSection email={me.email} />}
-          {tab === "sessions" && (
-            <SessionsSection currentSessionId={session?.session.id ?? null} />
-          )}
-          {tab === "privacy" && <PrivacySection />}
-          {tab === "connections" && <ConnectionsSection />}
-          {tab === "danger" && (
-            <DangerZone onDeleted={() => router.navigate({ to: "/" })} />
-          )}
-          {tab === "dev" && <DevToolsSection />}
-        </div>
+        )}
+        {tab === "sessions" && (
+          <SessionsSection currentSessionId={session?.session.id ?? null} />
+        )}
+        {tab === "privacy" && <PrivacySection />}
+        {tab === "connections" && <ConnectionsSection />}
+        {tab === "dev" && <DevToolsSection />}
       </div>
     </PageFrame>
   )
@@ -222,26 +235,29 @@ function ProfileSection() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <section className="flex flex-col gap-6">
-        <h2 className="text-sm font-semibold">Profile media</h2>
+    <div className="flex flex-col gap-2">
+      <section className="relative">
         <BannerUpload
           currentUrl={me.bannerUrl}
           onChange={(url) => updateMedia({ bannerUrl: url })}
         />
-        <AvatarUpload
-          currentUrl={me.avatarUrl}
-          displayName={me.displayName ?? me.handle}
-          onChange={(url) => updateMedia({ avatarUrl: url })}
-        />
+        <div className="bg-card/75 dark:bg-card/35 relative z-1 -mt-8 rounded-2xl p-5 w-max">
+          <div className="-mt-16 flex items-end justify-between gap-4">
+            <AvatarUpload
+              currentUrl={me.avatarUrl}
+              displayName={me.displayName ?? me.handle}
+              onChange={(url) => updateMedia({ avatarUrl: url })}
+            />
+          </div>
+        </div>
       </section>
 
       <form
         onSubmit={onSave}
         id="profile"
-        className="border-border flex scroll-mt-4 flex-col gap-3 border-t pt-6"
+        className="border-neutral flex scroll-mt-4 flex-col gap-4 pt-4"
       >
-        <h2 className="text-sm font-semibold">Profile details</h2>
+        <h2 className="text-sm font-semibold text-primary">Profile details</h2>
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="displayName">Display name</Label>
           <Input
@@ -257,8 +273,8 @@ function ProfileSection() {
             value={bio}
             onChange={(e) => setBio(e.target.value)}
             maxLength={280}
-            rows={3}
-            className="min-h-20"
+            rows={4}
+            className="min-h-20 resize-none"
           />
         </div>
         <div className="flex flex-col gap-1.5">
@@ -279,14 +295,20 @@ function ProfileSection() {
             placeholder="https://"
           />
         </div>
-        {status && <p className="text-muted-foreground text-xs">{status}</p>}
+        {status && <p className="text-xs text-tertiary">{status}</p>}
         <Button type="submit">Save</Button>
       </form>
     </div>
   )
 }
 
-function AccountSection({ email }: { email: string }) {
+function AccountSection({
+  email,
+  onDeleted,
+}: {
+  email: string
+  onDeleted: () => void
+}) {
   const [currentPassword, setCurrentPassword] = useState("")
   const [newPassword, setNewPassword] = useState("")
   const [pwBusy, setPwBusy] = useState(false)
@@ -341,11 +363,13 @@ function AccountSection({ email }: { email: string }) {
 
   return (
     <section className="flex flex-col gap-6">
-      <h2 className="text-sm font-semibold">Account</h2>
+      <h2 className="text-sm font-semibold text-primary">Account</h2>
 
       <form onSubmit={changeEmail} className="flex flex-col gap-2">
-        <Label htmlFor="newEmail">Email</Label>
-        <p className="text-muted-foreground text-xs">Currently {email}.</p>
+        <div className="">
+          <Label htmlFor="newEmail">Email</Label>
+          <p className="text-xs text-tertiary">Currently {email}.</p>
+        </div>
         <Input
           id="newEmail"
           type="email"
@@ -353,13 +377,12 @@ function AccountSection({ email }: { email: string }) {
           onChange={(e) => setNewEmail(e.target.value)}
           placeholder="new@example.com"
         />
-        {emStatus && (
-          <p className="text-muted-foreground text-xs">{emStatus}</p>
-        )}
+        {emStatus && <p className="text-xs text-tertiary">{emStatus}</p>}
         <Button
           type="submit"
           size="sm"
           disabled={emBusy || !newEmail || newEmail === email}
+          className="mt-2"
         >
           Send verification
         </Button>
@@ -368,6 +391,7 @@ function AccountSection({ email }: { email: string }) {
       <form onSubmit={changePassword} className="flex flex-col gap-2">
         <Label htmlFor="currentPassword">Change password</Label>
         <Input
+
           id="currentPassword"
           type="password"
           autoComplete="current-password"
@@ -383,17 +407,22 @@ function AccountSection({ email }: { email: string }) {
           onChange={(e) => setNewPassword(e.target.value)}
           placeholder="New password (10+ characters)"
         />
-        {pwStatus && (
-          <p className="text-muted-foreground text-xs">{pwStatus}</p>
-        )}
+        {pwStatus && <p className="text-xs text-tertiary">{pwStatus}</p>}
         <Button
           type="submit"
           size="sm"
           disabled={pwBusy || !currentPassword || !newPassword}
+          className="mt-2"
         >
           Update password
         </Button>
       </form>
+
+      <Divider />
+
+      <div id="danger" className="scroll-mt-4">
+        <DangerZone onDeleted={onDeleted} />
+      </div>
     </section>
   )
 }
@@ -404,6 +433,37 @@ interface SessionRow {
   createdAt?: string | Date
   ipAddress?: string | null
   userAgent?: string | null
+}
+
+type SessionDeviceKind = "mobile" | "tablet" | "desktop" | "unknown"
+
+function sessionDeviceKindFromUserAgent(
+  ua: string | null | undefined,
+): SessionDeviceKind {
+  if (!ua?.trim()) return "unknown"
+  if (/ipad|tablet|playbook|silk/i.test(ua)) return "tablet"
+  if (/android/i.test(ua) && !/mobile/i.test(ua)) return "tablet"
+  if (
+    /iphone|ipod|android|blackberry|webos|iemobile|opera mini|mobile|mobi/i.test(
+      ua,
+    )
+  )
+    return "mobile"
+  return "desktop"
+}
+
+function SessionDeviceIcon({ kind }: { kind: SessionDeviceKind }) {
+  const className = "size-5 shrink-0 text-primary"
+  switch (kind) {
+    case "mobile":
+      return <DevicePhoneMobileIcon className={className} aria-hidden />
+    case "tablet":
+      return <DeviceTabletIcon className={className} aria-hidden />
+    case "desktop":
+      return <ComputerDesktopIcon className={className} aria-hidden />
+    default:
+      return <QuestionMarkCircleIcon className={className} aria-hidden />
+  }
 }
 
 function SessionsSection({
@@ -426,7 +486,7 @@ function SessionsSection({
   }
 
   useEffect(() => {
-    refresh().catch(() => {})
+    refresh().catch(() => { })
   }, [])
 
   async function revoke(token: string) {
@@ -453,9 +513,9 @@ function SessionsSection({
   }
 
   return (
-    <section className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold">Active sessions</h2>
+    <section className="space-y-2">
+      <div className="flex w-full flex-wrap items-start justify-between gap-2 gap-y-1">
+        <h2 className="text-sm font-semibold text-primary">Active sessions</h2>
         <Button
           size="sm"
           variant="outline"
@@ -465,48 +525,78 @@ function SessionsSection({
           Sign out other devices
         </Button>
       </div>
-      {error && <p className="text-destructive text-xs">{error}</p>}
-      {!sessions && <p className="text-muted-foreground text-xs">loading…</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
+      {!sessions && <p className="text-xs text-tertiary">loading…</p>}
       {sessions && sessions.length === 0 && (
-        <p className="text-muted-foreground text-xs">No sessions found.</p>
+        <p className="text-xs text-tertiary">No sessions found.</p>
       )}
       {sessions && sessions.length > 0 && (
-        <ul className="divide-border border-border divide-y rounded-md border">
+        <ul className="flex flex-col gap-2">
           {sessions.map((s) => {
             const isCurrent = s.id === currentSessionId
+            const deviceKind = sessionDeviceKindFromUserAgent(s.userAgent)
+            const uaLabel = s.userAgent?.trim()
+              ? truncate(s.userAgent, 56)
+              : "Unknown device"
             return (
               <li
                 key={s.id}
-                className="flex items-start justify-between gap-3 px-3 py-2 text-xs"
+                className="flex items-center justify-between gap-3 bg-base-0 dark:bg-base-2 px-3 py-2.5 transition-colors hover:bg-base-2/40 sm:px-3.5 sm:py-3 rounded-2xl"
               >
-                <div className="min-w-0">
-                  <div className="font-medium">
-                    {s.userAgent ? truncate(s.userAgent, 60) : "Unknown device"}
-                    {isCurrent && (
-                      <span className="text-muted-foreground ml-1 text-[10px] tracking-wider uppercase">
-                        this device
-                      </span>
-                    )}
+                <div className="flex min-w-0 flex-1 items-start gap-3">
+                  <div
+                    className="pt-1"
+                    aria-hidden
+                  >
+                    <SessionDeviceIcon kind={deviceKind} />
                   </div>
-                  <div className="text-muted-foreground">
-                    {s.ipAddress && <span>{s.ipAddress} · </span>}
-                    {s.createdAt && (
-                      <span>
-                        started {new Date(s.createdAt).toLocaleString()}
+                  <div className="min-w-0 flex-1 space-y-0.5 ">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium text-primary">
+                        {uaLabel}
                       </span>
-                    )}
+                      {isCurrent && (
+                        <Badge
+                          variant="tooltip"
+                          className="shrink-0 text-[10px] font-medium uppercase ml-auto"
+                        >
+                          this device
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-tertiary [font-variant-numeric:tabular-nums]">
+                      {s.ipAddress ? <span>{s.ipAddress}</span> : null}
+                      {s.ipAddress && s.createdAt ? (
+                        <span aria-hidden> · </span>
+                      ) : null}
+                      {s.createdAt ? (
+                        <span>
+                          Signed in{" "}
+                          {new Date(s.createdAt).toLocaleString(undefined, {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                            hour: "numeric",
+                            minute: "2-digit",
+                          })}
+                        </span>
+                      ) : null}
+                    </p>
                   </div>
                 </div>
-                {!isCurrent && s.token && (
+                {!isCurrent && s.token ? (
                   <Button
                     size="sm"
-                    variant="transparent"
+                    variant="outline"
                     disabled={busy}
-                    onClick={() => revoke(s.token!)}
+                    onClick={() => {
+                      if (s.token) revoke(s.token)
+                    }}
+                    className="shrink-0"
                   >
                     Revoke
                   </Button>
-                )}
+                ) : null}
               </li>
             )
           })}
@@ -558,7 +648,7 @@ function PrivacySection() {
 
   return (
     <section className="space-y-3">
-      <h2 className="text-sm font-semibold">Privacy</h2>
+      <h2 className="text-sm font-semibold text-primary">Privacy</h2>
       <div className="flex gap-1">
         <Button
           size="sm"
@@ -582,7 +672,7 @@ function PrivacySection() {
         </Button>
       </div>
       {tab === "blocks" && blocksQuery.isError && (
-        <p className="text-destructive text-xs">
+        <p className="text-xs text-danger">
           {blocksQuery.error instanceof ApiError
             ? blocksQuery.error.message
             : "couldn't load blocks"}
@@ -608,7 +698,7 @@ function PrivacySection() {
         />
       )}
       {tab === "mutes" && mutesQuery.isError && (
-        <p className="text-destructive text-xs">
+        <p className="text-xs text-danger">
           {mutesQuery.error instanceof ApiError
             ? mutesQuery.error.message
             : "couldn't load mutes"}
@@ -664,17 +754,17 @@ function PrivacyList<
   renderMeta: (u: T) => string
 }) {
   if (users === null) {
-    return <p className="text-muted-foreground text-xs">loading…</p>
+    return <p className="text-xs text-tertiary">loading…</p>
   }
   if (users.length === 0) {
-    return <p className="text-muted-foreground text-xs">{emptyText}</p>
+    return <p className="text-xs text-tertiary">{emptyText}</p>
   }
   return (
-    <ul className="divide-border border-border divide-y rounded-md border">
+    <ul className="divide-neutral border-neutral divide-y rounded-lg border">
       {users.map((u) => (
         <li
           key={u.id}
-          className="flex items-center justify-between gap-3 px-3 py-2"
+          className="flex items-center justify-between gap-3 px-3 py-2 transition hover:bg-base-2/40"
         >
           <div className="flex min-w-0 items-center gap-2">
             <Avatar
@@ -704,7 +794,7 @@ function PrivacyList<
                   {u.isVerified && <VerifiedBadge size={13} role={u.role} />}
                 </span>
               )}
-              <p className="text-muted-foreground truncate text-xs">
+              <p className="truncate text-xs text-tertiary">
                 {renderMeta(u)}
               </p>
             </div>
@@ -742,25 +832,28 @@ function DangerZone({ onDeleted }: { onDeleted: () => void }) {
   }
 
   return (
-    <section className="space-y-3">
-      <h2 className="text-destructive text-sm font-semibold">Danger zone</h2>
-      <p className="text-muted-foreground text-xs">
+    <section className="space-y-2">
+      <h2 className="text-sm font-semibold text-danger">Danger zone</h2>
+      <p className="text-xs text-tertiary">
         Deleting your account is permanent. Posts, articles, and DMs you
         authored will be removed. Type{" "}
-        <code className="bg-muted rounded px-1">{requiredText}</code> to
-        confirm.
+        <code className="bg-subtle rounded px-1 font-mono text-secondary">
+          {requiredText}
+        </code>{" "}
+        to confirm.
       </p>
       <Input
         value={confirm}
         onChange={(e) => setConfirm(e.target.value)}
         placeholder={requiredText}
       />
-      {error && <p className="text-destructive text-xs">{error}</p>}
+      {error && <p className="text-xs text-danger">{error}</p>}
       <Button
         variant="danger"
         size="sm"
         disabled={!matches || busy}
         onClick={deleteMe}
+        className="mt-2"
       >
         Delete my account
       </Button>
@@ -839,48 +932,51 @@ function ConnectionsSection() {
   }
 
   return (
-    <section className="space-y-4">
-      <h2 className="text-sm font-semibold">Connections</h2>
-      <p className="text-muted-foreground text-xs">
+    <section className="space-y-2">
+      <h2 className="text-sm font-semibold text-primary">Connections</h2>
+      <p className="text-xs text-tertiary">
         Link external accounts to enrich your profile. We never post on your
         behalf.
       </p>
 
       {connected === "github" && (
-        <div className="border-border bg-muted/40 rounded-md border px-3 py-2 text-xs">
+        <div className="rounded-lg border border-neutral bg-base-2/50 px-3 py-2 text-xs text-secondary">
           GitHub connected.
         </div>
       )}
       {connectError && (
-        <div className="border-destructive/40 bg-destructive/10 text-destructive rounded-md border px-3 py-2 text-xs">
+        <div className="rounded-lg border border-danger/40 bg-danger-subtle px-3 py-2 text-xs text-danger">
           GitHub connection failed: {connectError}
         </div>
       )}
 
-      <div className="border-border rounded-md border p-3">
+      <div className="rounded-2xl bg-base-0 dark:bg-base-2 p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-sm font-semibold">GitHub</div>
+            <div className="text-foreground inline-flex items-center gap-1.5 text-sm font-semibold">
+              <GitHubMark />
+              <span>GitHub</span>
+            </div>
             {isPending && <PageLoading className="py-8" label="Loading…" />}
             {state && state.configured === false && (
-              <p className="text-muted-foreground text-xs">
+              <p className="text-xs text-tertiary">
                 The server isn't configured for GitHub connections yet.
               </p>
             )}
             {state?.connected === false && state.configured && (
-              <p className="text-muted-foreground text-xs">
+              <p className="text-xs text-tertiary">
                 Show your contributions graph and pinned repos on your profile.
               </p>
             )}
             {state?.connected === true && (
-              <div className="text-muted-foreground space-y-1 text-xs">
+              <div className="space-y-2 text-xs text-tertiary mt-1">
                 <div>
                   Connected as{" "}
                   <a
                     href={`https://github.com/${state.login}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="text-foreground font-medium hover:underline"
+                    className="font-medium text-primary hover:underline"
                   >
                     @{state.login}
                   </a>
@@ -891,7 +987,7 @@ function ConnectionsSection() {
                   </div>
                 )}
                 {state.needsReconnect && (
-                  <div className="text-destructive">
+                  <div className="text-danger">
                     Token revoked — reconnect to resume.
                   </div>
                 )}
@@ -906,14 +1002,18 @@ function ConnectionsSection() {
                   variant="outline"
                   disabled={busy !== null}
                   onClick={refresh}
+                  iconLeft={<ArrowPathIcon aria-hidden />}
+                  className="shadow-none"
                 >
-                  Refresh
+                  
                 </Button>
                 <Button
                   size="sm"
                   variant="outline"
                   disabled={busy !== null}
                   onClick={disconnect}
+                  iconLeft={<LinkSlashIcon aria-hidden />}
+                  className="shadow-none!"
                 >
                   Disconnect
                 </Button>
@@ -942,7 +1042,7 @@ function ConnectionsSection() {
           </label>
         )}
         {status && (
-          <p className="text-muted-foreground mt-2 text-xs">{status}</p>
+          <p className="mt-2 text-xs text-tertiary">{status}</p>
         )}
       </div>
     </section>
@@ -969,9 +1069,9 @@ function DevToolsSection() {
       if (data.ok) {
         setStatus(
           data.message +
-            (data.counts
-              ? ` (${data.counts.users} users, ${data.counts.posts} posts, ${data.counts.images} images)`
-              : "")
+          (data.counts
+            ? ` (${data.counts.users} users, ${data.counts.posts} posts, ${data.counts.images} images)`
+            : "")
         )
       } else {
         setStatus("Failed to seed")
@@ -985,8 +1085,8 @@ function DevToolsSection() {
 
   return (
     <section className="space-y-6">
-      <div>
-        <h3 className="text-sm font-medium text-primary">Seed Data</h3>
+      <div className="space-y-2">
+        <h3 className="text-sm font-semibold text-primary">Seed data</h3>
         <p className="mt-1 text-xs text-tertiary">
           Create fake users, posts with images, replies, reposts, and quote
           tweets for testing. Also creates a few posts for your account.

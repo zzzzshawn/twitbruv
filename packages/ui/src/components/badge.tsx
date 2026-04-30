@@ -6,6 +6,9 @@ const variantStyles = {
   danger: "bg-danger-subtle text-danger",
   warning: "bg-warn-subtle text-warn",
   success: "bg-success-subtle text-success",
+  /** Matches GitHub contributions heatmap tooltips (border, blur, inset shadow). */
+  tooltip:
+    "border border-neutral bg-subtle text-[11px] text-primary backdrop-blur-sm px-2 py-1 [box-shadow:var(--shadow-gh-tooltip)]",
 } as const
 
 export type BadgeVariant = keyof typeof variantStyles

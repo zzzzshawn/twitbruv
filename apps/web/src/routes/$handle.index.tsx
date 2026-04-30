@@ -147,7 +147,7 @@ function Profile() {
         disabled={!user.bannerUrl}
         className="block w-full rounded-b-2xl"
       >
-        <div className="bg-muted h-52 w-full rounded-b-2xl shadow-banner">
+        <div className="bg-base-0 h-52 w-full rounded-b-2xl shadow-banner">
           {user.bannerUrl && (
             <img
               src={user.bannerUrl}
