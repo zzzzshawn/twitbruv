@@ -1,5 +1,6 @@
 import { Link, createFileRoute, useRouter } from "@tanstack/react-router"
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import {
   ChatBubbleLeftEllipsisIcon,
   Cog6ToothIcon,
@@ -23,6 +24,7 @@ import { DropdownMenu } from "@workspace/ui/components/dropdown-menu"
 import { Avatar } from "@workspace/ui/components/avatar"
 import { api } from "../lib/api"
 import { authClient } from "../lib/auth"
+import { qk } from "../lib/query-keys"
 import { getPastedImageFiles } from "../lib/clipboard-images"
 import { ImageLightbox } from "../components/image-lightbox"
 import { PageEmpty, PageError } from "../components/page-surface"
@@ -74,6 +76,7 @@ interface Pending {
 function Thread() {
   const { conversationId } = Route.useParams()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { data: session } = authClient.useSession()
   const me = session?.user.id ?? null
   const [conversation, setConversation] = useState<DmConversationDetail | null>(
@@ -284,8 +287,11 @@ function Thread() {
     const latestId = messages[messages.length - 1].id
     if (latestId === lastSeenIdRef.current) return
     lastSeenIdRef.current = latestId
-    api.dmMarkRead(conversationId, latestId).catch(() => {})
-  }, [messages, conversationId])
+    api
+      .dmMarkRead(conversationId, latestId)
+      .then(() => queryClient.invalidateQueries({ queryKey: qk.dms.unread() }))
+      .catch(() => {})
+  }, [conversationId, messages, queryClient])
 
   // Auto-grow the composer textarea as the user types — capped so a wall of text doesn't
   // swallow the message list.
