@@ -7,6 +7,7 @@ export default function BadgeVariants() {
 			<Badge variant="success">Success</Badge>
 			<Badge variant="warning">Warning</Badge>
 			<Badge variant="danger">Danger</Badge>
+			<Badge variant="merged">Merged</Badge>
 		</div>
 	)
 }

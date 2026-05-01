@@ -5,6 +5,7 @@ import {
   persistFailureOnly,
   type FetchOutcome as CoreFetchOutcome,
 } from '@workspace/url-unfurl-core'
+import { LANGUAGE_COLORS } from './language-colors.ts'
 import { unfurlClient } from './octokit.ts'
 import type {
   GithubCard,
@@ -53,7 +54,7 @@ export async function fetchGithubCard(ref: GithubRef): Promise<FetchOutcome<Gith
         stars: d.stargazers_count,
         forks: d.forks_count,
         watchers: d.watchers_count,
-        primaryLanguage: d.language ? { name: d.language, color: null } : null,
+        primaryLanguage: d.language ? { name: d.language, color: LANGUAGE_COLORS[d.language] ?? null } : null,
         topics: Array.isArray(d.topics) ? d.topics : [],
         isPrivate: d.private,
         isArchived: d.archived,

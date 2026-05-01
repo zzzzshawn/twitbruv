@@ -108,21 +108,30 @@ Use `.env.example` as the source of truth for local variable names and defaults.
   states, and semantic elements.
 - Keep browser-only APIs guarded so SSR/build paths do not crash.
 
-## UI and shadcn
+## UI component library
 
-- Shared UI lives in `packages/ui/src`.
+- `packages/ui` is the single source of truth for all presentational UI
+  components. Every component that is rendered in the app or documented should
+  live here.
 - Import shared UI from `@workspace/ui/components/...`,
   `@workspace/ui/hooks/...`, or `@workspace/ui/lib/...`.
 - Global styles live in `packages/ui/src/styles/globals.css`.
-- The app shadcn config is `apps/web/components.json`.
-- Use the configured shadcn style and aliases. Components should be added with:
-
-```bash
-bunx shadcn@latest add <component> -c apps/web
-```
-
-- The configured icon library is Phosphor.
+- Components use Tailwind CSS v4 utility classes and the project's design tokens
+  (e.g. `bg-base-1`, `text-primary`, `border-neutral`). Do not use hardcoded
+  color values like `bg-white` — always use tokens so dark mode works.
+- The configured icon library is Heroicons 16 (`@heroicons/react/16/solid`).
+  Use the 16px solid variant as the default for all icons. Do not introduce
+  other icon libraries.
 - Prefer composing existing shared components before adding new ones.
+- When a component needs app-specific behavior (e.g. routing, context hooks,
+  API types), keep the presentational component in `packages/ui` with a plain
+  props interface and create a thin wrapper in `apps/web` that maps app-specific
+  data and wires up behavior.
+- Documentation lives in `docs/content/components/` (MDX) with live examples in
+  `docs/examples/`. Examples must import the real component from `@workspace/ui`
+  — never hand-roll markup that duplicates a component's implementation.
+- The docs site uses Cabinet Docs (`@cabinetdocs/cli`). Config is in
+  `cabinet.config.ts`. Run with `bun run docs`.
 
 ## API, auth, and background jobs
 

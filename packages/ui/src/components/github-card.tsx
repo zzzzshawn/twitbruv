@@ -3,8 +3,11 @@ import {
   ArrowsRightLeftIcon,
   CommandLineIcon,
   PencilSquareIcon,
-} from "@heroicons/react/24/outline"
+  StarIcon,
+} from "@heroicons/react/16/solid"
+import { LANGUAGE_COLORS } from "@workspace/github-unfurl/language-colors"
 import { cn } from "../lib/utils"
+import { Badge } from "./badge"
 import { LinkCardShell } from "./link-card"
 
 function compactNumber(n: number): string {
@@ -27,58 +30,16 @@ function GithubMark({ className }: { className?: string }) {
   )
 }
 
-function GithubChromeHeader({
-  repoLabel,
-  ownerAvatarUrl,
-}: {
-  repoLabel: string
-  ownerAvatarUrl?: string | null
-}) {
+function GithubChromeHeader({ repoLabel }: { repoLabel: string }) {
   return (
     <div className="flex items-center gap-2 border-b border-neutral bg-base-2/60 px-3 py-1.5 text-sm text-tertiary">
       <GithubMark className="size-3.5" />
-      {ownerAvatarUrl && (
-        <img
-          src={ownerAvatarUrl}
-          alt=""
-          width={14}
-          height={14}
-          loading="lazy"
-          className="size-3.5 rounded-full"
-        />
-      )}
       <span className="truncate">{repoLabel}</span>
     </div>
   )
 }
 
-type BadgeTone = "open" | "closed" | "merged" | "draft" | "neutral"
-
-function Badge({
-  tone,
-  children,
-}: {
-  tone: BadgeTone
-  children: React.ReactNode
-}) {
-  const map: Record<BadgeTone, string> = {
-    open: "border border-success bg-success-subtle text-success",
-    closed: "border border-danger bg-danger-subtle text-danger",
-    merged: "border-violet-500/30 bg-violet-500/15 text-violet-700",
-    draft: "border border-neutral bg-base-2 text-tertiary",
-    neutral: "border border-neutral bg-base-2 text-tertiary",
-  }
-  return (
-    <span
-      className={cn(
-        "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10.5px] font-medium tracking-wide uppercase",
-        map[tone]
-      )}
-    >
-      {children}
-    </span>
-  )
-}
+const badgeClass = "rounded-full uppercase tracking-wide gap-1"
 
 // ── Repo ──────────────────────────────────────────────
 
@@ -113,18 +74,25 @@ export function GithubRepoCard({
 }: GithubRepoCardProps) {
   return (
     <LinkCardShell href={url} className={className}>
-      <GithubChromeHeader
-        repoLabel={nameWithOwner}
-        ownerAvatarUrl={ownerAvatarUrl}
-      />
+      <GithubChromeHeader repoLabel={nameWithOwner.split("/")[0] ?? nameWithOwner} />
       <div className="space-y-2 p-3">
         <div className="flex items-center gap-2">
+          {ownerAvatarUrl && (
+            <img
+              src={ownerAvatarUrl}
+              alt=""
+              width={20}
+              height={20}
+              loading="lazy"
+              className="size-5 shrink-0 rounded-full"
+            />
+          )}
           <h3 className="truncate text-sm font-semibold text-primary">
-            {nameWithOwner}
+            {nameWithOwner.split("/")[1] ?? nameWithOwner}
           </h3>
-          {isArchived && <Badge tone="neutral">archived</Badge>}
-          {isFork && <Badge tone="neutral">fork</Badge>}
-          {isPrivate && <Badge tone="neutral">private</Badge>}
+          {isArchived && <Badge className={badgeClass}>archived</Badge>}
+          {isFork && <Badge className={badgeClass}>fork</Badge>}
+          {isPrivate && <Badge className={badgeClass}>private</Badge>}
         </div>
         {description && (
           <p className="line-clamp-2 text-sm text-tertiary">{description}</p>
@@ -132,12 +100,9 @@ export function GithubRepoCard({
         {topics.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {topics.slice(0, 6).map((t) => (
-              <span
-                key={t}
-                className="rounded-full bg-base-2 px-2 py-px text-xs text-tertiary"
-              >
+              <Badge key={t} className="rounded-full">
                 {t}
-              </span>
+              </Badge>
             ))}
           </div>
         )}
@@ -148,14 +113,27 @@ export function GithubRepoCard({
                 aria-hidden
                 className="inline-block size-2 rounded-full"
                 style={{
-                  backgroundColor: primaryLanguage.color ?? "currentColor",
+                  backgroundColor:
+                    primaryLanguage.color ??
+                    LANGUAGE_COLORS[primaryLanguage.name] ??
+                    "currentColor",
                 }}
               />
               {primaryLanguage.name}
             </span>
           )}
-          {stars > 0 && <span>★ {compactNumber(stars)}</span>}
-          {forks > 0 && <span>⑂ {compactNumber(forks)}</span>}
+          {stars > 0 && (
+            <span className="inline-flex items-center gap-1">
+              <StarIcon className="size-3.5 shrink-0" />
+              {compactNumber(stars)}
+            </span>
+          )}
+          {forks > 0 && (
+            <span className="inline-flex items-center gap-1">
+              <ArrowsRightLeftIcon className="size-3.5 shrink-0" />
+              {compactNumber(forks)}
+            </span>
+          )}
         </div>
       </div>
     </LinkCardShell>
@@ -198,15 +176,14 @@ export function GithubIssueCard({
   return (
     <LinkCardShell href={url} className={className}>
       <GithubChromeHeader
-        repoLabel={`${owner}/${repo}`}
-        ownerAvatarUrl={authorAvatarUrl}
+        repoLabel={owner}
       />
       <div className="space-y-2 p-3">
         <div className="flex items-start gap-2">
           {state === "open" ? (
-            <Badge tone="open">open</Badge>
+            <Badge variant="success" className={badgeClass}>open</Badge>
           ) : (
-            <Badge tone="closed">
+            <Badge variant="danger" className={badgeClass}>
               {stateReason === "not_planned" ? "not planned" : "closed"}
             </Badge>
           )}
@@ -220,17 +197,13 @@ export function GithubIssueCard({
         {labels.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {labels.slice(0, 5).map((l) => (
-              <span
+              <Badge
                 key={l.name}
-                className="rounded-full px-2 py-px text-[10.5px] font-medium"
-                style={{
-                  backgroundColor: l.color ? `#${l.color}22` : undefined,
-                  color: l.color ? `#${l.color}` : undefined,
-                  border: l.color ? `1px solid #${l.color}55` : undefined,
-                }}
+                color={l.color}
+                className="rounded-full"
               >
                 {l.name}
-              </span>
+              </Badge>
             ))}
           </div>
         )}
@@ -286,23 +259,23 @@ export function GithubPullCard({
   let badge: React.ReactNode
   if (state === "merged") {
     badge = (
-      <Badge tone="merged">
+      <Badge variant="merged" className={badgeClass}>
         <ArrowPathRoundedSquareIcon className="size-3" />
         merged
       </Badge>
     )
   } else if (state === "closed") {
-    badge = <Badge tone="closed">closed</Badge>
+    badge = <Badge variant="danger" className={badgeClass}>closed</Badge>
   } else if (draft) {
     badge = (
-      <Badge tone="draft">
+      <Badge className={badgeClass}>
         <PencilSquareIcon className="size-3" />
         draft
       </Badge>
     )
   } else {
     badge = (
-      <Badge tone="open">
+      <Badge variant="success" className={badgeClass}>
         <ArrowsRightLeftIcon className="size-3" />
         open
       </Badge>
@@ -311,10 +284,7 @@ export function GithubPullCard({
 
   return (
     <LinkCardShell href={url} className={className}>
-      <GithubChromeHeader
-        repoLabel={`${owner}/${repo}`}
-        ownerAvatarUrl={authorAvatarUrl}
-      />
+      <GithubChromeHeader repoLabel={owner} />
       <div className="space-y-2 p-3">
         <div className="flex items-start gap-2">
           {badge}
@@ -382,16 +352,13 @@ export function GithubCommitCard({
 }: GithubCommitCardProps) {
   return (
     <LinkCardShell href={url} className={className}>
-      <GithubChromeHeader
-        repoLabel={`${owner}/${repo}`}
-        ownerAvatarUrl={authorAvatarUrl}
-      />
+      <GithubChromeHeader repoLabel={owner} />
       <div className="space-y-2 p-3">
         <div className="flex items-start gap-2">
-          <span className="mt-0.5 inline-flex h-5 items-center rounded-md bg-base-2 px-1.5 font-mono text-[11px] text-tertiary">
-            <CommandLineIcon className="mr-1 size-3 shrink-0" />
+          <Badge className={cn(badgeClass, "font-mono")}>
+            <CommandLineIcon className="size-3 shrink-0" />
             {shortSha}
-          </span>
+          </Badge>
           <h3 className="line-clamp-2 text-sm leading-snug font-semibold text-primary">
             {messageHeadline}
           </h3>

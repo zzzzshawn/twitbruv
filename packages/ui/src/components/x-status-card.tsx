@@ -3,9 +3,9 @@ import {
   ArrowUturnLeftIcon,
   ChartBarIcon,
   ChatBubbleLeftIcon,
+  CheckBadgeIcon,
   HeartIcon,
-} from "@heroicons/react/24/outline"
-import { CheckBadgeIcon } from "@heroicons/react/24/solid"
+} from "@heroicons/react/16/solid"
 import { cn } from "../lib/utils"
 import { Avatar } from "./avatar"
 import { LinkCardShell } from "./link-card"
@@ -111,7 +111,7 @@ export function XStatusCard({
           {text}
         </p>
 
-        <div className="flex flex-wrap gap-x-5 gap-y-1 border-t border-neutral pt-3 text-sm text-tertiary">
+        <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-tertiary">
           <span className="inline-flex items-center gap-1">
             <ChatBubbleLeftIcon className="size-3.5 shrink-0" />
             {compactCount(replies)}

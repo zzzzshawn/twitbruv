@@ -1,4 +1,4 @@
-import { PlayIcon } from "@heroicons/react/24/solid"
+import { PlayIcon } from "@heroicons/react/16/solid"
 import { cn } from "../lib/utils"
 import { Avatar } from "./avatar"
 import { LinkCardShell, linkCardShellClasses } from "./link-card"

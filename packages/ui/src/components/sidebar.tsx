@@ -1,11 +1,9 @@
 import {
   ArrowRightStartOnRectangleIcon,
   Cog6ToothIcon,
-  PencilSquareIcon,
-} from "@heroicons/react/24/outline"
-import {
   ComputerDesktopIcon,
   MoonIcon,
+  PencilSquareIcon,
   SunIcon,
 } from "@heroicons/react/16/solid"
 import { cn } from "@workspace/ui/lib/utils"

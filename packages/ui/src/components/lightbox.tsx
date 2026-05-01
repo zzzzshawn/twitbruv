@@ -4,7 +4,7 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   XMarkIcon,
-} from "@heroicons/react/24/outline"
+} from "@heroicons/react/16/solid"
 import { Button } from "@workspace/ui/components/button"
 import type { ReactNode } from "react"
 
