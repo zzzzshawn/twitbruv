@@ -61,7 +61,7 @@ export const Route = createFileRoute("/$handle/")({
     const name = user.displayName || `@${user.handle}`
     const description = clipDescription(
       user.bio ||
-      `@${user.handle} on ${APP_NAME} — ${user.counts.followers} followers, ${user.counts.posts} posts.`
+        `@${user.handle} on ${APP_NAME} — ${user.counts.followers} followers, ${user.counts.posts} posts.`
     )
     return {
       meta: buildSeoMeta({

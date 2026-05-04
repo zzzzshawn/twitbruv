@@ -24,7 +24,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { data: session } = authClient.useSession()
   const authed = Boolean(session)
   const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const isAdminShell = pathname.startsWith("/admin")
+  const isAdminShell = pathname.startsWith("/admin");
+  const showMobileIslandNav = authed && !isAdminShell;
 
   const sidebarLeftStyle = {
     left: "max(0px, calc((100vw - 1080px) / 2))",
@@ -56,7 +57,13 @@ export function AppShell({ children }: { children: ReactNode }) {
                     : "hidden w-[68px] shrink-0 md:block xl:w-[240px]"
                 }
               />
-              <main className="flex min-h-svh min-w-0 flex-1 flex-col pb-32 md:pb-0">
+              <main
+                className={
+                  showMobileIslandNav
+                    ? "flex min-h-svh min-w-0 flex-1 flex-col pb-32 md:pb-0"
+                    : "flex min-h-svh min-w-0 flex-1 flex-col"
+                }
+              >
                 {children}
               </main>
               <div
@@ -67,7 +74,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 }
               />
             </div>
-            {authed && !isAdminShell ? <AppMobileIslandNav /> : null}
+            {showMobileIslandNav ? <AppMobileIslandNav /> : null}
           </YouTubePlayerProvider>
         </LightboxProvider>
       </SettingsProvider>
