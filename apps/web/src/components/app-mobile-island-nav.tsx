@@ -73,7 +73,7 @@ export function AppMobileIslandNav() {
       badge: unreadDms,
     },
     {
-      to: `/${me.handle}`,
+      to: me.handle ? `/${me.handle}` : "/",
       label: "Profile",
       icon: UserIcon,
       iconActive: UserIconSolid,
